@@ -44,6 +44,8 @@ private slots:
     void onSamplesPerChirpChanged(const QString& text);
     void onApplySettings();
     void onResetSettings();
+    void onSaveSettings();
+    void onDefaultSettings();
 
     // DSP parameter slots
     void onRangeAvgEdited();
@@ -66,6 +68,8 @@ private:
     void updateTrackTable();
     void generateSimulatedTargetData();
     void generateSimulatedADCData();
+    void loadSettings();
+    QString getSettingsFilePath() const;
 
     // Binary UDP data parsing - NEW
     void parseBinaryRawData(const QByteArray& datagram);
@@ -89,6 +93,8 @@ private:
     QSpinBox* m_rangeSpinBox;
     QPushButton* m_applyButton;
     QPushButton* m_resetButton;
+    QPushButton* m_saveSettingsButton;
+    QPushButton* m_defaultSettingsButton;
     QLabel* m_statusLabel;
     QLabel* m_frameCountLabel;
 
