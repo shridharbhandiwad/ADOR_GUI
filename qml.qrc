@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/MainView.qml</file>
+        <file>qml/components/UdpConfigPanel.qml</file>
+        <file>qml/components/OutputConfigPanel.qml</file>
+        <file>qml/components/AngleCorrectionPanel.qml</file>
+        <file>qml/components/AmplificationPanel.qml</file>
+        <file>qml/components/StyleManager.qml</file>
+        <file>qml/components/ModernButton.qml</file>
+        <file>qml/components/ModernTextField.qml</file>
+        <file>qml/components/ModernSpinBox.qml</file>
+        <file>qml/components/ModernComboBox.qml</file>
+        <file>qml/components/ModernSlider.qml</file>
+        <file>qml/components/ModernSwitch.qml</file>
+        <file>qml/components/PanelCard.qml</file>
+        <file>qml/components/SectionHeader.qml</file>
+    </qresource>
+</RCC>
