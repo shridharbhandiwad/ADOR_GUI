@@ -22,6 +22,10 @@
 #include <QUdpSocket>
 #include <QHostAddress>
 #include <QRegularExpression>
+#include <QSettings>
+#include <QStandardPaths>
+#include <QDir>
+#include <QFile>
 #include <QDebug>
 #include <cmath>
 #include <cstring>
@@ -33,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_trackTable(nullptr)
     , m_udpSocket(nullptr)
     , m_updateTimer(nullptr)
+    , m_saveSettingsButton(nullptr)
+    , m_defaultSettingsButton(nullptr)
     , m_simulationEnabled(false)  // Simulation disabled by default
     , m_randomEngine(std::random_device{}())
     , m_rangeDist(100.0f, 500.0f)
@@ -44,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_targetCount(0)
 {
     setupUI();
+    loadSettings();  // Load saved settings on startup
     setupNetworking();
     setupTimer();
 }
@@ -326,19 +333,6 @@ void MainWindow::setupUI()
     addField(rightLayout, 4, "Median Filter",    m_medianFilterEdit,    "1");
     addField(rightLayout, 5, "MTI Length",       m_mtiLengthEdit,       "2");
 
-    // Buttons in left column
-    m_applyButton = new QPushButton("Apply", this);
-    m_resetButton = new QPushButton("Reset", this);
-    m_applyButton->setMinimumHeight(32);
-    m_resetButton->setMinimumHeight(32);
-    m_applyButton->setStyleSheet("font-size: 13px; font-weight: 600; padding: 6px 14px;");
-    m_resetButton->setStyleSheet("font-size: 13px; font-weight: 600; padding: 6px 14px;");
-    
-    QHBoxLayout* buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(m_applyButton);
-    buttonLayout->addWidget(m_resetButton);
-    leftLayout->addLayout(buttonLayout, 6, 0, 1, 2);
-    
     // Set column widths
     leftLayout->setColumnMinimumWidth(0, 110);
     leftLayout->setColumnMinimumWidth(1, 80);
@@ -347,6 +341,63 @@ void MainWindow::setupUI()
     
     mainSettingsLayout->addWidget(leftGroup);
     mainSettingsLayout->addWidget(rightGroup);
+    
+    // Create buttons layout BELOW the DSP Settings group
+    QWidget* buttonContainer = new QWidget(this);
+    QHBoxLayout* buttonLayout = new QHBoxLayout(buttonContainer);
+    buttonLayout->setContentsMargins(0, 8, 0, 0);
+    buttonLayout->setSpacing(12);
+    
+    // Apply button - blue filled
+    m_applyButton = new QPushButton("Apply", this);
+    m_applyButton->setMinimumHeight(36);
+    m_applyButton->setMinimumWidth(100);
+    m_applyButton->setStyleSheet(
+        "QPushButton { font-size: 13px; font-weight: 600; padding: 8px 20px; "
+        "background-color: #3b82f6; color: white; border-radius: 8px; }"
+        "QPushButton:hover { background-color: #2563eb; }"
+        "QPushButton:pressed { background-color: #1d4ed8; }"
+    );
+    
+    // Reset button - red filled
+    m_resetButton = new QPushButton("Reset", this);
+    m_resetButton->setMinimumHeight(36);
+    m_resetButton->setMinimumWidth(100);
+    m_resetButton->setStyleSheet(
+        "QPushButton { font-size: 13px; font-weight: 600; padding: 8px 20px; "
+        "background-color: #ef4444; color: white; border-radius: 8px; }"
+        "QPushButton:hover { background-color: #dc2626; }"
+        "QPushButton:pressed { background-color: #b91c1c; }"
+    );
+    
+    // Save Settings button - green filled
+    m_saveSettingsButton = new QPushButton("Save Settings", this);
+    m_saveSettingsButton->setMinimumHeight(36);
+    m_saveSettingsButton->setMinimumWidth(120);
+    m_saveSettingsButton->setStyleSheet(
+        "QPushButton { font-size: 13px; font-weight: 600; padding: 8px 20px; "
+        "background-color: #10b981; color: white; border-radius: 8px; }"
+        "QPushButton:hover { background-color: #059669; }"
+        "QPushButton:pressed { background-color: #047857; }"
+    );
+    
+    // Default Settings button - orange outline
+    m_defaultSettingsButton = new QPushButton("Default Settings", this);
+    m_defaultSettingsButton->setMinimumHeight(36);
+    m_defaultSettingsButton->setMinimumWidth(130);
+    m_defaultSettingsButton->setStyleSheet(
+        "QPushButton { font-size: 13px; font-weight: 600; padding: 8px 20px; "
+        "background-color: transparent; color: #f59e0b; border: 2px solid #f59e0b; border-radius: 8px; }"
+        "QPushButton:hover { background-color: #fffbeb; }"
+        "QPushButton:pressed { background-color: #fef3c7; }"
+    );
+    
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(m_applyButton);
+    buttonLayout->addWidget(m_resetButton);
+    buttonLayout->addWidget(m_saveSettingsButton);
+    buttonLayout->addWidget(m_defaultSettingsButton);
+    buttonLayout->addStretch();
 
     // Connect DSP settings signals
     connect(m_rangeAvgEdit,        &QLineEdit::editingFinished, this, &MainWindow::onRangeAvgEdited);
@@ -363,8 +414,11 @@ void MainWindow::setupUI()
     connect(m_mtiLengthEdit,       &QLineEdit::editingFinished, this, &MainWindow::onMtiLengthEdited);
     connect(m_applyButton,         &QPushButton::clicked,       this, &MainWindow::onApplySettings);
     connect(m_resetButton,         &QPushButton::clicked,       this, &MainWindow::onResetSettings);
+    connect(m_saveSettingsButton,  &QPushButton::clicked,       this, &MainWindow::onSaveSettings);
+    connect(m_defaultSettingsButton, &QPushButton::clicked,     this, &MainWindow::onDefaultSettings);
 
     ppiLayout->addWidget(settingsGroup, 0);  // Stretch factor 0 to keep compact
+    ppiLayout->addWidget(buttonContainer, 0);  // Add buttons below settings
     m_mainSplitter->addWidget(ppiGroup);
 
     // Right side
@@ -398,21 +452,34 @@ void MainWindow::setupUI()
     m_rightSplitter->setSizes({400, 400});
 
     QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
-
-    // Control panel (status bar only - simulation removed)
-    QHBoxLayout* controlLayout = new QHBoxLayout();
-    controlLayout->addStretch();
+    mainLayout->setContentsMargins(8, 4, 8, 4);  // Reduced top margin to remove upper space
+    mainLayout->setSpacing(4);
+    
+    // Frame count and status labels - will be updated and shown in status bar
     m_frameCountLabel = new QLabel("Frames: 0");
-    m_frameCountLabel->setStyleSheet("font-size: 14px; font-weight: 500;");
-    controlLayout->addWidget(m_frameCountLabel);
     m_statusLabel = new QLabel("Status: Ready");
-    m_statusLabel->setStyleSheet("font-size: 14px; font-weight: 500;");
-    controlLayout->addWidget(m_statusLabel);
-
-    mainLayout->addLayout(controlLayout);
+    
+    // Add main splitter directly without the upper control panel
     mainLayout->addWidget(m_mainSplitter);
 
-    statusBar()->showMessage("Radar Visualization Ready - UDP port 5000 (Binary & Text mode) - Waiting for data");
+    // Create a permanent widget for the status bar with frame count and status
+    QWidget* statusWidget = new QWidget(this);
+    QHBoxLayout* statusLayout = new QHBoxLayout(statusWidget);
+    statusLayout->setContentsMargins(0, 0, 0, 0);
+    statusLayout->setSpacing(20);
+    
+    QLabel* readyLabel = new QLabel("Radar Visualization Ready - UDP port 5000 (Binary & Text mode)");
+    readyLabel->setStyleSheet("color: #64748b; font-size: 13px;");
+    statusLayout->addWidget(readyLabel);
+    statusLayout->addStretch();
+    
+    m_frameCountLabel->setStyleSheet("color: #3b82f6; font-weight: 600; font-size: 13px;");
+    statusLayout->addWidget(m_frameCountLabel);
+    
+    m_statusLabel->setStyleSheet("color: #10b981; font-weight: 500; font-size: 13px;");
+    statusLayout->addWidget(m_statusLabel);
+    
+    statusBar()->addPermanentWidget(statusWidget, 1);
 }
 
 void MainWindow::setupNetworking()
@@ -1014,4 +1081,135 @@ void MainWindow::onMtiLengthEdited()
     bool ok;
     int v = m_mtiLengthEdit->text().toInt(&ok);
     if (ok) m_dsp.mti_filter_length = std::max(1, v);
+}
+
+//==============================================================================
+// SETTINGS PERSISTENCE
+//==============================================================================
+QString MainWindow::getSettingsFilePath() const
+{
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QDir dir(configPath);
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+    return configPath + "/RadarVisualization.ini";
+}
+
+void MainWindow::onSaveSettings()
+{
+    QSettings settings(getSettingsFilePath(), QSettings::IniFormat);
+    
+    settings.beginGroup("DSPSettings");
+    settings.setValue("rangeAvg", m_rangeAvgEdit->text());
+    settings.setValue("minRange", m_minRangeEdit->text());
+    settings.setValue("maxRange", m_maxRangeEdit->text());
+    settings.setValue("minSpeed", m_minSpeedEdit->text());
+    settings.setValue("maxSpeed", m_maxSpeedEdit->text());
+    settings.setValue("minAngle", m_minAngleEdit->text());
+    settings.setValue("maxAngle", m_maxAngleEdit->text());
+    settings.setValue("rangeThreshold", m_rangeThresholdEdit->text());
+    settings.setValue("speedThreshold", m_speedThresholdEdit->text());
+    settings.setValue("numTracks", m_numTracksEdit->text());
+    settings.setValue("medianFilter", m_medianFilterEdit->text());
+    settings.setValue("mtiLength", m_mtiLengthEdit->text());
+    settings.endGroup();
+    
+    settings.sync();
+    
+    QMessageBox::information(this, "Settings Saved", 
+        QString("Settings have been saved to:\n%1").arg(getSettingsFilePath()));
+    m_statusLabel->setText("Status: Settings saved");
+}
+
+void MainWindow::loadSettings()
+{
+    QString settingsPath = getSettingsFilePath();
+    QSettings settings(settingsPath, QSettings::IniFormat);
+    
+    if (!QFile::exists(settingsPath)) {
+        qDebug() << "No saved settings found, using defaults";
+        return;
+    }
+    
+    settings.beginGroup("DSPSettings");
+    
+    if (settings.contains("rangeAvg"))
+        m_rangeAvgEdit->setText(settings.value("rangeAvg", "1").toString());
+    if (settings.contains("minRange"))
+        m_minRangeEdit->setText(settings.value("minRange", "0").toString());
+    if (settings.contains("maxRange"))
+        m_maxRangeEdit->setText(settings.value("maxRange", "5000").toString());
+    if (settings.contains("minSpeed"))
+        m_minSpeedEdit->setText(settings.value("minSpeed", "-100").toString());
+    if (settings.contains("maxSpeed"))
+        m_maxSpeedEdit->setText(settings.value("maxSpeed", "100").toString());
+    if (settings.contains("minAngle"))
+        m_minAngleEdit->setText(settings.value("minAngle", "-60").toString());
+    if (settings.contains("maxAngle"))
+        m_maxAngleEdit->setText(settings.value("maxAngle", "60").toString());
+    if (settings.contains("rangeThreshold"))
+        m_rangeThresholdEdit->setText(settings.value("rangeThreshold", "0").toString());
+    if (settings.contains("speedThreshold"))
+        m_speedThresholdEdit->setText(settings.value("speedThreshold", "0").toString());
+    if (settings.contains("numTracks"))
+        m_numTracksEdit->setText(settings.value("numTracks", "50").toString());
+    if (settings.contains("medianFilter"))
+        m_medianFilterEdit->setText(settings.value("medianFilter", "1").toString());
+    if (settings.contains("mtiLength"))
+        m_mtiLengthEdit->setText(settings.value("mtiLength", "2").toString());
+    
+    settings.endGroup();
+    
+    // Update internal DSP settings from loaded values
+    onRangeAvgEdited();
+    onMinRangeEdited();
+    onMaxRangeEdited();
+    onMinSpeedEdited();
+    onMaxSpeedEdited();
+    onMinAngleEdited();
+    onMaxAngleEdited();
+    onRangeThresholdEdited();
+    onSpeedThresholdEdited();
+    onNumTracksEdited();
+    onMedianFilterEdited();
+    onMtiLengthEdited();
+    
+    qDebug() << "Settings loaded from:" << settingsPath;
+}
+
+void MainWindow::onDefaultSettings()
+{
+    // Set all fields to default values
+    m_rangeAvgEdit->setText("1");
+    m_minRangeEdit->setText("0");
+    m_maxRangeEdit->setText("5000");
+    m_minSpeedEdit->setText("-100");
+    m_maxSpeedEdit->setText("100");
+    m_minAngleEdit->setText("-60");
+    m_maxAngleEdit->setText("60");
+    m_rangeThresholdEdit->setText("0");
+    m_speedThresholdEdit->setText("0");
+    m_numTracksEdit->setText("50");
+    m_medianFilterEdit->setText("1");
+    m_mtiLengthEdit->setText("2");
+    
+    // Update internal DSP settings
+    m_dsp.range_mvg_avg_length = 1;
+    m_dsp.min_range_cm = 0;
+    m_dsp.max_range_cm = 5000;
+    m_dsp.min_speed_kmh = -100;
+    m_dsp.max_speed_kmh = 100;
+    m_dsp.min_angle_degree = -60;
+    m_dsp.max_angle_degree = 60;
+    m_dsp.range_threshold = 0;
+    m_dsp.speed_threshold = 0;
+    m_dsp.num_of_tracks = 50;
+    m_dsp.median_filter_length = 1;
+    m_dsp.mti_filter_length = 2;
+    
+    m_speedDist = std::uniform_real_distribution<float>(-50.0f, 50.0f);
+    
+    m_statusLabel->setText("Status: Default settings restored");
+    QMessageBox::information(this, "Default Settings", "All settings restored to factory defaults.");
 }
