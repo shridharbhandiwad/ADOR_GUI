@@ -344,7 +344,11 @@ void PPIWidget::paintEvent(QPaintEvent *event)
 
 void PPIWidget::mouseMoveEvent(QMouseEvent *event)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QPointF mousePos = event->position();
+#else
+    QPointF mousePos = event->localPos();
+#endif
     int trackIndex = findTrackAtPosition(mousePos);
     
     if (trackIndex != m_hoveredTrackIndex) {
