@@ -40,53 +40,16 @@ Rectangle {
     
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 24
-        spacing: 20
+        anchors.margins: 16
+        spacing: 12
         
-        // Header
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 16
-            
-            Rectangle {
-                width: 48
-                height: 48
-                radius: 12
-                color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
-                
-                Text {
-                    anchors.centerIn: parent
-                    text: "📐"
-                    font.pixelSize: 24
-                }
-            }
-            
-            Column {
-                Layout.fillWidth: true
-                spacing: 4
-                
-                Text {
-                    text: "Angle Correction"
-                    font.pixelSize: 18
-                    font.weight: Font.DemiBold
-                    font.family: fontFamily
-                    color: textPrimary
-                }
-                
-                Text {
-                    text: "Mounting angle and height compensation"
-                    font.pixelSize: 13
-                    font.family: fontFamily
-                    color: textSecondary
-                }
-            }
-        }
-        
-        // Separator
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: borderColor
+        // Compact header
+        Text {
+            text: "Angle Correction"
+            font.pixelSize: 14
+            font.weight: Font.DemiBold
+            font.family: fontFamily
+            color: textPrimary
         }
         
         // Content
@@ -368,39 +331,5 @@ Rectangle {
             }
         }
         
-        // Footer buttons
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
-            
-            Item { Layout.fillWidth: true }
-            
-            ModernButton {
-                text: "Apply"
-                Layout.preferredWidth: 100
-                
-                primaryColor: angleCorrectionPanel.primaryColor
-                primaryHover: angleCorrectionPanel.primaryHover
-                primaryPressed: angleCorrectionPanel.primaryPressed
-                fontFamily: angleCorrectionPanel.fontFamily
-            }
-            
-            ModernButton {
-                text: "Reset"
-                Layout.preferredWidth: 100
-                outline: true
-                
-                primaryColor: angleCorrectionPanel.primaryColor
-                primaryHover: angleCorrectionPanel.primaryHover
-                primaryPressed: angleCorrectionPanel.primaryPressed
-                fontFamily: angleCorrectionPanel.fontFamily
-                
-                onClicked: {
-                    useAngleMethod = true
-                    angleSpinBox.value = 0
-                    heightSpinBox.value = 30
-                }
-            }
-        }
     }
 }
