@@ -1922,10 +1922,16 @@ void MainWindow::applyTheme(bool isDark)
         this->setStyleSheet(getLightThemeStyleSheet());
     }
 
+    // Propagate theme to PPI and FFT widgets for their custom drawing
+    if (m_ppiWidget) {
+        m_ppiWidget->setDarkTheme(isDark);
+    }
+    if (m_fftWidget) {
+        m_fftWidget->setDarkTheme(isDark);
+    }
+
     // Force update of all widgets
     update();
-    if (m_ppiWidget) m_ppiWidget->update();
-    if (m_fftWidget) m_fftWidget->update();
     if (m_trackTable) m_trackTable->update();
 }
 
@@ -2053,8 +2059,7 @@ void MainWindow::loadSettings()
     qDebug() << "Applied to displays - Range:" << minRangeMeters << "-" << maxRangeMeters << "m";
     qDebug() << "Angle:" << m_dsp.min_angle_degree << "-" << m_dsp.max_angle_degree << "deg";
 
-    // ADD THESE LINES:
-    // Load theme preference (NEW)
+    // Load theme preference
     QString theme = settings.value("UI/theme", "light").toString();
     m_isDarkTheme = (theme == "dark");
     applyTheme(m_isDarkTheme);
