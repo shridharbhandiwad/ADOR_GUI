@@ -20,6 +20,8 @@ FFTWidget::FFTWidget(QWidget *parent)
     , m_centerFreq(24125000000.0f) // 24.125 GHz (matching Infineon: 24.025-24.125)
     , m_maxRange(50.0f)
     , m_minRange(0.0f)
+    , m_minAngle(-60.0f)         // Default min angle
+    , m_maxAngle(60.0f)          // Default max angle
     , m_margin(50)
 {
     setMinimumSize(400, 300);
@@ -72,6 +74,22 @@ void FFTWidget::setMinRange(float minRange)
 {
     m_minRange = minRange;
     update();
+}
+
+void FFTWidget::setMinAngle(float minAngle)
+{
+    if (minAngle >= -90.0f) {
+        m_minAngle = minAngle;
+        update();
+    }
+}
+
+void FFTWidget::setMaxAngle(float maxAngle)
+{
+    if (maxAngle <= 90.0f) {
+        m_maxAngle = maxAngle;
+        update();
+    }
 }
 
 float FFTWidget::frequencyToRange(float frequency) const
@@ -415,7 +433,10 @@ void FFTWidget::drawTargetIndicators(QPainter& painter)
     for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
         const TargetTrack& target = m_currentTargets.targets[i];
 
-        if (target.azimuth < -90.0f || target.azimuth > 90.0f) continue;
+        // Filter by angle (using configured min/max angles)
+        if (target.azimuth < m_minAngle || target.azimuth > m_maxAngle) continue;
+        
+        // Filter by range (using configured min/max range)
         if (target.radius > m_maxRange || target.radius < m_minRange) continue;
 
         // Modern light theme target colors
@@ -437,11 +458,11 @@ void FFTWidget::drawTargetIndicators(QPainter& painter)
         painter.setPen(QPen(targetColor, 2, Qt::SolidLine));
         painter.drawLine(QPointF(x, m_plotRect.top()), QPointF(x, m_plotRect.bottom()));
 
-        // Draw target label
+        // Draw target label with angle info
         painter.setPen(QPen(targetColor, 1));
         painter.setFont(QFont("Arial", 8, QFont::Bold));
 
-        QString targetInfo = QString("T%1").arg(target.target_id);
+        QString targetInfo = QString("T%1 (%2°)").arg(target.target_id).arg(target.azimuth, 0, 'f', 1);
         QFontMetrics fm(painter.font());
         QRect textRect = fm.boundingRect(targetInfo);
 
@@ -530,4 +551,13 @@ void FFTWidget::drawLabels(QPainter& painter)
                        .arg(m_bandwidth / 1000000.0f, 0, 'f', 0)
                        .arg(m_sweepTime * 1000.0f, 0, 'f', 1);
     painter.drawText(QPointF(m_plotRect.left(), height() - 10), frameInfo);
+    
+    // Display current filter settings
+    painter.setPen(QPen(QColor(59, 130, 246), 1)); // #3b82f6 - Primary blue
+    QString filterInfo = QString("Range: %1-%2m  |  Angle: %3° to %4°")
+                        .arg(m_minRange, 0, 'f', 1)
+                        .arg(m_maxRange, 0, 'f', 1)
+                        .arg(m_minAngle, 0, 'f', 0)
+                        .arg(m_maxAngle, 0, 'f', 0);
+    painter.drawText(QPointF(m_plotRect.right() - 250, height() - 10), filterInfo);
 }

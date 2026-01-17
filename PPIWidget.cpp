@@ -232,8 +232,11 @@
 PPIWidget::PPIWidget(QWidget *parent)
     : QWidget(parent)
     , m_maxRange(50.0f)
+    , m_minRange(0.0f)
     , m_plotRadius(0)
-    , m_fovAngle(20.0f)  // ±20 degrees FoV
+    , m_fovAngle(20.0f)  // ±20 degrees FoV (default)
+    , m_minAngle(-60.0f) // Default min angle
+    , m_maxAngle(60.0f)  // Default max angle
 {
     setMinimumSize(400, 200);
     setBackgroundRole(QPalette::Base);
@@ -254,10 +257,38 @@ void PPIWidget::setMaxRange(float range)
     }
 }
 
+void PPIWidget::setMinRange(float range)
+{
+    if (range >= 0) {
+        m_minRange = range;
+        update();
+    }
+}
+
 void PPIWidget::setFoVAngle(float angle)
 {
     if (angle > 0 && angle <= 90) {
         m_fovAngle = angle;
+        update();
+    }
+}
+
+void PPIWidget::setMinAngle(float angle)
+{
+    if (angle >= -90.0f && angle < m_maxAngle) {
+        m_minAngle = angle;
+        // Update fovAngle to reflect the new angle range
+        m_fovAngle = std::max(std::abs(m_minAngle), std::abs(m_maxAngle));
+        update();
+    }
+}
+
+void PPIWidget::setMaxAngle(float angle)
+{
+    if (angle <= 90.0f && angle > m_minAngle) {
+        m_maxAngle = angle;
+        // Update fovAngle to reflect the new angle range
+        m_fovAngle = std::max(std::abs(m_minAngle), std::abs(m_maxAngle));
         update();
     }
 }
@@ -321,7 +352,7 @@ void PPIWidget::drawBackground(QPainter& painter)
 
 void PPIWidget::drawFoVHighlight(QPainter& painter)
 {
-    // Create a highlighted sector for the Field of View (±20°)
+    // Create a highlighted sector for the Field of View (using min/max angles)
     painter.save();
 
     // Set up semi-transparent blue fill for active FoV area (light theme)
@@ -330,16 +361,16 @@ void PPIWidget::drawFoVHighlight(QPainter& painter)
     painter.setPen(Qt::NoPen);
 
     // Calculate the angular span in Qt's coordinate system
-    // Qt angles: 0° = 3 o'clock, 90° = 6 o'clock, positive = counter-clockwise
+    // Qt angles: 0° = 3 o'clock, 90° = 12 o'clock (up), positive = counter-clockwise
     // Our radar: 0° = 12 o'clock (north), positive = clockwise
     // Conversion: qt_angle = 90° - radar_angle
 
-    float startAngleRadar = -m_fovAngle;  // -20°
-    float endAngleRadar = m_fovAngle;     // +20°
+    float startAngleRadar = m_minAngle;  // Use configured min angle
+    float endAngleRadar = m_maxAngle;    // Use configured max angle
 
     // Convert to Qt angles (in 16ths of a degree)
-    int startAngleQt = static_cast<int>((90.0f - endAngleRadar) * 16);   // Start from +20° radar
-    int spanAngleQt = static_cast<int>((endAngleRadar - startAngleRadar) * 16); // 40° span
+    int startAngleQt = static_cast<int>((90.0f - endAngleRadar) * 16);   // Start from max radar angle
+    int spanAngleQt = static_cast<int>((endAngleRadar - startAngleRadar) * 16); // Span from min to max
 
     // Draw the FoV sector
     QRectF ellipseRect(m_center.x() - m_plotRadius, m_center.y() - m_plotRadius,
@@ -355,14 +386,14 @@ void PPIWidget::drawFoVHighlight(QPainter& painter)
 
 void PPIWidget::drawFoVBoundaries(QPainter& painter)
 {
-    // Draw FoV boundary lines
+    // Draw FoV boundary lines using configured min/max angles
     painter.save();
 
     // Use primary blue for FoV boundaries (light theme)
     painter.setPen(QPen(QColor(59, 130, 246), 2, Qt::SolidLine)); // #3b82f6
 
-    // Draw left boundary (-20°)
-    float leftAngle = -m_fovAngle;
+    // Draw left boundary (min angle)
+    float leftAngle = m_minAngle;
     float leftRadians = qDegreesToRadians(90.0f - leftAngle);
     QPointF leftEndPoint(
         m_center.x() + m_plotRadius * std::cos(leftRadians),
@@ -370,8 +401,8 @@ void PPIWidget::drawFoVBoundaries(QPainter& painter)
     );
     painter.drawLine(m_center, leftEndPoint);
 
-    // Draw right boundary (+20°)
-    float rightAngle = m_fovAngle;
+    // Draw right boundary (max angle)
+    float rightAngle = m_maxAngle;
     float rightRadians = qDegreesToRadians(90.0f - rightAngle);
     QPointF rightEndPoint(
         m_center.x() + m_plotRadius * std::cos(rightRadians),
@@ -414,8 +445,8 @@ void PPIWidget::drawAzimuthLines(QPainter& painter)
             m_center.y() - m_plotRadius * std::sin(radians)
         );
 
-        // Draw different styles for lines within and outside FoV
-        if (azimuth >= -m_fovAngle && azimuth <= m_fovAngle) {
+        // Draw different styles for lines within and outside FoV (using configured min/max angles)
+        if (azimuth >= m_minAngle && azimuth <= m_maxAngle) {
             // Lines within FoV - primary blue
             painter.setPen(QPen(QColor(59, 130, 246, 120), 1)); // #3b82f6
         } else {
@@ -435,16 +466,16 @@ void PPIWidget::drawTargets(QPainter& painter)
             continue;
         }
 
-        // Skip targets outside our range
-        if (target.radius > m_maxRange) {
+        // Skip targets outside our range (both min and max)
+        if (target.radius > m_maxRange || target.radius < m_minRange) {
             continue;
         }
 
         QPointF targetPos = polarToCartesian(target.radius, target.azimuth);
         QColor targetColor = getTargetColor(target.radial_speed);
 
-        // Check if target is within FoV
-        bool inFoV = (target.azimuth >= -m_fovAngle && target.azimuth <= m_fovAngle);
+        // Check if target is within configured FoV (using min/max angles)
+        bool inFoV = (target.azimuth >= m_minAngle && target.azimuth <= m_maxAngle);
 
         // Draw target as a circle
         painter.setBrush(targetColor);
@@ -504,8 +535,8 @@ void PPIWidget::drawLabels(QPainter& painter)
         QRect textRect = fm.boundingRect(azText);
         labelPos -= QPointF(textRect.width() / 2, -textRect.height() / 2);
 
-        // Highlight FoV boundary labels
-        if (azimuth == -m_fovAngle || azimuth == m_fovAngle) {
+        // Highlight FoV boundary labels (using configured min/max angles)
+        if (std::abs(azimuth - m_minAngle) < 1.0f || std::abs(azimuth - m_maxAngle) < 1.0f) {
             painter.setPen(QPen(QColor(59, 130, 246), 1)); // #3b82f6 - Primary blue for FoV boundaries
         } else {
             painter.setPen(QPen(QColor(100, 116, 139), 1)); // #64748b - Normal gray
@@ -519,11 +550,16 @@ void PPIWidget::drawLabels(QPainter& painter)
     painter.setPen(QPen(QColor(30, 41, 59), 1)); // #1e293b - Dark text for title
     painter.drawText(QPointF(10, 25), "PPI Display - Target Tracks");
 
-    // FoV information
+    // FoV information (show actual min/max angles)
     painter.setFont(QFont("Segoe UI", 10, QFont::Medium));
     painter.setPen(QPen(QColor(59, 130, 246), 1)); // #3b82f6 - Primary blue for FoV info
-    QString fovText = QString("FoV: ±%1°").arg(m_fovAngle, 0, 'f', 0);
+    QString fovText = QString("FoV: %1° to %2°").arg(m_minAngle, 0, 'f', 0).arg(m_maxAngle, 0, 'f', 0);
     painter.drawText(QPointF(10, 45), fovText);
+
+    // Range information
+    painter.setPen(QPen(QColor(16, 185, 129), 1)); // #10b981 - Success green
+    QString rangeText = QString("Range: %1m to %2m").arg(m_minRange, 0, 'f', 1).arg(m_maxRange, 0, 'f', 1);
+    painter.drawText(QPointF(10, 65), rangeText);
 
     // Legend
     painter.setFont(QFont("Segoe UI", 9));
