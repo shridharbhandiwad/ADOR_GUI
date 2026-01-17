@@ -7,19 +7,21 @@ Rectangle {
     id: amplificationPanel
     
     // Theme properties
-    property color cardBackground: "#ffffff"
-    property color primaryColor: "#3b82f6"
-    property color primaryHover: "#2563eb"
-    property color primaryPressed: "#1d4ed8"
-    property color accentColor: "#06b6d4"
-    property color successColor: "#10b981"
-    property color warningColor: "#f59e0b"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color textMuted: "#94a3b8"
-    property color borderColor: "#e2e8f0"
-    property color borderFocus: "#3b82f6"
-    property string fontFamily: "Segoe UI"
+    property color cardBackground: ThemeManager.cardBackground
+    property color primaryColor: ThemeManager.primaryColor
+    property color primaryHover: ThemeManager.primaryHover
+    property color primaryPressed: ThemeManager.primaryPressed
+    property color accentColor: ThemeManager.accentColor
+    property color successColor: ThemeManager.successColor
+    property color warningColor: ThemeManager.warningColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color textMuted: ThemeManager.textMuted
+    property color borderColor: ThemeManager.borderColor
+    property color borderFocus: ThemeManager.borderFocus
+    property color inputBackground: ThemeManager.inputBackground
+    property color trackColor: ThemeManager.trackColor
+    property string fontFamily: ThemeManager.fontFamily
     
     // State
     property bool autoEnabled: false
@@ -30,6 +32,10 @@ Rectangle {
     border.color: borderColor
     border.width: 1
     
+    // Smooth theme transitions
+    Behavior on color { ColorAnimation { duration: 200 } }
+    Behavior on border.color { ColorAnimation { duration: 200 } }
+    
     // Shadow
     layer.enabled: true
     layer.effect: DropShadow {
@@ -38,7 +44,7 @@ Rectangle {
         verticalOffset: 4
         radius: 12
         samples: 25
-        color: "#0000001a"
+        color: ThemeManager.shadowColor
     }
     
     ColumnLayout {
@@ -53,6 +59,8 @@ Rectangle {
             font.weight: Font.DemiBold
             font.family: fontFamily
             color: textPrimary
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
         
         // Content
@@ -84,6 +92,9 @@ Rectangle {
                     border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
                     opacity: autoEnabled ? 0.5 : 1.0
                     
+                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on border.color { ColorAnimation { duration: 200 } }
+                    
                     Column {
                         anchors.centerIn: parent
                         spacing: 16
@@ -99,6 +110,8 @@ Rectangle {
                                 font.weight: Font.Bold
                                 font.family: fontFamily
                                 color: primaryColor
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             Text {
@@ -109,6 +122,8 @@ Rectangle {
                                 color: primaryColor
                                 anchors.bottom: parent.bottom
                                 anchors.bottomMargin: 10
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                         
@@ -126,6 +141,7 @@ Rectangle {
                             textPrimary: amplificationPanel.textPrimary
                             textSecondary: amplificationPanel.textSecondary
                             borderColor: amplificationPanel.borderColor
+                            trackColor: amplificationPanel.trackColor
                             fontFamily: amplificationPanel.fontFamily
                             
                             onValueChanged: amplificationValue = value
@@ -149,6 +165,9 @@ Rectangle {
                     color: autoEnabled ? Qt.rgba(successColor.r, successColor.g, successColor.b, 0.08) : "transparent"
                     border.color: autoEnabled ? Qt.rgba(successColor.r, successColor.g, successColor.b, 0.3) : borderColor
                     
+                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on border.color { ColorAnimation { duration: 200 } }
+                    
                     ModernSwitch {
                         anchors.fill: parent
                         anchors.margins: 16
@@ -161,6 +180,7 @@ Rectangle {
                         successColor: amplificationPanel.successColor
                         textPrimary: amplificationPanel.textPrimary
                         textSecondary: amplificationPanel.textSecondary
+                        trackOffColor: ThemeManager.trackOffColor
                         fontFamily: amplificationPanel.fontFamily
                         
                         onCheckedChanged: autoEnabled = checked
@@ -180,6 +200,9 @@ Rectangle {
                         color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.05)
                         border.color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.2)
                         
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        
                         Column {
                             anchors.centerIn: parent
                             spacing: 8
@@ -190,6 +213,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             ModernSpinBox {
@@ -206,6 +231,7 @@ Rectangle {
                                 textSecondary: amplificationPanel.textSecondary
                                 borderColor: amplificationPanel.borderColor
                                 borderFocus: accentColor
+                                backgroundColor: amplificationPanel.inputBackground
                                 fontFamily: amplificationPanel.fontFamily
                             }
                         }
@@ -218,6 +244,9 @@ Rectangle {
                         color: Qt.rgba(warningColor.r, warningColor.g, warningColor.b, 0.05)
                         border.color: Qt.rgba(warningColor.r, warningColor.g, warningColor.b, 0.2)
                         
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        
                         Column {
                             anchors.centerIn: parent
                             spacing: 8
@@ -228,6 +257,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             ModernSpinBox {
@@ -244,6 +275,7 @@ Rectangle {
                                 textSecondary: amplificationPanel.textSecondary
                                 borderColor: amplificationPanel.borderColor
                                 borderFocus: warningColor
+                                backgroundColor: amplificationPanel.inputBackground
                                 fontFamily: amplificationPanel.fontFamily
                             }
                         }
@@ -274,6 +306,8 @@ Rectangle {
                         y: -4
                         radius: 2
                         color: accentColor
+                        
+                        Behavior on color { ColorAnimation { duration: 200 } }
                     }
                     
                     // Outer threshold marker
@@ -284,6 +318,8 @@ Rectangle {
                         y: -4
                         radius: 2
                         color: warningColor
+                        
+                        Behavior on color { ColorAnimation { duration: 200 } }
                     }
                 }
             }

@@ -7,14 +7,15 @@ Item {
     id: modernComboBox
     
     // Theme properties
-    property color primaryColor: "#3b82f6"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color borderColor: "#e2e8f0"
-    property color borderFocus: "#3b82f6"
-    property color backgroundColor: "#f8fafc"
-    property color cardBackground: "#ffffff"
-    property string fontFamily: "Segoe UI"
+    property color primaryColor: ThemeManager.primaryColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color borderColor: ThemeManager.borderColor
+    property color borderFocus: ThemeManager.borderFocus
+    property color backgroundColor: ThemeManager.inputBackground
+    property color cardBackground: ThemeManager.cardBackground
+    property color hoverBackground: ThemeManager.hoverBackground
+    property string fontFamily: ThemeManager.fontFamily
     
     // ComboBox properties
     property string label: ""
@@ -37,6 +38,8 @@ Item {
             font.family: modernComboBox.fontFamily
             color: textSecondary
             visible: modernComboBox.label.length > 0
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
         
         // ComboBox
@@ -55,6 +58,8 @@ Item {
                 color: textPrimary
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
             
             indicator: Canvas {
@@ -65,9 +70,16 @@ Item {
                 height: 8
                 contextType: "2d"
                 
+                property color indicatorColor: textSecondary
+                
                 Connections {
                     target: comboBox
                     function onPressedChanged() { canvas.requestPaint(); }
+                }
+                
+                Connections {
+                    target: modernComboBox
+                    function onTextSecondaryChanged() { canvas.requestPaint(); }
                 }
                 
                 onPaint: {
@@ -83,11 +95,15 @@ Item {
             
             background: Rectangle {
                 radius: 10
-                color: comboBox.pressed ? "#ffffff" : backgroundColor
+                color: comboBox.pressed ? cardBackground : backgroundColor
                 border.color: comboBox.pressed || comboBox.popup.visible ? borderFocus : borderColor
                 border.width: comboBox.pressed || comboBox.popup.visible ? 2 : 1
                 
                 Behavior on border.color {
+                    ColorAnimation { duration: 150 }
+                }
+                
+                Behavior on color {
                     ColorAnimation { duration: 150 }
                 }
             }
@@ -112,6 +128,9 @@ Item {
                     color: cardBackground
                     border.color: borderColor
                     
+                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on border.color { ColorAnimation { duration: 200 } }
+                    
                     layer.enabled: true
                     layer.effect: DropShadow {
                         transparentBorder: true
@@ -119,7 +138,7 @@ Item {
                         verticalOffset: 4
                         radius: 16
                         samples: 33
-                        color: "#0000002a"
+                        color: ThemeManager.shadowColor
                     }
                 }
             }
@@ -136,11 +155,15 @@ Item {
                     font.weight: highlighted ? Font.Medium : Font.Normal
                     elide: Text.ElideRight
                     verticalAlignment: Text.AlignVCenter
+                    
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
                 
                 background: Rectangle {
                     radius: 8
                     color: highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
                 
                 highlighted: comboBox.highlightedIndex === index

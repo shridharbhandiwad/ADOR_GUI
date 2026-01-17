@@ -7,12 +7,12 @@ Item {
     id: modernSwitch
     
     // Theme properties
-    property color primaryColor: "#3b82f6"
-    property color successColor: "#10b981"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color trackOffColor: "#cbd5e1"
-    property string fontFamily: "Segoe UI"
+    property color primaryColor: ThemeManager.primaryColor
+    property color successColor: ThemeManager.successColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color trackOffColor: ThemeManager.trackOffColor
+    property string fontFamily: ThemeManager.fontFamily
     
     // Switch properties
     property string label: ""
@@ -37,6 +37,8 @@ Item {
                 font.family: modernSwitch.fontFamily
                 color: textPrimary
                 visible: modernSwitch.label.length > 0
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
             
             Text {
@@ -47,6 +49,8 @@ Item {
                 visible: modernSwitch.description.length > 0
                 width: parent.width
                 wrapMode: Text.WordWrap
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
         }
         

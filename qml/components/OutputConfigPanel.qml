@@ -7,22 +7,28 @@ Rectangle {
     id: outputConfigPanel
     
     // Theme properties
-    property color cardBackground: "#ffffff"
-    property color primaryColor: "#3b82f6"
-    property color primaryHover: "#2563eb"
-    property color primaryPressed: "#1d4ed8"
-    property color accentColor: "#06b6d4"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color textMuted: "#94a3b8"
-    property color borderColor: "#e2e8f0"
-    property color borderFocus: "#3b82f6"
-    property string fontFamily: "Segoe UI"
+    property color cardBackground: ThemeManager.cardBackground
+    property color primaryColor: ThemeManager.primaryColor
+    property color primaryHover: ThemeManager.primaryHover
+    property color primaryPressed: ThemeManager.primaryPressed
+    property color accentColor: ThemeManager.accentColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color textMuted: ThemeManager.textMuted
+    property color borderColor: ThemeManager.borderColor
+    property color borderFocus: ThemeManager.borderFocus
+    property color inputBackground: ThemeManager.inputBackground
+    property color hoverBackground: ThemeManager.hoverBackground
+    property string fontFamily: ThemeManager.fontFamily
     
     color: cardBackground
     radius: 16
     border.color: borderColor
     border.width: 1
+    
+    // Smooth theme transitions
+    Behavior on color { ColorAnimation { duration: 200 } }
+    Behavior on border.color { ColorAnimation { duration: 200 } }
     
     // Shadow
     layer.enabled: true
@@ -32,7 +38,7 @@ Rectangle {
         verticalOffset: 4
         radius: 12
         samples: 25
-        color: "#0000001a"
+        color: ThemeManager.shadowColor
     }
     
     ColumnLayout {
@@ -47,6 +53,8 @@ Rectangle {
             font.weight: Font.DemiBold
             font.family: fontFamily
             color: textPrimary
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
         
         // Tab bar
@@ -71,12 +79,16 @@ Rectangle {
                         color: parent.checked ? primaryColor : textSecondary
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        
+                        Behavior on color { ColorAnimation { duration: 200 } }
                     }
                     
                     background: Rectangle {
                         radius: 8
                         color: parent.checked ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : 
                                parent.hovered ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05) : "transparent"
+                        
+                        Behavior on color { ColorAnimation { duration: 150 } }
                         
                         Rectangle {
                             width: parent.width
@@ -85,6 +97,8 @@ Rectangle {
                             color: primaryColor
                             anchors.bottom: parent.bottom
                             visible: parent.parent.checked
+                            
+                            Behavior on color { ColorAnimation { duration: 200 } }
                         }
                     }
                 }
@@ -133,6 +147,9 @@ Rectangle {
                                           primaryColor : borderColor
                             border.width: outputTypeGroup.checkedButton && outputTypeGroup.checkedButton.text === modelData.text ? 2 : 1
                             
+                            Behavior on color { ColorAnimation { duration: 200 } }
+                            Behavior on border.color { ColorAnimation { duration: 200 } }
+                            
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
@@ -164,6 +181,8 @@ Rectangle {
                                         border.width: 2
                                         color: "transparent"
                                         
+                                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                                        
                                         Rectangle {
                                             anchors.centerIn: parent
                                             width: 10
@@ -171,6 +190,8 @@ Rectangle {
                                             radius: 5
                                             color: primaryColor
                                             visible: typeRadio.checked
+                                            
+                                            Behavior on color { ColorAnimation { duration: 200 } }
                                             
                                             scale: typeRadio.checked ? 1.0 : 0.0
                                             Behavior on scale {
@@ -192,6 +213,8 @@ Rectangle {
                                         font.weight: Font.Medium
                                         font.family: fontFamily
                                         color: textPrimary
+                                        
+                                        Behavior on color { ColorAnimation { duration: 200 } }
                                     }
                                     
                                     Text {
@@ -199,6 +222,8 @@ Rectangle {
                                         font.pixelSize: 12
                                         font.family: fontFamily
                                         color: textSecondary
+                                        
+                                        Behavior on color { ColorAnimation { duration: 200 } }
                                     }
                                 }
                             }
@@ -234,6 +259,7 @@ Rectangle {
                     borderColor: outputConfigPanel.borderColor
                     borderFocus: outputConfigPanel.borderFocus
                     cardBackground: outputConfigPanel.cardBackground
+                    backgroundColor: outputConfigPanel.inputBackground
                     fontFamily: outputConfigPanel.fontFamily
                 }
                 
@@ -262,6 +288,7 @@ Rectangle {
                         textSecondary: outputConfigPanel.textSecondary
                         borderColor: outputConfigPanel.borderColor
                         borderFocus: outputConfigPanel.borderFocus
+                        backgroundColor: outputConfigPanel.inputBackground
                         fontFamily: outputConfigPanel.fontFamily
                     }
                     
@@ -278,6 +305,7 @@ Rectangle {
                         textSecondary: outputConfigPanel.textSecondary
                         borderColor: outputConfigPanel.borderColor
                         borderFocus: outputConfigPanel.borderFocus
+                        backgroundColor: outputConfigPanel.inputBackground
                         fontFamily: outputConfigPanel.fontFamily
                     }
                 }

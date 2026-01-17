@@ -2,6 +2,9 @@
     <qresource prefix="/">
         <file>qml/main.qml</file>
         <file>qml/MainView.qml</file>
+        <file>qml/components/qmldir</file>
+        <file>qml/components/ThemeManager.qml</file>
+        <file>qml/components/SettingsPopup.qml</file>
         <file>qml/components/UdpConfigPanel.qml</file>
         <file>qml/components/OutputConfigPanel.qml</file>
         <file>qml/components/AngleCorrectionPanel.qml</file>

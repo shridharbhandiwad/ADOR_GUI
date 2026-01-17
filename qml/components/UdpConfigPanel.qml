@@ -7,18 +7,19 @@ Rectangle {
     id: udpConfigPanel
     
     // Theme properties
-    property color cardBackground: "#ffffff"
-    property color primaryColor: "#3b82f6"
-    property color primaryHover: "#2563eb"
-    property color primaryPressed: "#1d4ed8"
-    property color successColor: "#10b981"
-    property color errorColor: "#ef4444"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color textMuted: "#94a3b8"
-    property color borderColor: "#e2e8f0"
-    property color borderFocus: "#3b82f6"
-    property string fontFamily: "Segoe UI"
+    property color cardBackground: ThemeManager.cardBackground
+    property color primaryColor: ThemeManager.primaryColor
+    property color primaryHover: ThemeManager.primaryHover
+    property color primaryPressed: ThemeManager.primaryPressed
+    property color successColor: ThemeManager.successColor
+    property color errorColor: ThemeManager.errorColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color textMuted: ThemeManager.textMuted
+    property color borderColor: ThemeManager.borderColor
+    property color borderFocus: ThemeManager.borderFocus
+    property color inputBackground: ThemeManager.inputBackground
+    property string fontFamily: ThemeManager.fontFamily
     
     // State
     property bool isConnected: false
@@ -31,6 +32,10 @@ Rectangle {
     border.color: borderColor
     border.width: 1
     
+    // Smooth theme transitions
+    Behavior on color { ColorAnimation { duration: 200 } }
+    Behavior on border.color { ColorAnimation { duration: 200 } }
+    
     // Shadow
     layer.enabled: true
     layer.effect: DropShadow {
@@ -39,7 +44,7 @@ Rectangle {
         verticalOffset: 4
         radius: 12
         samples: 25
-        color: "#0000001a"
+        color: ThemeManager.shadowColor
     }
     
     ColumnLayout {
@@ -58,6 +63,8 @@ Rectangle {
                 font.weight: Font.DemiBold
                 font.family: fontFamily
                 color: textPrimary
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
             
             Item { Layout.fillWidth: true }
@@ -70,6 +77,8 @@ Rectangle {
                 color: isConnected ? Qt.rgba(successColor.r, successColor.g, successColor.b, 0.15) :
                                     Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.15)
                 
+                Behavior on color { ColorAnimation { duration: 200 } }
+                
                 Row {
                     id: statusRow
                     anchors.centerIn: parent
@@ -81,6 +90,8 @@ Rectangle {
                         radius: 3
                         color: isConnected ? successColor : errorColor
                         anchors.verticalCenter: parent.verticalCenter
+                        
+                        Behavior on color { ColorAnimation { duration: 200 } }
                         
                         SequentialAnimation on opacity {
                             running: true
@@ -96,6 +107,8 @@ Rectangle {
                         font.weight: Font.Medium
                         font.family: fontFamily
                         color: isConnected ? successColor : errorColor
+                        
+                        Behavior on color { ColorAnimation { duration: 200 } }
                     }
                 }
             }
@@ -139,6 +152,7 @@ Rectangle {
                         textSecondary: udpConfigPanel.textSecondary
                         borderColor: udpConfigPanel.borderColor
                         borderFocus: udpConfigPanel.borderFocus
+                        backgroundColor: udpConfigPanel.inputBackground
                         fontFamily: udpConfigPanel.fontFamily
                     }
                     
@@ -155,6 +169,7 @@ Rectangle {
                         textSecondary: udpConfigPanel.textSecondary
                         borderColor: udpConfigPanel.borderColor
                         borderFocus: udpConfigPanel.borderFocus
+                        backgroundColor: udpConfigPanel.inputBackground
                         fontFamily: udpConfigPanel.fontFamily
                     }
                 }
@@ -182,6 +197,9 @@ Rectangle {
                         color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05)
                         border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.2)
                         
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        
                         Column {
                             anchors.centerIn: parent
                             spacing: 4
@@ -193,6 +211,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: primaryColor
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             Text {
@@ -201,6 +221,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                     }
@@ -213,6 +235,9 @@ Rectangle {
                         color: Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.05)
                         border.color: Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.2)
                         
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        
                         Column {
                             anchors.centerIn: parent
                             spacing: 4
@@ -224,6 +249,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: errorColor
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             Text {
@@ -232,6 +259,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                     }
@@ -244,6 +273,9 @@ Rectangle {
                         color: Qt.rgba(successColor.r, successColor.g, successColor.b, 0.05)
                         border.color: Qt.rgba(successColor.r, successColor.g, successColor.b, 0.2)
                         
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        
                         Column {
                             anchors.centerIn: parent
                             spacing: 4
@@ -255,6 +287,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: successColor
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             Text {
@@ -263,6 +297,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                     }

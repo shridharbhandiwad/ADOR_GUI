@@ -6,13 +6,14 @@ Item {
     id: modernSpinBox
     
     // Theme properties
-    property color primaryColor: "#3b82f6"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color borderColor: "#e2e8f0"
-    property color borderFocus: "#3b82f6"
-    property color backgroundColor: "#f8fafc"
-    property string fontFamily: "Segoe UI"
+    property color primaryColor: ThemeManager.primaryColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color borderColor: ThemeManager.borderColor
+    property color borderFocus: ThemeManager.borderFocus
+    property color backgroundColor: ThemeManager.inputBackground
+    property color cardBackground: ThemeManager.cardBackground
+    property string fontFamily: ThemeManager.fontFamily
     
     // SpinBox properties
     property string label: ""
@@ -37,6 +38,8 @@ Item {
             font.family: modernSpinBox.fontFamily
             color: textSecondary
             visible: modernSpinBox.label.length > 0
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
         
         // SpinBox
@@ -63,6 +66,8 @@ Item {
                 validator: spinBox.validator
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 selectByMouse: true
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
             
             up.indicator: Rectangle {
@@ -73,12 +78,16 @@ Item {
                 color: spinBox.up.pressed ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15) :
                        spinBox.up.hovered ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08) : "transparent"
                 
+                Behavior on color { ColorAnimation { duration: 150 } }
+                
                 Text {
                     text: "+"
                     font.pixelSize: 18
                     font.weight: Font.Medium
                     color: spinBox.up.pressed ? primaryColor : textSecondary
                     anchors.centerIn: parent
+                    
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
             }
             
@@ -90,22 +99,30 @@ Item {
                 color: spinBox.down.pressed ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15) :
                        spinBox.down.hovered ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08) : "transparent"
                 
+                Behavior on color { ColorAnimation { duration: 150 } }
+                
                 Text {
                     text: "-"
                     font.pixelSize: 18
                     font.weight: Font.Medium
                     color: spinBox.down.pressed ? primaryColor : textSecondary
                     anchors.centerIn: parent
+                    
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
             }
             
             background: Rectangle {
                 radius: 10
-                color: spinBox.activeFocus ? "#ffffff" : backgroundColor
+                color: spinBox.activeFocus ? cardBackground : backgroundColor
                 border.color: spinBox.activeFocus ? borderFocus : borderColor
                 border.width: spinBox.activeFocus ? 2 : 1
                 
                 Behavior on border.color {
+                    ColorAnimation { duration: 150 }
+                }
+                
+                Behavior on color {
                     ColorAnimation { duration: 150 }
                 }
             }

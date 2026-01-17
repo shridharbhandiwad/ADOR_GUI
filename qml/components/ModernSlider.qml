@@ -7,12 +7,12 @@ Item {
     id: modernSlider
     
     // Theme properties
-    property color primaryColor: "#3b82f6"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color borderColor: "#e2e8f0"
-    property color trackColor: "#e2e8f0"
-    property string fontFamily: "Segoe UI"
+    property color primaryColor: ThemeManager.primaryColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color borderColor: ThemeManager.borderColor
+    property color trackColor: ThemeManager.trackColor
+    property string fontFamily: ThemeManager.fontFamily
     
     // Slider properties
     property string label: ""
@@ -41,6 +41,8 @@ Item {
                 font.weight: Font.Medium
                 font.family: modernSlider.fontFamily
                 color: textSecondary
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
             
             Item { Layout.fillWidth: true }
@@ -52,6 +54,8 @@ Item {
                 font.family: modernSlider.fontFamily
                 color: primaryColor
                 visible: showValue
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
         }
         
@@ -67,9 +71,11 @@ Item {
                 width: 24
                 height: 24
                 radius: 12
-                color: slider.pressed ? "#ffffff" : "#ffffff"
+                color: "#ffffff"
                 border.color: primaryColor
                 border.width: 3
+                
+                Behavior on border.color { ColorAnimation { duration: 200 } }
                 
                 layer.enabled: true
                 layer.effect: DropShadow {
@@ -99,6 +105,8 @@ Item {
                     height: parent.height
                     radius: 4
                     color: trackColor
+                    
+                    Behavior on color { ColorAnimation { duration: 200 } }
                 }
                 
                 Rectangle {
@@ -126,6 +134,8 @@ Item {
                 font.pixelSize: 11
                 font.family: modernSlider.fontFamily
                 color: textSecondary
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
             
             Item { Layout.fillWidth: true }
@@ -135,6 +145,8 @@ Item {
                 font.pixelSize: 11
                 font.family: modernSlider.fontFamily
                 color: textSecondary
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
             }
         }
     }
