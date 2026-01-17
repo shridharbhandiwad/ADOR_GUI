@@ -71,11 +71,50 @@ Popup {
                 radius: 10
                 color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
                 
-                Text {
+                // Gear icon using Canvas for reliable rendering
+                Canvas {
                     anchors.centerIn: parent
-                    text: "⚙"
-                    font.pixelSize: 20
-                    color: primaryColor
+                    width: 20
+                    height: 20
+                    
+                    property color iconColor: primaryColor
+                    
+                    onIconColorChanged: requestPaint()
+                    Component.onCompleted: requestPaint()
+                    
+                    onPaint: {
+                        var ctx = getContext("2d");
+                        ctx.reset();
+                        ctx.fillStyle = iconColor;
+                        
+                        var cx = width / 2;
+                        var cy = height / 2;
+                        var outerRadius = 9;
+                        var innerRadius = 3.5;
+                        var teethCount = 8;
+                        var toothDepth = 2.5;
+                        
+                        ctx.beginPath();
+                        for (var i = 0; i < teethCount * 2; i++) {
+                            var angle = (i * Math.PI) / teethCount;
+                            var radius = (i % 2 === 0) ? outerRadius : outerRadius - toothDepth;
+                            var x = cx + radius * Math.cos(angle - Math.PI / 2);
+                            var y = cy + radius * Math.sin(angle - Math.PI / 2);
+                            if (i === 0) {
+                                ctx.moveTo(x, y);
+                            } else {
+                                ctx.lineTo(x, y);
+                            }
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // Center hole
+                        ctx.globalCompositeOperation = "destination-out";
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, innerRadius, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
                 }
                 
                 Behavior on color {
