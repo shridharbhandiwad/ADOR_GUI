@@ -284,10 +284,10 @@ void FFTWidget::paintEvent(QPaintEvent *event)
 
 void FFTWidget::drawBackground(QPainter& painter)
 {
-    // Infineon-style background (darker blue)
-    QColor bgColor(40, 44, 52);           // Dark background
-    QColor plotBgColor(50, 54, 62);       // Slightly lighter plot area
-    QColor borderColor(100, 100, 100);    // Gray border
+    // Modern light theme background
+    QColor bgColor(248, 250, 252);        // #f8fafc - Light gray background
+    QColor plotBgColor(255, 255, 255);    // White plot area
+    QColor borderColor(226, 232, 240);    // #e2e8f0 - Light border
 
     painter.fillRect(rect(), bgColor);
     painter.fillRect(m_plotRect, plotBgColor);
@@ -300,8 +300,8 @@ void FFTWidget::drawGrid(QPainter& painter)
     const int GRID_LINES_X = 10;
     const int GRID_LINES_Y = 8;
 
-    // Infineon-style grid (subtle gray)
-    QColor gridColor(80, 80, 80, 100);
+    // Modern light theme grid (subtle gray)
+    QColor gridColor(226, 232, 240, 150); // #e2e8f0 with transparency
     painter.setPen(QPen(gridColor, 1));
 
     // Vertical grid lines (range)
@@ -351,8 +351,8 @@ void FFTWidget::drawSpectrum(QPainter& painter)
 
     if (spectrumPoints.isEmpty()) return;
 
-    // Draw only the spectrum line (no fill)
-    QColor lineColor(37, 99, 235, 255);      // Solid blue outline
+    // Draw only the spectrum line (no fill) - Modern primary blue
+    QColor lineColor(59, 130, 246, 255);     // #3b82f6 - Primary blue
     painter.setPen(QPen(lineColor, 2));
     painter.setBrush(Qt::NoBrush);  // No fill
 
@@ -399,9 +399,9 @@ void FFTWidget::drawPeakMarkers(QPainter& painter, const QVector<QPointF>& spect
         }
     }
 
-    // Draw peak markers (yellow dots like Infineon)
-    painter.setPen(QPen(QColor(255, 255, 0), 2));
-    painter.setBrush(QBrush(QColor(255, 255, 0)));
+    // Draw peak markers (accent color dots)
+    painter.setPen(QPen(QColor(245, 158, 11), 2));  // #f59e0b - Warning/accent color
+    painter.setBrush(QBrush(QColor(245, 158, 11)));
 
     for (const QPointF& peak : peaks) {
         painter.drawEllipse(peak, 6, 6);
@@ -418,14 +418,14 @@ void FFTWidget::drawTargetIndicators(QPainter& painter)
         if (target.azimuth < -90.0f || target.azimuth > 90.0f) continue;
         if (target.radius > m_maxRange || target.radius < m_minRange) continue;
 
-        // Infineon-style target colors
+        // Modern light theme target colors
         QColor targetColor;
         if (target.radial_speed > 1.0f) {
-            targetColor = QColor(255, 100, 100); // Red approaching
+            targetColor = QColor(239, 68, 68);   // #ef4444 - Red approaching
         } else if (target.radial_speed < -1.0f) {
-            targetColor = QColor(100, 150, 255); // Blue receding
+            targetColor = QColor(59, 130, 246);  // #3b82f6 - Blue receding
         } else {
-            targetColor = QColor(100, 255, 100); // Green stationary
+            targetColor = QColor(16, 185, 129);  // #10b981 - Green stationary
         }
 
         float rangeSpan = m_maxRange - m_minRange;
@@ -454,12 +454,12 @@ void FFTWidget::drawTargetIndicators(QPainter& painter)
 
 void FFTWidget::drawLabels(QPainter& painter)
 {
-    // Infineon-style white text
-    QColor textColor(255, 255, 255);
-    QColor gridTextColor(180, 180, 180);
+    // Modern light theme text colors
+    QColor textColor(30, 41, 59);          // #1e293b - Primary text
+    QColor gridTextColor(100, 116, 139);   // #64748b - Secondary text
 
     painter.setPen(QPen(gridTextColor, 1));
-    painter.setFont(QFont("Arial", 9));
+    painter.setFont(QFont("Segoe UI", 9));
 
     // INFINEON MAGNITUDE RANGE
     const float MIN_MAG_DB = -20.0f;
@@ -491,7 +491,7 @@ void FFTWidget::drawLabels(QPainter& painter)
 
     // Axis labels
     painter.setPen(QPen(textColor, 1));
-    painter.setFont(QFont("Arial", 11, QFont::Bold));
+    painter.setFont(QFont("Segoe UI", 11, QFont::DemiBold));
 
     QFontMetrics fm(painter.font());
     QString xLabel = "Range [m]";
@@ -511,19 +511,21 @@ void FFTWidget::drawLabels(QPainter& painter)
     painter.drawText(-yLabelRect.width() / 2, 0, yLabel);
     painter.restore();
 
-    // Title - Infineon style
-    painter.setFont(QFont("Arial", 12, QFont::Bold));
-    painter.drawText(QPointF(m_plotRect.left(), 20), "Spectrum");
+    // Title - Modern style
+    painter.setFont(QFont("Segoe UI", 14, QFont::Bold));
+    painter.setPen(QPen(QColor(30, 41, 59), 1)); // #1e293b
+    painter.drawText(QPointF(m_plotRect.left(), 20), "FFT Spectrum");
 
-    // Antenna info like Infineon
-    painter.setPen(QPen(textColor, 1));
-    painter.setFont(QFont("Arial", 8));
-    QString antennaInfo = "■ Ant. Tx1 Rx1";
-    painter.drawText(m_plotRect.right() - 80, 20, antennaInfo);
+    // Antenna info badge
+    painter.setPen(QPen(QColor(59, 130, 246), 1)); // #3b82f6
+    painter.setFont(QFont("Segoe UI", 9, QFont::Medium));
+    QString antennaInfo = "● Ant. Tx1 Rx1";
+    painter.drawText(m_plotRect.right() - 90, 20, antennaInfo);
 
-    // Technical info - matching Infineon parameters
-    painter.setPen(QPen(gridTextColor, 1));
-    QString frameInfo = QString("Samples: %1, BW: %2MHz, Sweep: %3ms")
+    // Technical info
+    painter.setPen(QPen(QColor(148, 163, 184), 1)); // #94a3b8 - Muted text
+    painter.setFont(QFont("Segoe UI", 9));
+    QString frameInfo = QString("Samples: %1  |  BW: %2 MHz  |  Sweep: %3 ms")
                        .arg(m_currentFrame.complex_data.size())
                        .arg(m_bandwidth / 1000000.0f, 0, 'f', 0)
                        .arg(m_sweepTime * 1000.0f, 0, 'f', 1);

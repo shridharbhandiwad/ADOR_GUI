@@ -1,11 +1,15 @@
 # Qt Project File for Radar Data Visualization
-# Updated for binary UDP support
+# Updated for Qt QML UI with modern light theme
 
-QT       += core gui network widgets
+QT += core gui network widgets quick quickcontrols2 qml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++17 qmltypes
+
+# QML module configuration
+QML_IMPORT_NAME = RadarApp
+QML_IMPORT_MAJOR_VERSION = 1
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -15,13 +19,39 @@ SOURCES += \
     main.cpp \
     MainWindow.cpp \
     PPIWidget.cpp \
-    FFTWidget.cpp
+    FFTWidget.cpp \
+    dialogs.cpp \
+    udphandler.cpp
 
 HEADERS += \
     DataStructures.h \
     MainWindow.h \
     PPIWidget.h \
-    FFTWidget.h
+    FFTWidget.h \
+    dialogs.h \
+    udphandler.h \
+    structures.h
+
+RESOURCES += \
+    qml.qrc
+
+# QML files
+QML_FILES += \
+    qml/main.qml \
+    qml/MainView.qml \
+    qml/components/UdpConfigPanel.qml \
+    qml/components/OutputConfigPanel.qml \
+    qml/components/AngleCorrectionPanel.qml \
+    qml/components/AmplificationPanel.qml \
+    qml/components/StyleManager.qml \
+    qml/components/ModernButton.qml \
+    qml/components/ModernTextField.qml \
+    qml/components/ModernSpinBox.qml \
+    qml/components/ModernComboBox.qml \
+    qml/components/ModernSlider.qml \
+    qml/components/ModernSwitch.qml \
+    qml/components/PanelCard.qml \
+    qml/components/SectionHeader.qml
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
