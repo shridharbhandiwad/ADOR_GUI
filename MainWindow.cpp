@@ -267,19 +267,26 @@ void MainWindow::setupUI()
     // Left side: PPI Display
     QGroupBox* ppiGroup = new QGroupBox("PPI Display (Target Tracks)");
     QVBoxLayout* ppiLayout = new QVBoxLayout(ppiGroup);
+    ppiLayout->setSpacing(8);
 
     m_ppiWidget = new PPIWidget();
-    ppiLayout->addWidget(m_ppiWidget);
+    m_ppiWidget->setMinimumSize(400, 400);
+    ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
 
-    // DSP Settings Panel
+    // DSP Settings Panel - Compact design
     QGroupBox* settingsGroup = new QGroupBox("DSP Settings", this);
+    settingsGroup->setMaximumHeight(320);
+    settingsGroup->setStyleSheet("QGroupBox { font-size: 12px; padding: 8px 6px 6px 6px; margin-top: 10px; } QGroupBox::title { padding: 0 6px; }");
     QGridLayout* settingsLayout = new QGridLayout(settingsGroup);
 
     int row = 0;
     auto addRow = [&](const QString& label, QLineEdit*& edit, const QString& def) {
         QLabel* l = new QLabel(label, this);
+        l->setStyleSheet("font-size: 11px;");
         edit = new QLineEdit(def, this);
-        edit->setMaximumWidth(80);
+        edit->setMaximumWidth(60);
+        edit->setMaximumHeight(24);
+        edit->setStyleSheet("font-size: 11px; padding: 4px 6px;");
         settingsLayout->addWidget(l, row, 0);
         settingsLayout->addWidget(edit, row, 1);
         row++;
@@ -300,6 +307,10 @@ void MainWindow::setupUI()
 
     m_applyButton = new QPushButton("Apply", this);
     m_resetButton = new QPushButton("Reset", this);
+    m_applyButton->setMaximumHeight(28);
+    m_resetButton->setMaximumHeight(28);
+    m_applyButton->setStyleSheet("font-size: 11px; padding: 4px 10px;");
+    m_resetButton->setStyleSheet("font-size: 11px; padding: 4px 10px;");
     settingsLayout->addWidget(m_applyButton, row, 0);
     settingsLayout->addWidget(m_resetButton, row, 1);
 
@@ -318,12 +329,12 @@ void MainWindow::setupUI()
     connect(m_applyButton,         &QPushButton::clicked,       this, &MainWindow::onApplySettings);
     connect(m_resetButton,         &QPushButton::clicked,       this, &MainWindow::onResetSettings);
 
-    settingsLayout->setColumnMinimumWidth(0, 140);
-    settingsLayout->setColumnMinimumWidth(1, 80);
-    settingsLayout->setSpacing(5);
-    settingsLayout->setContentsMargins(10, 10, 10, 10);
+    settingsLayout->setColumnMinimumWidth(0, 100);
+    settingsLayout->setColumnMinimumWidth(1, 60);
+    settingsLayout->setSpacing(2);
+    settingsLayout->setContentsMargins(6, 6, 6, 6);
 
-    ppiLayout->addWidget(settingsGroup);
+    ppiLayout->addWidget(settingsGroup, 0);  // Stretch factor 0 to keep compact
     m_mainSplitter->addWidget(ppiGroup);
 
     // Right side
@@ -353,7 +364,7 @@ void MainWindow::setupUI()
     m_rightSplitter->addWidget(tableGroup);
 
     m_mainSplitter->addWidget(m_rightSplitter);
-    m_mainSplitter->setSizes({600, 600});
+    m_mainSplitter->setSizes({800, 400});
     m_rightSplitter->setSizes({400, 400});
 
     QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
