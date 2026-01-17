@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_updateTimer(nullptr)
     , m_saveSettingsButton(nullptr)
     , m_defaultSettingsButton(nullptr)
+    , m_clearTracksButton(nullptr)
     , m_simulationEnabled(false)  // Simulation disabled by default
     , m_randomEngine(std::random_device{}())
     , m_rangeDist(100.0f, 500.0f)
@@ -445,6 +446,19 @@ void MainWindow::setupUI()
     m_trackTable->setAlternatingRowColors(true);
     m_trackTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableLayout->addWidget(m_trackTable);
+    
+    // Clear Tracks button
+    m_clearTracksButton = new QPushButton("Clear Tracks", this);
+    m_clearTracksButton->setMinimumHeight(36);
+    m_clearTracksButton->setStyleSheet(
+        "QPushButton { font-size: 13px; font-weight: 600; padding: 8px 20px; "
+        "background-color: #ef4444; color: white; border-radius: 8px; }"
+        "QPushButton:hover { background-color: #dc2626; }"
+        "QPushButton:pressed { background-color: #b91c1c; }"
+    );
+    connect(m_clearTracksButton, &QPushButton::clicked, this, &MainWindow::onClearTracks);
+    tableLayout->addWidget(m_clearTracksButton);
+    
     m_rightSplitter->addWidget(tableGroup);
 
     m_mainSplitter->addWidget(m_rightSplitter);
@@ -1307,4 +1321,25 @@ void MainWindow::onDefaultSettings()
     
     m_statusLabel->setText("Status: Default settings restored");
     QMessageBox::information(this, "Default Settings", "All settings restored to factory defaults.");
+}
+
+void MainWindow::onClearTracks()
+{
+    // Clear the internal target data
+    m_currentTargets.targets.clear();
+    m_currentTargets.numTracks = 0;
+    
+    // Clear the PPI widget display
+    m_ppiWidget->clearTracks();
+    
+    // Clear the track table
+    m_trackTable->setRowCount(0);
+    
+    // Reset target count statistics
+    m_targetCount = 0;
+    
+    // Update status
+    m_statusLabel->setText("Status: Track data cleared");
+    
+    qDebug() << "Track data cleared from PPI and table";
 }

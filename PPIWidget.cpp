@@ -249,6 +249,13 @@ void PPIWidget::updateTargets(const TargetTrackData& trackData)
     update();
 }
 
+void PPIWidget::clearTracks()
+{
+    m_currentTargets.targets.clear();
+    m_currentTargets.numTracks = 0;
+    update();
+}
+
 void PPIWidget::setMaxRange(float range)
 {
     if (range > 0) {
