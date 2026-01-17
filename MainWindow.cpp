@@ -27,6 +27,12 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QMenuBar>
+#include <QMenu>
+#include <QAction>
+#include <QFileDialog>
+#include <QTextStream>
+#include <QFileInfo>
 #include <cmath>
 #include <cstring>
 
@@ -283,6 +289,9 @@ void MainWindow::setupUI()
     )";
 
     this->setStyleSheet(lightTheme);
+
+    // Create Menu Bar
+    createMenuBar();
 
     QWidget* centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -1178,6 +1187,273 @@ void MainWindow::onMtiLengthEdited()
     bool ok;
     int v = m_mtiLengthEdit->text().toInt(&ok);
     if (ok) m_dsp.mti_filter_length = std::max(1, v);
+}
+
+//==============================================================================
+// MENU BAR
+//==============================================================================
+void MainWindow::createMenuBar()
+{
+    QMenuBar* menuBar = new QMenuBar(this);
+    menuBar->setStyleSheet(R"(
+        QMenuBar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 4px 8px;
+            spacing: 4px;
+        }
+        QMenuBar::item {
+            background-color: transparent;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        QMenuBar::item:selected {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        QMenuBar::item:pressed {
+            background-color: rgba(59, 130, 246, 0.15);
+        }
+        QMenu {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px;
+        }
+        QMenu::item {
+            padding: 8px 24px 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1e293b;
+        }
+        QMenu::item:selected {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        QMenu::separator {
+            height: 1px;
+            background-color: #e2e8f0;
+            margin: 6px 8px;
+        }
+        QMenu::icon {
+            margin-left: 8px;
+        }
+    )");
+    
+    // File Menu
+    QMenu* fileMenu = menuBar->addMenu(tr("&File"));
+    
+    QAction* newAction = fileMenu->addAction(tr("&New Configuration"));
+    newAction->setShortcut(QKeySequence::New);
+    connect(newAction, &QAction::triggered, this, [this]() {
+        onResetSettings();
+        m_statusLabel->setText("Status: New configuration created");
+    });
+    
+    QAction* openAction = fileMenu->addAction(tr("&Open Configuration..."));
+    openAction->setShortcut(QKeySequence::Open);
+    connect(openAction, &QAction::triggered, this, [this]() {
+        QString fileName = QFileDialog::getOpenFileName(this, 
+            tr("Open Configuration"), "", tr("Configuration Files (*.ini);;All Files (*)"));
+        if (!fileName.isEmpty()) {
+            QSettings settings(fileName, QSettings::IniFormat);
+            // Load settings from file
+            settings.beginGroup("DSPSettings");
+            if (settings.contains("rangeAvg")) m_rangeAvgEdit->setText(settings.value("rangeAvg").toString());
+            if (settings.contains("minRange")) m_minRangeEdit->setText(settings.value("minRange").toString());
+            if (settings.contains("maxRange")) m_maxRangeEdit->setText(settings.value("maxRange").toString());
+            if (settings.contains("minSpeed")) m_minSpeedEdit->setText(settings.value("minSpeed").toString());
+            if (settings.contains("maxSpeed")) m_maxSpeedEdit->setText(settings.value("maxSpeed").toString());
+            if (settings.contains("minAngle")) m_minAngleEdit->setText(settings.value("minAngle").toString());
+            if (settings.contains("maxAngle")) m_maxAngleEdit->setText(settings.value("maxAngle").toString());
+            if (settings.contains("rangeThreshold")) m_rangeThresholdEdit->setText(settings.value("rangeThreshold").toString());
+            if (settings.contains("speedThreshold")) m_speedThresholdEdit->setText(settings.value("speedThreshold").toString());
+            if (settings.contains("numTracks")) m_numTracksEdit->setText(settings.value("numTracks").toString());
+            if (settings.contains("medianFilter")) m_medianFilterEdit->setText(settings.value("medianFilter").toString());
+            if (settings.contains("mtiLength")) m_mtiLengthEdit->setText(settings.value("mtiLength").toString());
+            settings.endGroup();
+            m_statusLabel->setText(QString("Status: Configuration loaded from %1").arg(QFileInfo(fileName).fileName()));
+        }
+    });
+    
+    QAction* saveAction = fileMenu->addAction(tr("&Save Configuration"));
+    saveAction->setShortcut(QKeySequence::Save);
+    connect(saveAction, &QAction::triggered, this, &MainWindow::onSaveSettings);
+    
+    QAction* saveAsAction = fileMenu->addAction(tr("Save Configuration &As..."));
+    saveAsAction->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S));
+    connect(saveAsAction, &QAction::triggered, this, [this]() {
+        QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Save Configuration"), "", tr("Configuration Files (*.ini);;All Files (*)"));
+        if (!fileName.isEmpty()) {
+            if (!fileName.endsWith(".ini")) fileName += ".ini";
+            QSettings settings(fileName, QSettings::IniFormat);
+            settings.beginGroup("DSPSettings");
+            settings.setValue("rangeAvg", m_rangeAvgEdit->text());
+            settings.setValue("minRange", m_minRangeEdit->text());
+            settings.setValue("maxRange", m_maxRangeEdit->text());
+            settings.setValue("minSpeed", m_minSpeedEdit->text());
+            settings.setValue("maxSpeed", m_maxSpeedEdit->text());
+            settings.setValue("minAngle", m_minAngleEdit->text());
+            settings.setValue("maxAngle", m_maxAngleEdit->text());
+            settings.setValue("rangeThreshold", m_rangeThresholdEdit->text());
+            settings.setValue("speedThreshold", m_speedThresholdEdit->text());
+            settings.setValue("numTracks", m_numTracksEdit->text());
+            settings.setValue("medianFilter", m_medianFilterEdit->text());
+            settings.setValue("mtiLength", m_mtiLengthEdit->text());
+            settings.endGroup();
+            settings.sync();
+            m_statusLabel->setText(QString("Status: Configuration saved to %1").arg(QFileInfo(fileName).fileName()));
+        }
+    });
+    
+    fileMenu->addSeparator();
+    
+    QAction* exportAction = fileMenu->addAction(tr("&Export Data..."));
+    exportAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E));
+    connect(exportAction, &QAction::triggered, this, [this]() {
+        QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Export Data"), "", tr("CSV Files (*.csv);;All Files (*)"));
+        if (!fileName.isEmpty()) {
+            // Export track data to CSV
+            QFile file(fileName);
+            if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                QTextStream out(&file);
+                out << "ID,Range (m),Azimuth (deg),Radial Speed (m/s)\n";
+                for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
+                    const TargetTrack& target = m_currentTargets.targets[i];
+                    out << target.target_id << "," 
+                        << target.radius << "," 
+                        << target.azimuth << "," 
+                        << target.radial_speed << "\n";
+                }
+                file.close();
+                m_statusLabel->setText(QString("Status: Data exported to %1").arg(QFileInfo(fileName).fileName()));
+            }
+        }
+    });
+    
+    fileMenu->addSeparator();
+    
+    QAction* exitAction = fileMenu->addAction(tr("E&xit"));
+    exitAction->setShortcut(QKeySequence::Quit);
+    connect(exitAction, &QAction::triggered, this, &QMainWindow::close);
+    
+    // View Menu
+    QMenu* viewMenu = menuBar->addMenu(tr("&View"));
+    
+    QAction* fullScreenAction = viewMenu->addAction(tr("&Full Screen"));
+    fullScreenAction->setShortcut(QKeySequence(Qt::Key_F11));
+    fullScreenAction->setCheckable(true);
+    connect(fullScreenAction, &QAction::triggered, this, [this, fullScreenAction](bool checked) {
+        if (checked) {
+            showFullScreen();
+        } else {
+            showNormal();
+        }
+    });
+    
+    viewMenu->addSeparator();
+    
+    QAction* refreshAction = viewMenu->addAction(tr("&Refresh"));
+    refreshAction->setShortcut(QKeySequence::Refresh);
+    connect(refreshAction, &QAction::triggered, this, [this]() {
+        m_ppiWidget->update();
+        m_fftWidget->update();
+        m_statusLabel->setText("Status: Display refreshed");
+    });
+    
+    QAction* clearDisplayAction = viewMenu->addAction(tr("&Clear Display"));
+    connect(clearDisplayAction, &QAction::triggered, this, &MainWindow::onClearTracks);
+    
+    // Connection Menu
+    QMenu* connectionMenu = menuBar->addMenu(tr("&Connection"));
+    
+    QAction* reconnectAction = connectionMenu->addAction(tr("&Reconnect UDP"));
+    reconnectAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
+    connect(reconnectAction, &QAction::triggered, this, [this]() {
+        if (m_udpSocket) {
+            m_udpSocket->close();
+            if (m_udpSocket->bind(QHostAddress::Any, UDP_PORT)) {
+                m_statusLabel->setText("Status: UDP reconnected on port 5000");
+            } else {
+                m_statusLabel->setText("Status: Failed to reconnect UDP");
+            }
+        }
+    });
+    
+    connectionMenu->addSeparator();
+    
+    QAction* networkInfoAction = connectionMenu->addAction(tr("&Network Info..."));
+    connect(networkInfoAction, &QAction::triggered, this, [this]() {
+        QString info = QString("UDP Port: %1\nStatus: %2")
+            .arg(UDP_PORT)
+            .arg(m_udpSocket && m_udpSocket->state() == QAbstractSocket::BoundState ? "Listening" : "Not Connected");
+        QMessageBox::information(this, "Network Information", info);
+    });
+    
+    // Tools Menu
+    QMenu* toolsMenu = menuBar->addMenu(tr("&Tools"));
+    
+    QAction* applyAction = toolsMenu->addAction(tr("&Apply Settings"));
+    applyAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return));
+    connect(applyAction, &QAction::triggered, this, &MainWindow::onApplySettings);
+    
+    QAction* resetAction = toolsMenu->addAction(tr("&Reset Settings"));
+    connect(resetAction, &QAction::triggered, this, &MainWindow::onResetSettings);
+    
+    toolsMenu->addSeparator();
+    
+    QAction* defaultsAction = toolsMenu->addAction(tr("Restore &Defaults"));
+    connect(defaultsAction, &QAction::triggered, this, &MainWindow::onDefaultSettings);
+    
+    // Help Menu
+    QMenu* helpMenu = menuBar->addMenu(tr("&Help"));
+    
+    QAction* shortcutsAction = helpMenu->addAction(tr("&Keyboard Shortcuts"));
+    connect(shortcutsAction, &QAction::triggered, this, [this]() {
+        QString shortcuts = 
+            "Keyboard Shortcuts:\n\n"
+            "File:\n"
+            "  Ctrl+N     New Configuration\n"
+            "  Ctrl+O     Open Configuration\n"
+            "  Ctrl+S     Save Configuration\n"
+            "  Ctrl+E     Export Data\n\n"
+            "View:\n"
+            "  F11        Toggle Full Screen\n"
+            "  F5         Refresh Display\n\n"
+            "Tools:\n"
+            "  Ctrl+Enter Apply Settings\n"
+            "  Ctrl+R     Reconnect UDP";
+        QMessageBox::information(this, "Keyboard Shortcuts", shortcuts);
+    });
+    
+    helpMenu->addSeparator();
+    
+    QAction* aboutAction = helpMenu->addAction(tr("&About Radar Visualization"));
+    connect(aboutAction, &QAction::triggered, this, [this]() {
+        QMessageBox::about(this, "About Radar Visualization",
+            "<h3>Radar Data Visualization</h3>"
+            "<p>Version 1.0.0</p>"
+            "<p>A modern radar data visualization and configuration "
+            "application for real-time radar signal processing and display.</p>"
+            "<p>Features:</p>"
+            "<ul>"
+            "<li>PPI (Plan Position Indicator) display</li>"
+            "<li>FFT spectrum analysis</li>"
+            "<li>Real-time target tracking</li>"
+            "<li>UDP binary and text data support</li>"
+            "</ul>"
+        );
+    });
+    
+    QAction* aboutQtAction = helpMenu->addAction(tr("About &Qt"));
+    connect(aboutQtAction, &QAction::triggered, qApp, &QApplication::aboutQt);
+    
+    setMenuBar(menuBar);
 }
 
 //==============================================================================
