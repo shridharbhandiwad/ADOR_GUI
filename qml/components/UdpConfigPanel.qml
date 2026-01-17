@@ -44,52 +44,29 @@ Rectangle {
     
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 24
-        spacing: 20
+        anchors.margins: 16
+        spacing: 12
         
-        // Header
+        // Compact header with title and status
         RowLayout {
             Layout.fillWidth: true
-            spacing: 16
+            spacing: 12
             
-            Rectangle {
-                width: 48
-                height: 48
-                radius: 12
-                color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
-                
-                Text {
-                    anchors.centerIn: parent
-                    text: "📡"
-                    font.pixelSize: 24
-                }
+            Text {
+                text: "UDP Configuration"
+                font.pixelSize: 14
+                font.weight: Font.DemiBold
+                font.family: fontFamily
+                color: textPrimary
             }
             
-            Column {
-                Layout.fillWidth: true
-                spacing: 4
-                
-                Text {
-                    text: "UDP Configuration"
-                    font.pixelSize: 18
-                    font.weight: Font.DemiBold
-                    font.family: fontFamily
-                    color: textPrimary
-                }
-                
-                Text {
-                    text: "Network connection settings"
-                    font.pixelSize: 13
-                    font.family: fontFamily
-                    color: textSecondary
-                }
-            }
+            Item { Layout.fillWidth: true }
             
             // Status badge
             Rectangle {
-                width: statusRow.width + 16
-                height: 28
-                radius: 14
+                width: statusRow.width + 12
+                height: 24
+                radius: 12
                 color: isConnected ? Qt.rgba(successColor.r, successColor.g, successColor.b, 0.15) :
                                     Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.15)
                 
@@ -99,9 +76,9 @@ Rectangle {
                     spacing: 6
                     
                     Rectangle {
-                        width: 8
-                        height: 8
-                        radius: 4
+                        width: 6
+                        height: 6
+                        radius: 3
                         color: isConnected ? successColor : errorColor
                         anchors.verticalCenter: parent.verticalCenter
                         
@@ -115,20 +92,13 @@ Rectangle {
                     
                     Text {
                         text: isConnected ? "Connected" : "Disconnected"
-                        font.pixelSize: 12
+                        font.pixelSize: 11
                         font.weight: Font.Medium
                         font.family: fontFamily
                         color: isConnected ? successColor : errorColor
                     }
                 }
             }
-        }
-        
-        // Separator
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: borderColor
         }
         
         // Content
@@ -300,44 +270,21 @@ Rectangle {
             }
         }
         
-        // Footer buttons
-        RowLayout {
+        // Connect button (kept as it's specific to UDP)
+        ModernButton {
+            text: isConnected ? "Disconnect" : "Connect"
             Layout.fillWidth: true
-            spacing: 12
+            Layout.preferredHeight: 36
             
-            ModernButton {
-                text: isConnected ? "Disconnect" : "Connect"
-                Layout.fillWidth: true
-                
-                primaryColor: isConnected ? errorColor : udpConfigPanel.primaryColor
-                primaryHover: isConnected ? Qt.darker(errorColor, 1.1) : udpConfigPanel.primaryHover
-                primaryPressed: isConnected ? Qt.darker(errorColor, 1.2) : udpConfigPanel.primaryPressed
-                fontFamily: udpConfigPanel.fontFamily
-                
-                onClicked: {
-                    isConnected = !isConnected
-                    if (isConnected) {
-                        // Simulate connection
-                        packetsReceived = 0
-                        packetsDropped = 0
-                        packetRate = 0
-                    }
-                }
-            }
+            primaryColor: isConnected ? errorColor : udpConfigPanel.primaryColor
+            primaryHover: isConnected ? Qt.darker(errorColor, 1.1) : udpConfigPanel.primaryHover
+            primaryPressed: isConnected ? Qt.darker(errorColor, 1.2) : udpConfigPanel.primaryPressed
+            fontFamily: udpConfigPanel.fontFamily
             
-            ModernButton {
-                text: "Reset"
-                Layout.preferredWidth: 100
-                outline: true
-                
-                primaryColor: udpConfigPanel.primaryColor
-                primaryHover: udpConfigPanel.primaryHover
-                primaryPressed: udpConfigPanel.primaryPressed
-                fontFamily: udpConfigPanel.fontFamily
-                
-                onClicked: {
-                    hostField.text = "127.0.0.1"
-                    portField.value = 5000
+            onClicked: {
+                isConnected = !isConnected
+                if (isConnected) {
+                    // Simulate connection
                     packetsReceived = 0
                     packetsDropped = 0
                     packetRate = 0

@@ -37,53 +37,16 @@ Rectangle {
     
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 24
-        spacing: 20
+        anchors.margins: 16
+        spacing: 12
         
-        // Header
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 16
-            
-            Rectangle {
-                width: 48
-                height: 48
-                radius: 12
-                color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.1)
-                
-                Text {
-                    anchors.centerIn: parent
-                    text: "⚡"
-                    font.pixelSize: 24
-                }
-            }
-            
-            Column {
-                Layout.fillWidth: true
-                spacing: 4
-                
-                Text {
-                    text: "Output Configuration"
-                    font.pixelSize: 18
-                    font.weight: Font.DemiBold
-                    font.family: fontFamily
-                    color: textPrimary
-                }
-                
-                Text {
-                    text: "Configure output channels and timing"
-                    font.pixelSize: 13
-                    font.family: fontFamily
-                    color: textSecondary
-                }
-            }
-        }
-        
-        // Separator
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: borderColor
+        // Compact header
+        Text {
+            text: "Output Configuration"
+            font.pixelSize: 14
+            font.weight: Font.DemiBold
+            font.family: fontFamily
+            color: textPrimary
         }
         
         // Tab bar
@@ -321,33 +284,5 @@ Rectangle {
             }
         }
         
-        // Footer buttons
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
-            
-            Item { Layout.fillWidth: true }
-            
-            ModernButton {
-                text: "Apply"
-                Layout.preferredWidth: 100
-                
-                primaryColor: outputConfigPanel.primaryColor
-                primaryHover: outputConfigPanel.primaryHover
-                primaryPressed: outputConfigPanel.primaryPressed
-                fontFamily: outputConfigPanel.fontFamily
-            }
-            
-            ModernButton {
-                text: "Save"
-                Layout.preferredWidth: 100
-                outline: true
-                
-                primaryColor: outputConfigPanel.primaryColor
-                primaryHover: outputConfigPanel.primaryHover
-                primaryPressed: outputConfigPanel.primaryPressed
-                fontFamily: outputConfigPanel.fontFamily
-            }
-        }
     }
 }

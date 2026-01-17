@@ -43,53 +43,16 @@ Rectangle {
     
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 24
-        spacing: 20
+        anchors.margins: 16
+        spacing: 12
         
-        // Header
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 16
-            
-            Rectangle {
-                width: 48
-                height: 48
-                radius: 12
-                color: Qt.rgba(warningColor.r, warningColor.g, warningColor.b, 0.1)
-                
-                Text {
-                    anchors.centerIn: parent
-                    text: "📊"
-                    font.pixelSize: 24
-                }
-            }
-            
-            Column {
-                Layout.fillWidth: true
-                spacing: 4
-                
-                Text {
-                    text: "Amplification"
-                    font.pixelSize: 18
-                    font.weight: Font.DemiBold
-                    font.family: fontFamily
-                    color: textPrimary
-                }
-                
-                Text {
-                    text: "Signal amplification and gain control"
-                    font.pixelSize: 13
-                    font.family: fontFamily
-                    color: textSecondary
-                }
-            }
-        }
-        
-        // Separator
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: borderColor
+        // Compact header
+        Text {
+            text: "Amplification"
+            font.pixelSize: 14
+            font.weight: Font.DemiBold
+            font.family: fontFamily
+            color: textPrimary
         }
         
         // Content
@@ -326,48 +289,16 @@ Rectangle {
             }
         }
         
-        // Footer buttons
-        RowLayout {
+        // Store to EEPROM button (panel-specific)
+        ModernButton {
+            text: "Store to EEPROM"
             Layout.fillWidth: true
-            spacing: 12
+            Layout.preferredHeight: 36
             
-            ModernButton {
-                text: "Store to EEPROM"
-                Layout.fillWidth: true
-                
-                primaryColor: successColor
-                primaryHover: Qt.darker(successColor, 1.1)
-                primaryPressed: Qt.darker(successColor, 1.2)
-                fontFamily: amplificationPanel.fontFamily
-            }
-            
-            ModernButton {
-                text: "Apply"
-                Layout.preferredWidth: 100
-                
-                primaryColor: amplificationPanel.primaryColor
-                primaryHover: amplificationPanel.primaryHover
-                primaryPressed: amplificationPanel.primaryPressed
-                fontFamily: amplificationPanel.fontFamily
-            }
-            
-            ModernButton {
-                text: "Reset"
-                Layout.preferredWidth: 100
-                outline: true
-                
-                primaryColor: amplificationPanel.primaryColor
-                primaryHover: amplificationPanel.primaryHover
-                primaryPressed: amplificationPanel.primaryPressed
-                fontFamily: amplificationPanel.fontFamily
-                
-                onClicked: {
-                    amplificationValue = 20
-                    autoEnabled = false
-                    innerThreshold.value = 30
-                    outerThreshold.value = 70
-                }
-            }
+            primaryColor: successColor
+            primaryHover: Qt.darker(successColor, 1.1)
+            primaryPressed: Qt.darker(successColor, 1.2)
+            fontFamily: amplificationPanel.fontFamily
         }
     }
 }
