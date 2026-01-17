@@ -181,14 +181,14 @@ ApplicationWindow {
                     text: qsTr("Light Theme")
                     checkable: true
                     checked: !ThemeManager.isDarkTheme
-                    onTriggered: ThemeManager.setTheme("light")
+                    onTriggered: ThemeManager.setTheme(false)
                 }
                 
                 Action {
                     text: qsTr("Dark Theme")
                     checkable: true
                     checked: ThemeManager.isDarkTheme
-                    onTriggered: ThemeManager.setTheme("dark")
+                    onTriggered: ThemeManager.setTheme(true)
                 }
             }
             
@@ -312,6 +312,58 @@ ApplicationWindow {
                 text: qsTr("&Settings...")
                 shortcut: "Ctrl+,"
                 onTriggered: settingsPopup.open()
+            }
+        }
+        
+        // Theme Menu
+        Menu {
+            id: themeMenu
+            title: qsTr("&Theme")
+            
+            background: Rectangle {
+                implicitWidth: 180
+                color: cardBackground
+                border.color: borderColor
+                border.width: 1
+                radius: 8
+                
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 4
+                    radius: 12
+                    samples: 17
+                    color: shadowColor
+                }
+            }
+            
+            Action {
+                text: qsTr("☀️  Light Theme")
+                checkable: true
+                checked: !ThemeManager.isDarkTheme
+                onTriggered: ThemeManager.setTheme(false)
+            }
+            
+            Action {
+                text: qsTr("🌙  Dark Theme")
+                checkable: true
+                checked: ThemeManager.isDarkTheme
+                onTriggered: ThemeManager.setTheme(true)
+            }
+            
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 160
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+            
+            Action {
+                text: qsTr("Toggle Theme")
+                shortcut: "Ctrl+T"
+                onTriggered: ThemeManager.toggleTheme()
             }
         }
         
