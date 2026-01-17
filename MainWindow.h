@@ -87,7 +87,6 @@ private:
 
     // Control widgets
     QSpinBox* m_rangeSpinBox;
-    QPushButton* m_simulateButton;
     QPushButton* m_applyButton;
     QPushButton* m_resetButton;
     QLabel* m_statusLabel;
