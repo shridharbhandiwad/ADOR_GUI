@@ -319,6 +319,7 @@ ApplicationWindow {
         Menu {
             id: themeMenu
             title: qsTr("&Theme")
+            visible: true
             
             background: Rectangle {
                 implicitWidth: 180
