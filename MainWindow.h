@@ -46,6 +46,7 @@ private slots:
     void onResetSettings();
     void onSaveSettings();
     void onDefaultSettings();
+    void onClearTracks();  // Clear all track data from PPI and table
 
     // DSP parameter slots
     void onRangeAvgEdited();
@@ -95,6 +96,7 @@ private:
     QPushButton* m_resetButton;
     QPushButton* m_saveSettingsButton;
     QPushButton* m_defaultSettingsButton;
+    QPushButton* m_clearTracksButton;  // Button to clear all track data
     QLabel* m_statusLabel;
     QLabel* m_frameCountLabel;
 
