@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_trackTable(nullptr)
     , m_udpSocket(nullptr)
     , m_updateTimer(nullptr)
-    , m_simulationEnabled(false)
+    , m_simulationEnabled(false)  // Simulation disabled by default
     , m_randomEngine(std::random_device{}())
     , m_rangeDist(100.0f, 500.0f)
     , m_azimuthDist(-90.0f, 90.0f)
@@ -273,47 +273,82 @@ void MainWindow::setupUI()
     m_ppiWidget->setMinimumSize(400, 400);
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
 
-    // DSP Settings Panel - Compact design
+    // DSP Settings Panel - Two column layout with uniform fonts
     QGroupBox* settingsGroup = new QGroupBox("DSP Settings", this);
-    settingsGroup->setMaximumHeight(320);
-    settingsGroup->setStyleSheet("QGroupBox { font-size: 12px; padding: 8px 6px 6px 6px; margin-top: 10px; } QGroupBox::title { padding: 0 6px; }");
-    QGridLayout* settingsLayout = new QGridLayout(settingsGroup);
+    settingsGroup->setMaximumHeight(380);
+    settingsGroup->setStyleSheet("QGroupBox { font-size: 15px; font-weight: 600; padding: 12px 10px 10px 10px; margin-top: 12px; } QGroupBox::title { padding: 0 8px; }");
+    
+    QHBoxLayout* mainSettingsLayout = new QHBoxLayout(settingsGroup);
+    mainSettingsLayout->setSpacing(20);
+    
+    // Left column - Range & Speed settings
+    QGroupBox* leftGroup = new QGroupBox("Range && Speed", this);
+    leftGroup->setStyleSheet("QGroupBox { font-size: 13px; font-weight: 600; padding: 10px 8px 8px 8px; margin-top: 10px; background-color: #f8fafc; border-radius: 10px; } QGroupBox::title { padding: 0 6px; color: #3b82f6; }");
+    QGridLayout* leftLayout = new QGridLayout(leftGroup);
+    leftLayout->setSpacing(6);
+    leftLayout->setContentsMargins(8, 8, 8, 8);
+    
+    // Right column - Filter & Tracking settings
+    QGroupBox* rightGroup = new QGroupBox("Filter && Tracking", this);
+    rightGroup->setStyleSheet("QGroupBox { font-size: 13px; font-weight: 600; padding: 10px 8px 8px 8px; margin-top: 10px; background-color: #f8fafc; border-radius: 10px; } QGroupBox::title { padding: 0 6px; color: #3b82f6; }");
+    QGridLayout* rightLayout = new QGridLayout(rightGroup);
+    rightLayout->setSpacing(6);
+    rightLayout->setContentsMargins(8, 8, 8, 8);
 
-    int row = 0;
-    auto addRow = [&](const QString& label, QLineEdit*& edit, const QString& def) {
+    // Uniform font size for labels and edits
+    const QString labelStyle = "font-size: 13px; font-weight: 500; color: #374151;";
+    const QString editStyle = "font-size: 13px; padding: 6px 8px; font-weight: 500;";
+    
+    auto addField = [&](QGridLayout* layout, int row, const QString& label, QLineEdit*& edit, const QString& def) {
         QLabel* l = new QLabel(label, this);
-        l->setStyleSheet("font-size: 11px;");
+        l->setStyleSheet(labelStyle);
         edit = new QLineEdit(def, this);
-        edit->setMaximumWidth(60);
-        edit->setMaximumHeight(24);
-        edit->setStyleSheet("font-size: 11px; padding: 4px 6px;");
-        settingsLayout->addWidget(l, row, 0);
-        settingsLayout->addWidget(edit, row, 1);
-        row++;
+        edit->setMaximumWidth(80);
+        edit->setMinimumHeight(28);
+        edit->setStyleSheet(editStyle);
+        layout->addWidget(l, row, 0);
+        layout->addWidget(edit, row, 1);
     };
 
-    addRow("Range Avg",        m_rangeAvgEdit,        "1");
-    addRow("Min Range (cm)",   m_minRangeEdit,        "0");
-    addRow("Max Range (cm)",   m_maxRangeEdit,        "5000");
-    addRow("Min Speed (km/h)", m_minSpeedEdit,        "-100");
-    addRow("Max Speed (km/h)", m_maxSpeedEdit,        "100");
-    addRow("Min Angle (deg)",  m_minAngleEdit,        "-60");
-    addRow("Max Angle (deg)",  m_maxAngleEdit,        "60");
-    addRow("Range Thresh",     m_rangeThresholdEdit,  "0");
-    addRow("Speed Thresh",     m_speedThresholdEdit,  "0");
-    addRow("Num Tracks",       m_numTracksEdit,       "50");
-    addRow("Median Filter",    m_medianFilterEdit,    "1");
-    addRow("MTI Length",       m_mtiLengthEdit,       "2");
+    // Left column fields - Range & Speed
+    addField(leftLayout, 0, "Range Avg",        m_rangeAvgEdit,        "1");
+    addField(leftLayout, 1, "Min Range (cm)",   m_minRangeEdit,        "0");
+    addField(leftLayout, 2, "Max Range (cm)",   m_maxRangeEdit,        "5000");
+    addField(leftLayout, 3, "Min Speed (km/h)", m_minSpeedEdit,        "-100");
+    addField(leftLayout, 4, "Max Speed (km/h)", m_maxSpeedEdit,        "100");
+    addField(leftLayout, 5, "Range Thresh",     m_rangeThresholdEdit,  "0");
+    
+    // Right column fields - Filter & Tracking
+    addField(rightLayout, 0, "Min Angle (deg)",  m_minAngleEdit,        "-60");
+    addField(rightLayout, 1, "Max Angle (deg)",  m_maxAngleEdit,        "60");
+    addField(rightLayout, 2, "Speed Thresh",     m_speedThresholdEdit,  "0");
+    addField(rightLayout, 3, "Num Tracks",       m_numTracksEdit,       "50");
+    addField(rightLayout, 4, "Median Filter",    m_medianFilterEdit,    "1");
+    addField(rightLayout, 5, "MTI Length",       m_mtiLengthEdit,       "2");
 
+    // Buttons in left column
     m_applyButton = new QPushButton("Apply", this);
     m_resetButton = new QPushButton("Reset", this);
-    m_applyButton->setMaximumHeight(28);
-    m_resetButton->setMaximumHeight(28);
-    m_applyButton->setStyleSheet("font-size: 11px; padding: 4px 10px;");
-    m_resetButton->setStyleSheet("font-size: 11px; padding: 4px 10px;");
-    settingsLayout->addWidget(m_applyButton, row, 0);
-    settingsLayout->addWidget(m_resetButton, row, 1);
+    m_applyButton->setMinimumHeight(32);
+    m_resetButton->setMinimumHeight(32);
+    m_applyButton->setStyleSheet("font-size: 13px; font-weight: 600; padding: 6px 14px;");
+    m_resetButton->setStyleSheet("font-size: 13px; font-weight: 600; padding: 6px 14px;");
+    
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(m_applyButton);
+    buttonLayout->addWidget(m_resetButton);
+    leftLayout->addLayout(buttonLayout, 6, 0, 1, 2);
+    
+    // Set column widths
+    leftLayout->setColumnMinimumWidth(0, 110);
+    leftLayout->setColumnMinimumWidth(1, 80);
+    rightLayout->setColumnMinimumWidth(0, 110);
+    rightLayout->setColumnMinimumWidth(1, 80);
+    
+    mainSettingsLayout->addWidget(leftGroup);
+    mainSettingsLayout->addWidget(rightGroup);
 
+    // Connect DSP settings signals
     connect(m_rangeAvgEdit,        &QLineEdit::editingFinished, this, &MainWindow::onRangeAvgEdited);
     connect(m_minRangeEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMinRangeEdited);
     connect(m_maxRangeEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMaxRangeEdited);
@@ -328,11 +363,6 @@ void MainWindow::setupUI()
     connect(m_mtiLengthEdit,       &QLineEdit::editingFinished, this, &MainWindow::onMtiLengthEdited);
     connect(m_applyButton,         &QPushButton::clicked,       this, &MainWindow::onApplySettings);
     connect(m_resetButton,         &QPushButton::clicked,       this, &MainWindow::onResetSettings);
-
-    settingsLayout->setColumnMinimumWidth(0, 100);
-    settingsLayout->setColumnMinimumWidth(1, 60);
-    settingsLayout->setSpacing(2);
-    settingsLayout->setContentsMargins(6, 6, 6, 6);
 
     ppiLayout->addWidget(settingsGroup, 0);  // Stretch factor 0 to keep compact
     m_mainSplitter->addWidget(ppiGroup);
@@ -369,23 +399,20 @@ void MainWindow::setupUI()
 
     QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
 
-    // Control panel
+    // Control panel (status bar only - simulation removed)
     QHBoxLayout* controlLayout = new QHBoxLayout();
-    m_simulateButton = new QPushButton("Enable Simulation");
-    m_simulateButton->setCheckable(true);
-    m_simulateButton->setChecked(true);
-    connect(m_simulateButton, &QPushButton::toggled, this, &MainWindow::onSimulateDataToggled);
-    controlLayout->addWidget(m_simulateButton);
     controlLayout->addStretch();
     m_frameCountLabel = new QLabel("Frames: 0");
+    m_frameCountLabel->setStyleSheet("font-size: 14px; font-weight: 500;");
     controlLayout->addWidget(m_frameCountLabel);
-    m_statusLabel = new QLabel("Status: Simulation Active");
+    m_statusLabel = new QLabel("Status: Ready");
+    m_statusLabel->setStyleSheet("font-size: 14px; font-weight: 500;");
     controlLayout->addWidget(m_statusLabel);
 
     mainLayout->addLayout(controlLayout);
     mainLayout->addWidget(m_mainSplitter);
 
-    statusBar()->showMessage("Radar Visualization Ready - UDP port 5000 (Binary & Text mode)");
+    statusBar()->showMessage("Radar Visualization Ready - UDP port 5000 (Binary & Text mode) - Waiting for data");
 }
 
 void MainWindow::setupNetworking()
@@ -520,8 +547,6 @@ void MainWindow::parseBinaryRawData(const QByteArray& datagram)
 
     if (m_simulationEnabled) {
         m_simulationEnabled = false;
-        m_simulateButton->setChecked(false);
-        m_simulateButton->setText("Enable Simulation");
     }
 
     m_statusLabel->setText(QString("Binary Data - Frame %1, %2 samples")
@@ -639,8 +664,6 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
     // Disable simulation when receiving real data
     if (m_simulationEnabled) {
         m_simulationEnabled = false;
-        m_simulateButton->setChecked(false);
-        m_simulateButton->setText("Enable Simulation");
     }
 
     m_statusLabel->setText(QString("Binary Target Data - %1 targets, ID: %2")
@@ -747,14 +770,9 @@ void MainWindow::parseADCMessage(const QString& message)
 //==============================================================================
 void MainWindow::onSimulateDataToggled()
 {
-    m_simulationEnabled = m_simulateButton->isChecked();
-    if (m_simulationEnabled) {
-        m_simulateButton->setText("Disable Simulation");
-        m_statusLabel->setText("Status: Simulation Active");
-    } else {
-        m_simulateButton->setText("Enable Simulation");
-        m_statusLabel->setText("Status: Waiting for Data");
-    }
+    // Simulation toggle removed - simulation disabled by default
+    m_simulationEnabled = false;
+    m_statusLabel->setText("Status: Waiting for Data");
 }
 
 void MainWindow::generateSimulatedTargetData()
