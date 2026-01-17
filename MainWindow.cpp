@@ -49,7 +49,24 @@ MainWindow::MainWindow(QWidget *parent)
     , m_numTargetsDist(3, 8)
     , m_frameCount(0)
     , m_targetCount(0)
+    , m_dsp{}  // Zero-initialize the DSP settings struct
 {
+    // Initialize DSP settings with default values matching UI defaults
+    m_dsp.range_mvg_avg_length = 1;
+    m_dsp.min_range_cm = 0;
+    m_dsp.max_range_cm = 5000;
+    m_dsp.min_speed_kmh = -100;   // Signed type now supports negative values
+    m_dsp.max_speed_kmh = 100;
+    m_dsp.min_angle_degree = -60; // Signed type now supports negative values
+    m_dsp.max_angle_degree = 60;
+    m_dsp.range_threshold = 0;
+    m_dsp.speed_threshold = 0;
+    m_dsp.enable_tracking = 1;
+    m_dsp.num_of_tracks = 50;
+    m_dsp.median_filter_length = 1;
+    m_dsp.enable_mti_filter = 1;
+    m_dsp.mti_filter_length = 2;
+
     setupUI();
     loadSettings();  // Load saved settings on startup
     setupNetworking();
@@ -978,11 +995,19 @@ void MainWindow::onResetSettings()
     m_mtiLengthEdit->setText("2");
     m_speedDist = std::uniform_real_distribution<float>(-50.0f, 50.0f);
     
-    // Update internal DSP settings
+    // Update ALL internal DSP settings to match UI defaults
+    m_dsp.range_mvg_avg_length = 1;
     m_dsp.min_range_cm = 0;
     m_dsp.max_range_cm = 5000;
+    m_dsp.min_speed_kmh = -100;
+    m_dsp.max_speed_kmh = 100;
     m_dsp.min_angle_degree = -60;
     m_dsp.max_angle_degree = 60;
+    m_dsp.range_threshold = 0;
+    m_dsp.speed_threshold = 0;
+    m_dsp.num_of_tracks = 50;
+    m_dsp.median_filter_length = 1;
+    m_dsp.mti_filter_length = 2;
     
     // Apply to both displays (convert cm to meters)
     m_ppiWidget->setMinRange(0.0f);
@@ -1092,8 +1117,8 @@ void MainWindow::onMaxSpeedEdited()
 {
     bool ok;
     int v = m_maxSpeedEdit->text().toInt(&ok);
-    if (ok) m_dsp.max_speed_kmh = std::max(static_cast<unsigned short>(v),
-                                           static_cast<unsigned short>(m_dsp.min_speed_kmh));
+    if (ok) m_dsp.max_speed_kmh = std::max(static_cast<int16_t>(v),
+                                           m_dsp.min_speed_kmh);
 }
 
 void MainWindow::onMinAngleEdited()
