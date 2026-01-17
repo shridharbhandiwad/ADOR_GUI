@@ -137,6 +137,30 @@ struct MessageHeader {
 
 Followed by the serialized target track data or raw ADC data.
 
+## Windows Deployment (Standalone Executable)
+
+To create a standalone Windows executable package that includes all Qt libraries (no Qt installation required on target machine):
+
+### Quick Deploy
+```batch
+# Option 1: Batch script
+deploy_windows.bat
+
+# Option 2: PowerShell
+.\Deploy-Windows.ps1
+```
+
+### Output
+- Creates `deploy\RadarVisualization\` folder with all required files
+- Creates `RadarVisualization_Windows_v1.0.0.zip` ready for distribution
+
+### Customer Usage
+1. Extract the ZIP file
+2. Run `RadarVisualization.exe`
+3. No installation or Qt required!
+
+See [WINDOWS_DEPLOYMENT.md](WINDOWS_DEPLOYMENT.md) for detailed instructions.
+
 ## Architecture
 
 - **MainWindow**: Main application window with layout management
