@@ -237,10 +237,12 @@ PPIWidget::PPIWidget(QWidget *parent)
     , m_fovAngle(20.0f)  // ±20 degrees FoV (default)
     , m_minAngle(-60.0f) // Default min angle
     , m_maxAngle(60.0f)  // Default max angle
+    , m_hoveredTrackIndex(-1)
 {
     setMinimumSize(400, 200);
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
+    setMouseTracking(true);  // Enable mouse tracking for hover detection
 }
 
 void PPIWidget::updateTargets(const TargetTrackData& trackData)
@@ -337,6 +339,166 @@ void PPIWidget::paintEvent(QPaintEvent *event)
     drawFoVBoundaries(painter); // Draw FoV boundaries on top
     drawTargets(painter);
     drawLabels(painter);
+    drawHoverTooltip(painter);  // Draw tooltip on top of everything
+}
+
+void PPIWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    QPointF mousePos = event->position();
+    int trackIndex = findTrackAtPosition(mousePos);
+    
+    if (trackIndex != m_hoveredTrackIndex) {
+        m_hoveredTrackIndex = trackIndex;
+        m_hoverPosition = mousePos;
+        update();  // Trigger repaint to show/hide tooltip
+    } else if (trackIndex >= 0) {
+        // Update tooltip position even if same track
+        m_hoverPosition = mousePos;
+        update();
+    }
+    
+    QWidget::mouseMoveEvent(event);
+}
+
+void PPIWidget::leaveEvent(QEvent *event)
+{
+    if (m_hoveredTrackIndex >= 0) {
+        m_hoveredTrackIndex = -1;
+        update();
+    }
+    QWidget::leaveEvent(event);
+}
+
+int PPIWidget::findTrackAtPosition(const QPointF& pos) const
+{
+    const float hitRadius = 12.0f;  // Pixel radius for hit detection
+    
+    for (size_t i = 0; i < m_currentTargets.targets.size(); ++i) {
+        const auto& target = m_currentTargets.targets[i];
+        
+        // Skip targets outside display range
+        if (target.azimuth < MIN_AZIMUTH || target.azimuth > MAX_AZIMUTH) {
+            continue;
+        }
+        if (target.radius > m_maxRange || target.radius < m_minRange) {
+            continue;
+        }
+        
+        QPointF targetPos = polarToCartesian(target.radius, target.azimuth);
+        
+        // Check if mouse is within hit radius of target
+        float dx = pos.x() - targetPos.x();
+        float dy = pos.y() - targetPos.y();
+        float distance = std::sqrt(dx * dx + dy * dy);
+        
+        if (distance <= hitRadius) {
+            return static_cast<int>(i);
+        }
+    }
+    
+    return -1;  // No track found
+}
+
+void PPIWidget::drawHoverTooltip(QPainter& painter)
+{
+    if (m_hoveredTrackIndex < 0 || 
+        static_cast<size_t>(m_hoveredTrackIndex) >= m_currentTargets.targets.size()) {
+        return;
+    }
+    
+    const auto& target = m_currentTargets.targets[m_hoveredTrackIndex];
+    
+    // Build tooltip text
+    QString tooltipText = QString("ID: %1\nRange: %2 m\nAzimuth: %3°\nSpeed: %4 m/s")
+        .arg(target.target_id)
+        .arg(target.radius, 0, 'f', 2)
+        .arg(target.azimuth, 0, 'f', 1)
+        .arg(target.radial_speed, 0, 'f', 2);
+    
+    painter.save();
+    
+    // Set up font for measurement
+    QFont tooltipFont("Segoe UI", 10);
+    painter.setFont(tooltipFont);
+    QFontMetrics fm(tooltipFont);
+    
+    // Calculate tooltip dimensions
+    QStringList lines = tooltipText.split('\n');
+    int maxWidth = 0;
+    int totalHeight = 0;
+    for (const QString& line : lines) {
+        maxWidth = std::max(maxWidth, fm.horizontalAdvance(line));
+        totalHeight += fm.height();
+    }
+    
+    int padding = 10;
+    int tooltipWidth = maxWidth + 2 * padding;
+    int tooltipHeight = totalHeight + 2 * padding;
+    
+    // Calculate position (offset from target to avoid obscuring it)
+    QPointF targetPos = polarToCartesian(target.radius, target.azimuth);
+    float offsetX = 15;
+    float offsetY = -tooltipHeight - 10;
+    
+    // Adjust position to keep tooltip within widget bounds
+    float tooltipX = targetPos.x() + offsetX;
+    float tooltipY = targetPos.y() + offsetY;
+    
+    // Keep within horizontal bounds
+    if (tooltipX + tooltipWidth > width()) {
+        tooltipX = targetPos.x() - tooltipWidth - offsetX;
+    }
+    if (tooltipX < 0) {
+        tooltipX = 5;
+    }
+    
+    // Keep within vertical bounds
+    if (tooltipY < 0) {
+        tooltipY = targetPos.y() + 15;
+    }
+    if (tooltipY + tooltipHeight > height()) {
+        tooltipY = height() - tooltipHeight - 5;
+    }
+    
+    QRectF tooltipRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
+    
+    // Draw semi-transparent background (transparent mode)
+    QColor bgColor(30, 41, 59, 200);  // #1e293b with transparency
+    painter.setBrush(QBrush(bgColor));
+    painter.setPen(QPen(QColor(59, 130, 246, 180), 1));  // Blue border with transparency
+    painter.drawRoundedRect(tooltipRect, 6, 6);
+    
+    // Draw text
+    painter.setPen(QPen(QColor(248, 250, 252)));  // #f8fafc - Light text
+    
+    float textY = tooltipY + padding + fm.ascent();
+    for (const QString& line : lines) {
+        painter.drawText(QPointF(tooltipX + padding, textY), line);
+        textY += fm.height();
+    }
+    
+    // Draw small triangle pointer towards target
+    QPointF trianglePoints[3];
+    float triSize = 8;
+    
+    // Position triangle on the side closest to the target
+    if (targetPos.x() > tooltipRect.center().x()) {
+        // Triangle on right side
+        trianglePoints[0] = QPointF(tooltipRect.right(), tooltipRect.center().y() - triSize);
+        trianglePoints[1] = QPointF(tooltipRect.right(), tooltipRect.center().y() + triSize);
+        trianglePoints[2] = QPointF(tooltipRect.right() + triSize, tooltipRect.center().y());
+    } else {
+        // Triangle on left side
+        trianglePoints[0] = QPointF(tooltipRect.left(), tooltipRect.center().y() - triSize);
+        trianglePoints[1] = QPointF(tooltipRect.left(), tooltipRect.center().y() + triSize);
+        trianglePoints[2] = QPointF(tooltipRect.left() - triSize, tooltipRect.center().y());
+    }
+    
+    painter.setBrush(QBrush(bgColor));
+    painter.setPen(Qt::NoPen);
+    painter.drawPolygon(trianglePoints, 3);
+    
+    painter.restore();
 }
 
 void PPIWidget::drawBackground(QPainter& painter)
