@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QPainter>
 #include <QTimer>
+#include <QMouseEvent>
 #include <vector>
 #include "DataStructures.h"
 
@@ -30,6 +31,8 @@ public:
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 private:
     // Drawing functions
@@ -40,10 +43,12 @@ private:
     void drawAzimuthLines(QPainter& painter);
     void drawTargets(QPainter& painter);
     void drawLabels(QPainter& painter);
+    void drawHoverTooltip(QPainter& painter);   // Draw transparent hover tooltip
 
     // Utility functions
     QColor getTargetColor(float radialSpeed) const;
     QPointF polarToCartesian(float range, float azimuth) const;
+    int findTrackAtPosition(const QPointF& pos) const;  // Find track under mouse position
 
     // Data members
     TargetTrackData m_currentTargets;
@@ -57,6 +62,10 @@ private:
     float m_plotRadius;         // Radius of the plot area in pixels
     QPointF m_center;           // Center point of the plot
     QRect m_plotRect;           // Bounding rectangle of the plot
+
+    // Hover tracking
+    int m_hoveredTrackIndex;    // Index of currently hovered track (-1 if none)
+    QPointF m_hoverPosition;    // Current mouse position for tooltip placement
 
     // Constants for radar display
     static const int NUM_RANGE_RINGS = 5;      // Number of concentric range rings
