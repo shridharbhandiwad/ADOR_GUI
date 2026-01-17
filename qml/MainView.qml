@@ -6,22 +6,22 @@ import "components"
 Item {
     id: mainView
     
-    // Theme properties
-    property color backgroundColor: "#f8fafc"
-    property color cardBackground: "#ffffff"
-    property color primaryColor: "#3b82f6"
-    property color primaryHover: "#2563eb"
-    property color primaryPressed: "#1d4ed8"
-    property color accentColor: "#06b6d4"
-    property color successColor: "#10b981"
-    property color warningColor: "#f59e0b"
-    property color errorColor: "#ef4444"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color textMuted: "#94a3b8"
-    property color borderColor: "#e2e8f0"
-    property color borderFocus: "#3b82f6"
-    property string fontFamily: "Segoe UI"
+    // Theme properties with smooth transitions
+    property color backgroundColor: ThemeManager.backgroundColor
+    property color cardBackground: ThemeManager.cardBackground
+    property color primaryColor: ThemeManager.primaryColor
+    property color primaryHover: ThemeManager.primaryHover
+    property color primaryPressed: ThemeManager.primaryPressed
+    property color accentColor: ThemeManager.accentColor
+    property color successColor: ThemeManager.successColor
+    property color warningColor: ThemeManager.warningColor
+    property color errorColor: ThemeManager.errorColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color textMuted: ThemeManager.textMuted
+    property color borderColor: ThemeManager.borderColor
+    property color borderFocus: ThemeManager.borderFocus
+    property string fontFamily: ThemeManager.fontFamily
     
     // Expose panels for external access
     property alias udpConfigPanel: udpConfig
@@ -157,6 +157,7 @@ Item {
                 primaryColor: mainView.primaryColor
                 primaryHover: mainView.primaryHover
                 primaryPressed: mainView.primaryPressed
+                textColor: mainView.textPrimary
                 fontFamily: mainView.fontFamily
                 
                 onClicked: {

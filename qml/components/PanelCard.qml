@@ -7,12 +7,12 @@ Rectangle {
     id: panelCard
     
     // Theme properties
-    property color cardBackground: "#ffffff"
-    property color primaryColor: "#3b82f6"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color borderColor: "#e2e8f0"
-    property string fontFamily: "Segoe UI"
+    property color cardBackground: ThemeManager.cardBackground
+    property color primaryColor: ThemeManager.primaryColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color borderColor: ThemeManager.borderColor
+    property string fontFamily: ThemeManager.fontFamily
     
     // Content properties
     property string title: "Panel Title"
@@ -25,6 +25,10 @@ Rectangle {
     border.color: borderColor
     border.width: 1
     
+    // Smooth theme transitions
+    Behavior on color { ColorAnimation { duration: 200 } }
+    Behavior on border.color { ColorAnimation { duration: 200 } }
+    
     // Shadow effect
     layer.enabled: true
     layer.effect: DropShadow {
@@ -33,7 +37,7 @@ Rectangle {
         verticalOffset: 4
         radius: 12
         samples: 25
-        color: "#0000001a"
+        color: ThemeManager.shadowColor
     }
     
     ColumnLayout {
@@ -53,11 +57,15 @@ Rectangle {
                 radius: 12
                 color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
                 
+                Behavior on color { ColorAnimation { duration: 200 } }
+                
                 Text {
                     anchors.centerIn: parent
                     text: panelCard.iconText
                     font.pixelSize: 24
                     color: primaryColor
+                    
+                    Behavior on color { ColorAnimation { duration: 200 } }
                 }
             }
             
@@ -71,6 +79,8 @@ Rectangle {
                     font.weight: Font.DemiBold
                     font.family: panelCard.fontFamily
                     color: textPrimary
+                    
+                    Behavior on color { ColorAnimation { duration: 200 } }
                 }
                 
                 Text {
@@ -79,6 +89,8 @@ Rectangle {
                     font.family: panelCard.fontFamily
                     color: textSecondary
                     visible: panelCard.subtitle.length > 0
+                    
+                    Behavior on color { ColorAnimation { duration: 200 } }
                 }
             }
         }
@@ -88,6 +100,8 @@ Rectangle {
             Layout.fillWidth: true
             height: 1
             color: borderColor
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
         
         // Content container

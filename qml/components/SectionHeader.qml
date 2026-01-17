@@ -6,8 +6,8 @@ Item {
     id: sectionHeader
     
     property string title: "Section"
-    property color textColor: "#64748b"
-    property string fontFamily: "Segoe UI"
+    property color textColor: ThemeManager.textSecondary
+    property string fontFamily: ThemeManager.fontFamily
     
     height: 32
     
@@ -23,6 +23,8 @@ Item {
             font.letterSpacing: 0.5
             color: textColor
             Layout.alignment: Qt.AlignVCenter
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
         
         Rectangle {
@@ -30,6 +32,8 @@ Item {
             height: 1
             color: Qt.rgba(textColor.r, textColor.g, textColor.b, 0.3)
             Layout.alignment: Qt.AlignVCenter
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
     }
 }

@@ -7,17 +7,19 @@ Rectangle {
     id: angleCorrectionPanel
     
     // Theme properties
-    property color cardBackground: "#ffffff"
-    property color primaryColor: "#3b82f6"
-    property color primaryHover: "#2563eb"
-    property color primaryPressed: "#1d4ed8"
-    property color accentColor: "#06b6d4"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color textMuted: "#94a3b8"
-    property color borderColor: "#e2e8f0"
-    property color borderFocus: "#3b82f6"
-    property string fontFamily: "Segoe UI"
+    property color cardBackground: ThemeManager.cardBackground
+    property color primaryColor: ThemeManager.primaryColor
+    property color primaryHover: ThemeManager.primaryHover
+    property color primaryPressed: ThemeManager.primaryPressed
+    property color accentColor: ThemeManager.accentColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color textMuted: ThemeManager.textMuted
+    property color borderColor: ThemeManager.borderColor
+    property color borderFocus: ThemeManager.borderFocus
+    property color inputBackground: ThemeManager.inputBackground
+    property color hoverBackground: ThemeManager.hoverBackground
+    property string fontFamily: ThemeManager.fontFamily
     
     // State
     property bool useAngleMethod: true
@@ -27,6 +29,10 @@ Rectangle {
     border.color: borderColor
     border.width: 1
     
+    // Smooth theme transitions
+    Behavior on color { ColorAnimation { duration: 200 } }
+    Behavior on border.color { ColorAnimation { duration: 200 } }
+    
     // Shadow
     layer.enabled: true
     layer.effect: DropShadow {
@@ -35,7 +41,7 @@ Rectangle {
         verticalOffset: 4
         radius: 12
         samples: 25
-        color: "#0000001a"
+        color: ThemeManager.shadowColor
     }
     
     ColumnLayout {
@@ -50,6 +56,8 @@ Rectangle {
             font.weight: Font.DemiBold
             font.family: fontFamily
             color: textPrimary
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
         
         // Content
@@ -86,6 +94,9 @@ Rectangle {
                         border.color: useAngleMethod ? primaryColor : borderColor
                         border.width: useAngleMethod ? 2 : 1
                         
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        
                         MouseArea {
                             anchors.fill: parent
                             onClicked: useAngleMethod = true
@@ -103,6 +114,8 @@ Rectangle {
                                 color: useAngleMethod ? primaryColor : borderColor
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
+                                Behavior on color { ColorAnimation { duration: 200 } }
+                                
                                 Text {
                                     anchors.centerIn: parent
                                     text: "∠"
@@ -119,6 +132,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: useAngleMethod ? primaryColor : textPrimary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             Text {
@@ -127,6 +142,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                     }
@@ -139,6 +156,9 @@ Rectangle {
                         color: !useAngleMethod ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08) : "transparent"
                         border.color: !useAngleMethod ? primaryColor : borderColor
                         border.width: !useAngleMethod ? 2 : 1
+                        
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
                         
                         MouseArea {
                             anchors.fill: parent
@@ -157,6 +177,8 @@ Rectangle {
                                 color: !useAngleMethod ? primaryColor : borderColor
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
+                                Behavior on color { ColorAnimation { duration: 200 } }
+                                
                                 Text {
                                     anchors.centerIn: parent
                                     text: "↕"
@@ -173,6 +195,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: !useAngleMethod ? primaryColor : textPrimary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             Text {
@@ -181,6 +205,8 @@ Rectangle {
                                 font.family: fontFamily
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                     }
@@ -199,9 +225,12 @@ Rectangle {
                     Layout.fillWidth: true
                     height: 100
                     radius: 12
-                    color: useAngleMethod ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05) : "#f1f5f9"
+                    color: useAngleMethod ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05) : hoverBackground
                     border.color: useAngleMethod ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.2) : borderColor
                     opacity: useAngleMethod ? 1.0 : 0.5
+                    
+                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on border.color { ColorAnimation { duration: 200 } }
                     
                     RowLayout {
                         anchors.fill: parent
@@ -218,6 +247,8 @@ Rectangle {
                                 font.weight: Font.Medium
                                 font.family: fontFamily
                                 color: textPrimary
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             Text {
@@ -225,6 +256,8 @@ Rectangle {
                                 font.pixelSize: 12
                                 font.family: fontFamily
                                 color: textSecondary
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                         
@@ -242,6 +275,7 @@ Rectangle {
                             textSecondary: angleCorrectionPanel.textSecondary
                             borderColor: angleCorrectionPanel.borderColor
                             borderFocus: angleCorrectionPanel.borderFocus
+                            backgroundColor: angleCorrectionPanel.inputBackground
                             fontFamily: angleCorrectionPanel.fontFamily
                         }
                     }
@@ -252,9 +286,12 @@ Rectangle {
                     Layout.fillWidth: true
                     height: 100
                     radius: 12
-                    color: !useAngleMethod ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05) : "#f1f5f9"
+                    color: !useAngleMethod ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05) : hoverBackground
                     border.color: !useAngleMethod ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.2) : borderColor
                     opacity: !useAngleMethod ? 1.0 : 0.5
+                    
+                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on border.color { ColorAnimation { duration: 200 } }
                     
                     RowLayout {
                         anchors.fill: parent
@@ -271,6 +308,8 @@ Rectangle {
                                 font.weight: Font.Medium
                                 font.family: fontFamily
                                 color: textPrimary
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                             
                             Text {
@@ -278,6 +317,8 @@ Rectangle {
                                 font.pixelSize: 12
                                 font.family: fontFamily
                                 color: textSecondary
+                                
+                                Behavior on color { ColorAnimation { duration: 200 } }
                             }
                         }
                         
@@ -295,6 +336,7 @@ Rectangle {
                             textSecondary: angleCorrectionPanel.textSecondary
                             borderColor: angleCorrectionPanel.borderColor
                             borderFocus: angleCorrectionPanel.borderFocus
+                            backgroundColor: angleCorrectionPanel.inputBackground
                             fontFamily: angleCorrectionPanel.fontFamily
                         }
                     }
@@ -307,6 +349,9 @@ Rectangle {
                     radius: 10
                     color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.1)
                     border.color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.3)
+                    
+                    Behavior on color { ColorAnimation { duration: 200 } }
+                    Behavior on border.color { ColorAnimation { duration: 200 } }
                     
                     RowLayout {
                         anchors.fill: parent
@@ -325,6 +370,8 @@ Rectangle {
                             font.family: fontFamily
                             color: textSecondary
                             wrapMode: Text.WordWrap
+                            
+                            Behavior on color { ColorAnimation { duration: 200 } }
                         }
                     }
                 }

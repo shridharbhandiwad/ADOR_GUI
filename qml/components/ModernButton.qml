@@ -6,11 +6,11 @@ Button {
     id: modernButton
     
     // Theme properties
-    property color primaryColor: "#3b82f6"
-    property color primaryHover: "#2563eb"
-    property color primaryPressed: "#1d4ed8"
+    property color primaryColor: ThemeManager.primaryColor
+    property color primaryHover: ThemeManager.primaryHover
+    property color primaryPressed: ThemeManager.primaryPressed
     property color textColor: "#ffffff"
-    property string fontFamily: "Segoe UI"
+    property string fontFamily: ThemeManager.fontFamily
     property bool outline: false
     property bool small: false
     
@@ -26,6 +26,8 @@ Button {
                modernButton.hovered ? primaryHover : primaryColor) : textColor
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
+        
+        Behavior on color { ColorAnimation { duration: 150 } }
     }
     
     background: Rectangle {
@@ -45,6 +47,10 @@ Button {
         border.width: outline ? 1.5 : 0
         
         Behavior on color {
+            ColorAnimation { duration: 150 }
+        }
+        
+        Behavior on border.color {
             ColorAnimation { duration: 150 }
         }
         

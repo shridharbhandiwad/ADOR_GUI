@@ -6,13 +6,14 @@ Item {
     id: modernTextField
     
     // Theme properties
-    property color primaryColor: "#3b82f6"
-    property color textPrimary: "#1e293b"
-    property color textSecondary: "#64748b"
-    property color borderColor: "#e2e8f0"
-    property color borderFocus: "#3b82f6"
-    property color backgroundColor: "#f8fafc"
-    property string fontFamily: "Segoe UI"
+    property color primaryColor: ThemeManager.primaryColor
+    property color textPrimary: ThemeManager.textPrimary
+    property color textSecondary: ThemeManager.textSecondary
+    property color borderColor: ThemeManager.borderColor
+    property color borderFocus: ThemeManager.borderFocus
+    property color backgroundColor: ThemeManager.inputBackground
+    property color cardBackground: ThemeManager.cardBackground
+    property string fontFamily: ThemeManager.fontFamily
     
     // Field properties
     property string label: ""
@@ -38,6 +39,8 @@ Item {
             font.family: modernTextField.fontFamily
             color: textSecondary
             visible: modernTextField.label.length > 0
+            
+            Behavior on color { ColorAnimation { duration: 200 } }
         }
         
         // Text field
@@ -50,11 +53,11 @@ Item {
             font.family: modernTextField.fontFamily
             color: textPrimary
             placeholderText: modernTextField.placeholderText
-            placeholderTextColor: "#94a3b8"
+            placeholderTextColor: ThemeManager.textMuted
             
             background: Rectangle {
                 radius: 10
-                color: textField.activeFocus ? "#ffffff" : backgroundColor
+                color: textField.activeFocus ? cardBackground : backgroundColor
                 border.color: textField.activeFocus ? borderFocus : borderColor
                 border.width: textField.activeFocus ? 2 : 1
                 

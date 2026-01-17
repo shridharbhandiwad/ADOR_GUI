@@ -1,0 +1,18 @@
+module components
+
+singleton ThemeManager 1.0 ThemeManager.qml
+
+AmplificationPanel 1.0 AmplificationPanel.qml
+AngleCorrectionPanel 1.0 AngleCorrectionPanel.qml
+ModernButton 1.0 ModernButton.qml
+ModernComboBox 1.0 ModernComboBox.qml
+ModernSlider 1.0 ModernSlider.qml
+ModernSpinBox 1.0 ModernSpinBox.qml
+ModernSwitch 1.0 ModernSwitch.qml
+ModernTextField 1.0 ModernTextField.qml
+OutputConfigPanel 1.0 OutputConfigPanel.qml
+PanelCard 1.0 PanelCard.qml
+SectionHeader 1.0 SectionHeader.qml
+SettingsPopup 1.0 SettingsPopup.qml
+StyleManager 1.0 StyleManager.qml
+UdpConfigPanel 1.0 UdpConfigPanel.qml
