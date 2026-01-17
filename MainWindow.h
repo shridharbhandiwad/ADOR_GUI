@@ -64,6 +64,7 @@ private slots:
 
 private:
     void setupUI();
+    void createMenuBar();
     void setupNetworking();
     void setupTimer();
     void updateTrackTable();

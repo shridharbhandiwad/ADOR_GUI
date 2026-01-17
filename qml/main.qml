@@ -14,6 +14,390 @@ ApplicationWindow {
     minimumHeight: 800
     title: qsTr("Radar Data Visualization - Configuration Panel")
     
+    // Menu Bar at the top
+    menuBar: MenuBar {
+        id: mainMenuBar
+        
+        background: Rectangle {
+            color: cardBackground
+            border.color: borderColor
+            border.width: 0
+            
+            Rectangle {
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: 1
+                color: borderColor
+            }
+            
+            Behavior on color {
+                ColorAnimation { duration: 200 }
+            }
+        }
+        
+        // File Menu
+        Menu {
+            id: fileMenu
+            title: qsTr("&File")
+            
+            background: Rectangle {
+                implicitWidth: 200
+                color: cardBackground
+                border.color: borderColor
+                border.width: 1
+                radius: 8
+                
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 4
+                    radius: 12
+                    samples: 17
+                    color: shadowColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&New Configuration")
+                shortcut: "Ctrl+N"
+                onTriggered: {
+                    console.log("New Configuration")
+                }
+            }
+            
+            Action {
+                text: qsTr("&Open Configuration...")
+                shortcut: "Ctrl+O"
+                onTriggered: {
+                    console.log("Open Configuration")
+                }
+            }
+            
+            Action {
+                text: qsTr("&Save Configuration")
+                shortcut: "Ctrl+S"
+                onTriggered: {
+                    console.log("Save Configuration")
+                }
+            }
+            
+            Action {
+                text: qsTr("Save Configuration &As...")
+                shortcut: "Ctrl+Shift+S"
+                onTriggered: {
+                    console.log("Save Configuration As")
+                }
+            }
+            
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&Export Data...")
+                shortcut: "Ctrl+E"
+                onTriggered: {
+                    console.log("Export Data")
+                }
+            }
+            
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+            
+            Action {
+                text: qsTr("E&xit")
+                shortcut: "Alt+F4"
+                onTriggered: Qt.quit()
+            }
+        }
+        
+        // View Menu
+        Menu {
+            id: viewMenu
+            title: qsTr("&View")
+            
+            background: Rectangle {
+                implicitWidth: 220
+                color: cardBackground
+                border.color: borderColor
+                border.width: 1
+                radius: 8
+                
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 4
+                    radius: 12
+                    samples: 17
+                    color: shadowColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&Full Screen")
+                shortcut: "F11"
+                checkable: true
+                checked: root.visibility === Window.FullScreen
+                onTriggered: {
+                    if (root.visibility === Window.FullScreen) {
+                        root.showNormal()
+                    } else {
+                        root.showFullScreen()
+                    }
+                }
+            }
+            
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 200
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+            
+            Menu {
+                title: qsTr("&Theme")
+                
+                background: Rectangle {
+                    implicitWidth: 180
+                    color: cardBackground
+                    border.color: borderColor
+                    border.width: 1
+                    radius: 8
+                }
+                
+                Action {
+                    text: qsTr("Light Theme")
+                    checkable: true
+                    checked: !ThemeManager.isDarkTheme
+                    onTriggered: ThemeManager.setTheme("light")
+                }
+                
+                Action {
+                    text: qsTr("Dark Theme")
+                    checkable: true
+                    checked: ThemeManager.isDarkTheme
+                    onTriggered: ThemeManager.setTheme("dark")
+                }
+            }
+            
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 200
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&Refresh")
+                shortcut: "F5"
+                onTriggered: {
+                    console.log("Refresh display")
+                }
+            }
+        }
+        
+        // Connection Menu
+        Menu {
+            id: connectionMenu
+            title: qsTr("&Connection")
+            
+            background: Rectangle {
+                implicitWidth: 200
+                color: cardBackground
+                border.color: borderColor
+                border.width: 1
+                radius: 8
+                
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 4
+                    radius: 12
+                    samples: 17
+                    color: shadowColor
+                }
+            }
+            
+            Action {
+                text: udpPanel.isConnected ? qsTr("&Disconnect") : qsTr("&Connect")
+                shortcut: "Ctrl+K"
+                onTriggered: {
+                    console.log("Toggle connection")
+                }
+            }
+            
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&UDP Settings...")
+                onTriggered: {
+                    console.log("UDP Settings")
+                }
+            }
+            
+            Action {
+                text: qsTr("&Output Settings...")
+                onTriggered: {
+                    console.log("Output Settings")
+                }
+            }
+        }
+        
+        // Tools Menu
+        Menu {
+            id: toolsMenu
+            title: qsTr("&Tools")
+            
+            background: Rectangle {
+                implicitWidth: 200
+                color: cardBackground
+                border.color: borderColor
+                border.width: 1
+                radius: 8
+                
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 4
+                    radius: 12
+                    samples: 17
+                    color: shadowColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&Angle Correction...")
+                onTriggered: {
+                    console.log("Angle Correction")
+                }
+            }
+            
+            Action {
+                text: qsTr("A&mplification Settings...")
+                onTriggered: {
+                    console.log("Amplification Settings")
+                }
+            }
+            
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&Settings...")
+                shortcut: "Ctrl+,"
+                onTriggered: settingsPopup.open()
+            }
+        }
+        
+        // Help Menu
+        Menu {
+            id: helpMenu
+            title: qsTr("&Help")
+            
+            background: Rectangle {
+                implicitWidth: 200
+                color: cardBackground
+                border.color: borderColor
+                border.width: 1
+                radius: 8
+                
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 4
+                    radius: 12
+                    samples: 17
+                    color: shadowColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&Documentation")
+                shortcut: "F1"
+                onTriggered: {
+                    console.log("Open Documentation")
+                }
+            }
+            
+            Action {
+                text: qsTr("&Keyboard Shortcuts")
+                onTriggered: {
+                    console.log("Show Keyboard Shortcuts")
+                }
+            }
+            
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+            
+            Action {
+                text: qsTr("&About Radar Visualization")
+                onTriggered: {
+                    aboutDialog.open()
+                }
+            }
+        }
+        
+        // Custom styling for menu items
+        delegate: MenuBarItem {
+            id: menuBarItem
+            
+            contentItem: Text {
+                text: menuBarItem.text
+                font.pixelSize: 13
+                font.weight: Font.Medium
+                font.family: root.fontFamily
+                opacity: enabled ? 1.0 : 0.3
+                color: menuBarItem.highlighted ? primaryColor : textPrimary
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
+            
+            background: Rectangle {
+                implicitWidth: 60
+                implicitHeight: 36
+                color: menuBarItem.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                radius: 6
+                
+                Behavior on color {
+                    ColorAnimation { duration: 150 }
+                }
+            }
+        }
+    }
+    
     // Dynamic theme colors from ThemeManager
     readonly property color backgroundColor: ThemeManager.backgroundColor
     readonly property color cardBackground: ThemeManager.cardBackground
@@ -396,5 +780,128 @@ ApplicationWindow {
     SettingsPopup {
         id: settingsPopup
         anchors.centerIn: parent
+    }
+    
+    // About Dialog
+    Dialog {
+        id: aboutDialog
+        title: "About Radar Visualization"
+        anchors.centerIn: parent
+        width: 400
+        height: 280
+        modal: true
+        
+        background: Rectangle {
+            color: cardBackground
+            radius: 16
+            border.color: borderColor
+            border.width: 1
+            
+            layer.enabled: true
+            layer.effect: DropShadow {
+                transparentBorder: true
+                horizontalOffset: 0
+                verticalOffset: 8
+                radius: 24
+                samples: 25
+                color: shadowColor
+            }
+        }
+        
+        header: Rectangle {
+            height: 50
+            color: "transparent"
+            
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 20
+                anchors.rightMargin: 20
+                
+                Rectangle {
+                    width: 36
+                    height: 36
+                    radius: 8
+                    color: primaryColor
+                    
+                    Text {
+                        anchors.centerIn: parent
+                        text: "R"
+                        font.pixelSize: 18
+                        font.weight: Font.Bold
+                        color: "#ffffff"
+                    }
+                }
+                
+                Text {
+                    text: "About Radar Visualization"
+                    font.pixelSize: 16
+                    font.weight: Font.DemiBold
+                    font.family: root.fontFamily
+                    color: textPrimary
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 12
+                }
+            }
+        }
+        
+        contentItem: ColumnLayout {
+            spacing: 16
+            
+            Text {
+                text: "Radar Data Visualization"
+                font.pixelSize: 20
+                font.weight: Font.Bold
+                font.family: root.fontFamily
+                color: textPrimary
+                Layout.alignment: Qt.AlignHCenter
+            }
+            
+            Text {
+                text: "Version 1.0.0"
+                font.pixelSize: 14
+                font.family: root.fontFamily
+                color: textSecondary
+                Layout.alignment: Qt.AlignHCenter
+            }
+            
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: borderColor
+                Layout.leftMargin: 20
+                Layout.rightMargin: 20
+            }
+            
+            Text {
+                text: "A modern radar data visualization and\nconfiguration dashboard for real-time\nradar signal processing and display."
+                font.pixelSize: 13
+                font.family: root.fontFamily
+                color: textSecondary
+                horizontalAlignment: Text.AlignHCenter
+                Layout.alignment: Qt.AlignHCenter
+                lineHeight: 1.4
+            }
+            
+            Item { Layout.fillHeight: true }
+        }
+        
+        footer: Rectangle {
+            height: 60
+            color: "transparent"
+            
+            ModernButton {
+                text: "Close"
+                anchors.centerIn: parent
+                width: 100
+                height: 36
+                
+                primaryColor: root.primaryColor
+                primaryHover: root.primaryHover
+                primaryPressed: root.primaryPressed
+                fontFamily: root.fontFamily
+                
+                onClicked: aboutDialog.close()
+            }
+        }
     }
 }
