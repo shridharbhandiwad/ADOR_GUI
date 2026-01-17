@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../qml/Main.qml</file>
+        <file>../qml/style/Theme.qml</file>
+        <file>../qml/style/qmldir</file>
+        <file>../qml/components/DialogCard.qml</file>
+        <file>../qml/components/ModernButton.qml</file>
+        <file>../qml/components/ModernTextField.qml</file>
+        <file>../qml/components/ModernComboBox.qml</file>
+        <file>../qml/components/ModernSwitch.qml</file>
+        <file>../qml/components/StatusIndicator.qml</file>
+        <file>../qml/dialogs/ConfigurationDialog.qml</file>
+        <file>../qml/dialogs/MonitoringDialog.qml</file>
+        <file>../qml/dialogs/ControlDialog.qml</file>
+        <file>../qml/dialogs/DiagnosticsDialog.qml</file>
+    </qresource>
+</RCC>

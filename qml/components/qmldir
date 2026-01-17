@@ -1,0 +1,7 @@
+module ADOR.components
+DialogCard 1.0 DialogCard.qml
+ModernButton 1.0 ModernButton.qml
+ModernTextField 1.0 ModernTextField.qml
+ModernComboBox 1.0 ModernComboBox.qml
+ModernSwitch 1.0 ModernSwitch.qml
+StatusIndicator 1.0 StatusIndicator.qml

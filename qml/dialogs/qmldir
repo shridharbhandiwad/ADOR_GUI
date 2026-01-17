@@ -1,0 +1,5 @@
+module ADOR.dialogs
+ConfigurationDialog 1.0 ConfigurationDialog.qml
+MonitoringDialog 1.0 MonitoringDialog.qml
+ControlDialog 1.0 ControlDialog.qml
+DiagnosticsDialog 1.0 DiagnosticsDialog.qml
