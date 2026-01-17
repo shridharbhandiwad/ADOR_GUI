@@ -111,10 +111,10 @@ typedef struct {
     uint8_t range_mvg_avg_length;  // Moving average length
     uint16_t min_range_cm;         // Minimum range (cm)
     uint16_t max_range_cm;         // Maximum range (cm)
-    uint16_t min_speed_kmh;        // Minimum speed (km/h)
-    uint16_t max_speed_kmh;        // Maximum speed (km/h)
-    uint16_t min_angle_degree;     // Minimum angle (degrees)
-    uint16_t max_angle_degree;     // Maximum angle (degrees)
+    int16_t min_speed_kmh;         // Minimum speed (km/h) - can be negative
+    int16_t max_speed_kmh;         // Maximum speed (km/h) - can be negative
+    int16_t min_angle_degree;      // Minimum angle (degrees) - can be negative
+    int16_t max_angle_degree;      // Maximum angle (degrees) - can be negative
     uint16_t range_threshold;      // Range FFT threshold
     uint16_t speed_threshold;      // Doppler FFT threshold
     uint8_t enable_tracking;       // Enable tracking
