@@ -21,12 +21,14 @@ public:
     void setFoVAngle(float angle);  // NEW: Set Field of View angle
     void setMinAngle(float angle);  // NEW: Set minimum display angle
     void setMaxAngle(float angle);  // NEW: Set maximum display angle
+    void setDarkTheme(bool isDark); // NEW: Set dark/light theme
 
     float getMaxRange() const { return m_maxRange; }
     float getMinRange() const { return m_minRange; }
     float getFoVAngle() const { return m_fovAngle; }  // NEW: Get FoV angle
     float getMinAngle() const { return m_minAngle; }  // NEW: Get min angle
     float getMaxAngle() const { return m_maxAngle; }  // NEW: Get max angle
+    bool isDarkTheme() const { return m_isDarkTheme; } // NEW: Get current theme
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -66,6 +68,25 @@ private:
     // Hover tracking
     int m_hoveredTrackIndex;    // Index of currently hovered track (-1 if none)
     QPointF m_hoverPosition;    // Current mouse position for tooltip placement
+
+    // Theme support
+    bool m_isDarkTheme;         // Current theme state
+    
+    // Theme-aware color helper methods
+    QColor getBackgroundColor() const;
+    QColor getPlotBackgroundColor() const;
+    QColor getBorderColor() const;
+    QColor getGridColor() const;
+    QColor getFovColor() const;
+    QColor getFovBorderColor() const;
+    QColor getTextColor() const;
+    QColor getSecondaryTextColor() const;
+    QColor getMutedTextColor() const;
+    QColor getPrimaryBlueColor() const;
+    QColor getSuccessGreenColor() const;
+    QColor getErrorRedColor() const;
+    QColor getTooltipBgColor() const;
+    QColor getTooltipTextColor() const;
 
     // Constants for radar display
     static const int NUM_RANGE_RINGS = 5;      // Number of concentric range rings

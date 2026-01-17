@@ -156,12 +156,14 @@ public:
     void setMinRange(float minRange);
     void setMinAngle(float minAngle);
     void setMaxAngle(float maxAngle);
+    void setDarkTheme(bool isDark);  // NEW: Set dark/light theme
     
     // Getters
     float getMaxRange() const { return m_maxRange; }
     float getMinRange() const { return m_minRange; }
     float getMinAngle() const { return m_minAngle; }
     float getMaxAngle() const { return m_maxAngle; }
+    bool isDarkTheme() const { return m_isDarkTheme; }  // NEW: Get current theme
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -227,6 +229,23 @@ private:
     // UI layout
     QRect m_plotRect;
     int m_margin;
+    
+    // Theme support
+    bool m_isDarkTheme;         // Current theme state
+    
+    // Theme-aware color helper methods
+    QColor getBackgroundColor() const;
+    QColor getPlotBackgroundColor() const;
+    QColor getBorderColor() const;
+    QColor getGridColor() const;
+    QColor getTextColor() const;
+    QColor getSecondaryTextColor() const;
+    QColor getMutedTextColor() const;
+    QColor getSpectrumLineColor() const;
+    QColor getPrimaryBlueColor() const;
+    QColor getSuccessGreenColor() const;
+    QColor getErrorRedColor() const;
+    QColor getAccentColor() const;
 };
 
 #endif // FFTWIDGET_H

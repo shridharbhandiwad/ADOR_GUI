@@ -238,11 +238,91 @@ PPIWidget::PPIWidget(QWidget *parent)
     , m_minAngle(-60.0f) // Default min angle
     , m_maxAngle(60.0f)  // Default max angle
     , m_hoveredTrackIndex(-1)
+    , m_isDarkTheme(false) // Default to light theme
 {
     setMinimumSize(400, 200);
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
     setMouseTracking(true);  // Enable mouse tracking for hover detection
+}
+
+void PPIWidget::setDarkTheme(bool isDark)
+{
+    if (m_isDarkTheme != isDark) {
+        m_isDarkTheme = isDark;
+        update();  // Trigger repaint with new theme colors
+    }
+}
+
+// Theme-aware color helper methods
+QColor PPIWidget::getBackgroundColor() const
+{
+    return m_isDarkTheme ? QColor(30, 41, 59) : QColor(248, 250, 252);  // #1e293b / #f8fafc
+}
+
+QColor PPIWidget::getPlotBackgroundColor() const
+{
+    return m_isDarkTheme ? QColor(15, 23, 42) : QColor(255, 255, 255);  // #0f172a / white
+}
+
+QColor PPIWidget::getBorderColor() const
+{
+    return m_isDarkTheme ? QColor(51, 65, 85) : QColor(226, 232, 240);  // #334155 / #e2e8f0
+}
+
+QColor PPIWidget::getGridColor() const
+{
+    return m_isDarkTheme ? QColor(71, 85, 105, 180) : QColor(203, 213, 225, 180);  // #475569 / #cbd5e1
+}
+
+QColor PPIWidget::getFovColor() const
+{
+    return m_isDarkTheme ? QColor(59, 130, 246, 60) : QColor(59, 130, 246, 40);  // #3b82f6 with transparency
+}
+
+QColor PPIWidget::getFovBorderColor() const
+{
+    return m_isDarkTheme ? QColor(96, 165, 250) : QColor(59, 130, 246);  // #60a5fa / #3b82f6
+}
+
+QColor PPIWidget::getTextColor() const
+{
+    return m_isDarkTheme ? QColor(226, 232, 240) : QColor(30, 41, 59);  // #e2e8f0 / #1e293b
+}
+
+QColor PPIWidget::getSecondaryTextColor() const
+{
+    return m_isDarkTheme ? QColor(148, 163, 184) : QColor(100, 116, 139);  // #94a3b8 / #64748b
+}
+
+QColor PPIWidget::getMutedTextColor() const
+{
+    return m_isDarkTheme ? QColor(100, 116, 139) : QColor(148, 163, 184);  // #64748b / #94a3b8
+}
+
+QColor PPIWidget::getPrimaryBlueColor() const
+{
+    return m_isDarkTheme ? QColor(96, 165, 250) : QColor(59, 130, 246);  // #60a5fa / #3b82f6
+}
+
+QColor PPIWidget::getSuccessGreenColor() const
+{
+    return m_isDarkTheme ? QColor(52, 211, 153) : QColor(16, 185, 129);  // #34d399 / #10b981
+}
+
+QColor PPIWidget::getErrorRedColor() const
+{
+    return m_isDarkTheme ? QColor(248, 113, 113) : QColor(239, 68, 68);  // #f87171 / #ef4444
+}
+
+QColor PPIWidget::getTooltipBgColor() const
+{
+    return m_isDarkTheme ? QColor(15, 23, 42, 220) : QColor(30, 41, 59, 200);  // #0f172a / #1e293b with transparency
+}
+
+QColor PPIWidget::getTooltipTextColor() const
+{
+    return QColor(248, 250, 252);  // #f8fafc - Light text for both themes (tooltip bg is always dark)
 }
 
 void PPIWidget::updateTargets(const TargetTrackData& trackData)
@@ -466,14 +546,16 @@ void PPIWidget::drawHoverTooltip(QPainter& painter)
     
     QRectF tooltipRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
     
-    // Draw semi-transparent background (transparent mode)
-    QColor bgColor(30, 41, 59, 200);  // #1e293b with transparency
+    // Draw semi-transparent background (theme-aware)
+    QColor bgColor = getTooltipBgColor();
     painter.setBrush(QBrush(bgColor));
-    painter.setPen(QPen(QColor(59, 130, 246, 180), 1));  // Blue border with transparency
+    QColor borderColor = getPrimaryBlueColor();
+    borderColor.setAlpha(180);
+    painter.setPen(QPen(borderColor, 1));
     painter.drawRoundedRect(tooltipRect, 6, 6);
     
     // Draw text
-    painter.setPen(QPen(QColor(248, 250, 252)));  // #f8fafc - Light text
+    painter.setPen(QPen(getTooltipTextColor()));
     
     float textY = tooltipY + padding + fm.ascent();
     for (const QString& line : lines) {
@@ -507,16 +589,21 @@ void PPIWidget::drawHoverTooltip(QPainter& painter)
 
 void PPIWidget::drawBackground(QPainter& painter)
 {
-    // Fill background with modern light theme
-    painter.fillRect(rect(), QColor(248, 250, 252)); // #f8fafc - Light gray background
+    // Fill background with theme-aware color
+    painter.fillRect(rect(), getBackgroundColor());
 
-    // Draw semi-circular plot area with subtle gradient
+    // Draw semi-circular plot area with subtle gradient (theme-aware)
     QRadialGradient gradient(m_center, m_plotRadius);
-    gradient.setColorAt(0, QColor(255, 255, 255));    // White center
-    gradient.setColorAt(1, QColor(241, 245, 249));    // #f1f5f9 - Slightly darker edge
+    if (m_isDarkTheme) {
+        gradient.setColorAt(0, QColor(30, 41, 59));    // #1e293b - Dark center
+        gradient.setColorAt(1, QColor(15, 23, 42));    // #0f172a - Darker edge
+    } else {
+        gradient.setColorAt(0, QColor(255, 255, 255)); // White center
+        gradient.setColorAt(1, QColor(241, 245, 249)); // #f1f5f9 - Slightly darker edge
+    }
     
     painter.setBrush(gradient);
-    painter.setPen(QPen(QColor(226, 232, 240), 2)); // #e2e8f0 - Border color
+    painter.setPen(QPen(getBorderColor(), 2));
 
     QRectF ellipseRect(m_center.x() - m_plotRadius, m_center.y() - m_plotRadius,
                        2 * m_plotRadius, 2 * m_plotRadius);
@@ -528,9 +615,8 @@ void PPIWidget::drawFoVHighlight(QPainter& painter)
     // Create a highlighted sector for the Field of View (using min/max angles)
     painter.save();
 
-    // Set up semi-transparent blue fill for active FoV area (light theme)
-    QColor fovColor(59, 130, 246, 40); // #3b82f6 - Primary blue with transparency
-    painter.setBrush(QBrush(fovColor));
+    // Set up semi-transparent blue fill for active FoV area (theme-aware)
+    painter.setBrush(QBrush(getFovColor()));
     painter.setPen(Qt::NoPen);
 
     // Calculate the angular span in Qt's coordinate system
@@ -562,8 +648,8 @@ void PPIWidget::drawFoVBoundaries(QPainter& painter)
     // Draw FoV boundary lines using configured min/max angles
     painter.save();
 
-    // Use primary blue for FoV boundaries (light theme)
-    painter.setPen(QPen(QColor(59, 130, 246), 2, Qt::SolidLine)); // #3b82f6
+    // Use theme-aware FoV boundary color
+    painter.setPen(QPen(getFovBorderColor(), 2, Qt::SolidLine));
 
     // Draw left boundary (min angle)
     float leftAngle = m_minAngle;
@@ -595,7 +681,7 @@ void PPIWidget::drawFoVBoundaries(QPainter& painter)
 
 void PPIWidget::drawRangeRings(QPainter& painter)
 {
-    painter.setPen(QPen(QColor(203, 213, 225, 180), 1)); // #cbd5e1 - Light theme grid color
+    painter.setPen(QPen(getGridColor(), 1)); // Theme-aware grid color
 
     for (int i = 1; i <= NUM_RANGE_RINGS; ++i) {
         float radius = (float(i) / NUM_RANGE_RINGS) * m_plotRadius;
@@ -607,8 +693,6 @@ void PPIWidget::drawRangeRings(QPainter& painter)
 
 void PPIWidget::drawAzimuthLines(QPainter& painter)
 {
-    painter.setPen(QPen(QColor(203, 213, 225, 180), 1)); // #cbd5e1 - Light theme grid color
-
     for (int i = 0; i < NUM_AZIMUTH_LINES; ++i) {
         float azimuth = MIN_AZIMUTH + (float(i) / (NUM_AZIMUTH_LINES - 1)) * (MAX_AZIMUTH - MIN_AZIMUTH);
         float radians = qDegreesToRadians(90.0f - azimuth);
@@ -620,11 +704,15 @@ void PPIWidget::drawAzimuthLines(QPainter& painter)
 
         // Draw different styles for lines within and outside FoV (using configured min/max angles)
         if (azimuth >= m_minAngle && azimuth <= m_maxAngle) {
-            // Lines within FoV - primary blue
-            painter.setPen(QPen(QColor(59, 130, 246, 120), 1)); // #3b82f6
+            // Lines within FoV - theme-aware primary color
+            QColor fovLineColor = getPrimaryBlueColor();
+            fovLineColor.setAlpha(120);
+            painter.setPen(QPen(fovLineColor, 1));
         } else {
-            // Lines outside FoV - light gray
-            painter.setPen(QPen(QColor(203, 213, 225, 100), 1)); // #cbd5e1
+            // Lines outside FoV - theme-aware grid color (more muted)
+            QColor outsideFovColor = getGridColor();
+            outsideFovColor.setAlpha(100);
+            painter.setPen(QPen(outsideFovColor, 1));
         }
 
         painter.drawLine(m_center, endPoint);
@@ -666,8 +754,9 @@ void PPIWidget::drawTargets(QPainter& painter)
         float targetSize = inFoV ? 6.0f : 4.0f; // Larger targets in FoV
         painter.drawEllipse(targetPos, targetSize, targetSize);
 
-        // Draw target ID
-        painter.setPen(QPen(Qt::white, 1));
+        // Draw target ID (theme-aware text color)
+        QColor idTextColor = m_isDarkTheme ? QColor(226, 232, 240) : Qt::white;
+        painter.setPen(QPen(idTextColor, 1));
         painter.setFont(QFont("Arial", inFoV ? 9 : 7)); // Larger text in FoV
         QPointF textPos = targetPos + QPointF(0, -targetSize - 5);
         painter.drawText(textPos, QString::number(target.target_id));
@@ -676,7 +765,7 @@ void PPIWidget::drawTargets(QPainter& painter)
 
 void PPIWidget::drawLabels(QPainter& painter)
 {
-    painter.setPen(QPen(QColor(100, 116, 139), 1)); // #64748b - Light theme text color
+    painter.setPen(QPen(getSecondaryTextColor(), 1)); // Theme-aware secondary text
     painter.setFont(QFont("Segoe UI", 10));
 
     // Range labels
@@ -692,7 +781,7 @@ void PPIWidget::drawLabels(QPainter& painter)
     // Azimuth labels
     QFont azFont("Segoe UI", 11, QFont::DemiBold);
     painter.setFont(azFont);
-    painter.setPen(QPen(QColor(100, 116, 139), 1)); // #64748b
+    painter.setPen(QPen(getSecondaryTextColor(), 1));
 
     for (int i = 0; i < NUM_AZIMUTH_LINES; i += 2) {
         float azimuth = MIN_AZIMUTH + (float(i) / (NUM_AZIMUTH_LINES - 1)) * (MAX_AZIMUTH - MIN_AZIMUTH);
@@ -710,9 +799,9 @@ void PPIWidget::drawLabels(QPainter& painter)
 
         // Highlight FoV boundary labels (using configured min/max angles)
         if (std::abs(azimuth - m_minAngle) < 1.0f || std::abs(azimuth - m_maxAngle) < 1.0f) {
-            painter.setPen(QPen(QColor(59, 130, 246), 1)); // #3b82f6 - Primary blue for FoV boundaries
+            painter.setPen(QPen(getPrimaryBlueColor(), 1)); // Theme-aware primary blue for FoV boundaries
         } else {
-            painter.setPen(QPen(QColor(100, 116, 139), 1)); // #64748b - Normal gray
+            painter.setPen(QPen(getSecondaryTextColor(), 1)); // Theme-aware secondary text
         }
 
         painter.drawText(labelPos, azText);
@@ -720,40 +809,38 @@ void PPIWidget::drawLabels(QPainter& painter)
 
     // Title and FoV indicator
     painter.setFont(QFont("Segoe UI", 14, QFont::Bold));
-    painter.setPen(QPen(QColor(30, 41, 59), 1)); // #1e293b - Dark text for title
+    painter.setPen(QPen(getTextColor(), 1)); // Theme-aware title text
     painter.drawText(QPointF(10, 25), "PPI Display - Target Tracks");
 
     // FoV information (show actual min/max angles)
     painter.setFont(QFont("Segoe UI", 10, QFont::Medium));
-    painter.setPen(QPen(QColor(59, 130, 246), 1)); // #3b82f6 - Primary blue for FoV info
+    painter.setPen(QPen(getPrimaryBlueColor(), 1)); // Theme-aware primary blue for FoV info
     QString fovText = QString("FoV: %1° to %2°").arg(m_minAngle, 0, 'f', 0).arg(m_maxAngle, 0, 'f', 0);
     painter.drawText(QPointF(10, 45), fovText);
 
     // Range information
-    painter.setPen(QPen(QColor(16, 185, 129), 1)); // #10b981 - Success green
+    painter.setPen(QPen(getSuccessGreenColor(), 1)); // Theme-aware success green
     QString rangeText = QString("Range: %1m to %2m").arg(m_minRange, 0, 'f', 1).arg(m_maxRange, 0, 'f', 1);
     painter.drawText(QPointF(10, 65), rangeText);
 
     // Legend
     painter.setFont(QFont("Segoe UI", 9));
-    painter.setPen(QPen(QColor(148, 163, 184), 1)); // #94a3b8 - Muted text
+    painter.setPen(QPen(getMutedTextColor(), 1)); // Theme-aware muted text
     painter.drawText(QPointF(10, height() - 30), "Blue area: Active Field of View");
     painter.drawText(QPointF(10, height() - 15), "Bright targets: Within FoV, Dim targets: Outside FoV");
 }
 
 QColor PPIWidget::getTargetColor(float radialSpeed) const
 {
-    // Modern color coding based on radial speed (light theme friendly)
+    // Modern color coding based on radial speed (theme-aware)
     if (std::abs(radialSpeed) < 1.0f) {
-        return QColor(16, 185, 129); // #10b981 - Success green for stationary
+        return getSuccessGreenColor(); // Green for stationary
     } else if (radialSpeed > 0) {
         // Approaching - warm red/orange
-        int intensity = std::min(255, static_cast<int>(150 + std::abs(radialSpeed) * 10));
-        return QColor(239, 68, 68); // #ef4444 - Error red for approaching
+        return getErrorRedColor(); // Red for approaching
     } else {
         // Receding - cool blue
-        int intensity = std::min(255, static_cast<int>(150 + std::abs(radialSpeed) * 10));
-        return QColor(59, 130, 246); // #3b82f6 - Primary blue for receding
+        return getPrimaryBlueColor(); // Blue for receding
     }
 }
 

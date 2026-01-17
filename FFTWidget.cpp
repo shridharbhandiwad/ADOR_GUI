@@ -23,10 +23,80 @@ FFTWidget::FFTWidget(QWidget *parent)
     , m_minAngle(-60.0f)         // Default min angle
     , m_maxAngle(60.0f)          // Default max angle
     , m_margin(50)
+    , m_isDarkTheme(false)       // Default to light theme
 {
     setMinimumSize(400, 300);
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
+}
+
+void FFTWidget::setDarkTheme(bool isDark)
+{
+    if (m_isDarkTheme != isDark) {
+        m_isDarkTheme = isDark;
+        update();  // Trigger repaint with new theme colors
+    }
+}
+
+// Theme-aware color helper methods
+QColor FFTWidget::getBackgroundColor() const
+{
+    return m_isDarkTheme ? QColor(30, 41, 59) : QColor(248, 250, 252);  // #1e293b / #f8fafc
+}
+
+QColor FFTWidget::getPlotBackgroundColor() const
+{
+    return m_isDarkTheme ? QColor(15, 23, 42) : QColor(255, 255, 255);  // #0f172a / white
+}
+
+QColor FFTWidget::getBorderColor() const
+{
+    return m_isDarkTheme ? QColor(51, 65, 85) : QColor(226, 232, 240);  // #334155 / #e2e8f0
+}
+
+QColor FFTWidget::getGridColor() const
+{
+    return m_isDarkTheme ? QColor(71, 85, 105, 150) : QColor(226, 232, 240, 150);  // #475569 / #e2e8f0 with transparency
+}
+
+QColor FFTWidget::getTextColor() const
+{
+    return m_isDarkTheme ? QColor(226, 232, 240) : QColor(30, 41, 59);  // #e2e8f0 / #1e293b
+}
+
+QColor FFTWidget::getSecondaryTextColor() const
+{
+    return m_isDarkTheme ? QColor(148, 163, 184) : QColor(100, 116, 139);  // #94a3b8 / #64748b
+}
+
+QColor FFTWidget::getMutedTextColor() const
+{
+    return m_isDarkTheme ? QColor(100, 116, 139) : QColor(148, 163, 184);  // #64748b / #94a3b8
+}
+
+QColor FFTWidget::getSpectrumLineColor() const
+{
+    return m_isDarkTheme ? QColor(96, 165, 250, 255) : QColor(59, 130, 246, 255);  // #60a5fa / #3b82f6
+}
+
+QColor FFTWidget::getPrimaryBlueColor() const
+{
+    return m_isDarkTheme ? QColor(96, 165, 250) : QColor(59, 130, 246);  // #60a5fa / #3b82f6
+}
+
+QColor FFTWidget::getSuccessGreenColor() const
+{
+    return m_isDarkTheme ? QColor(52, 211, 153) : QColor(16, 185, 129);  // #34d399 / #10b981
+}
+
+QColor FFTWidget::getErrorRedColor() const
+{
+    return m_isDarkTheme ? QColor(248, 113, 113) : QColor(239, 68, 68);  // #f87171 / #ef4444
+}
+
+QColor FFTWidget::getAccentColor() const
+{
+    return m_isDarkTheme ? QColor(251, 191, 36) : QColor(245, 158, 11);  // #fbbf24 / #f59e0b
 }
 
 void FFTWidget::updateData(const RawADCFrameTest& adcFrame)
@@ -302,14 +372,10 @@ void FFTWidget::paintEvent(QPaintEvent *event)
 
 void FFTWidget::drawBackground(QPainter& painter)
 {
-    // Modern light theme background
-    QColor bgColor(248, 250, 252);        // #f8fafc - Light gray background
-    QColor plotBgColor(255, 255, 255);    // White plot area
-    QColor borderColor(226, 232, 240);    // #e2e8f0 - Light border
-
-    painter.fillRect(rect(), bgColor);
-    painter.fillRect(m_plotRect, plotBgColor);
-    painter.setPen(QPen(borderColor, 1));
+    // Theme-aware background colors
+    painter.fillRect(rect(), getBackgroundColor());
+    painter.fillRect(m_plotRect, getPlotBackgroundColor());
+    painter.setPen(QPen(getBorderColor(), 1));
     painter.drawRect(m_plotRect);
 }
 
@@ -318,9 +384,8 @@ void FFTWidget::drawGrid(QPainter& painter)
     const int GRID_LINES_X = 10;
     const int GRID_LINES_Y = 8;
 
-    // Modern light theme grid (subtle gray)
-    QColor gridColor(226, 232, 240, 150); // #e2e8f0 with transparency
-    painter.setPen(QPen(gridColor, 1));
+    // Theme-aware grid color
+    painter.setPen(QPen(getGridColor(), 1));
 
     // Vertical grid lines (range)
     for (int i = 0; i <= GRID_LINES_X; ++i) {
@@ -369,9 +434,8 @@ void FFTWidget::drawSpectrum(QPainter& painter)
 
     if (spectrumPoints.isEmpty()) return;
 
-    // Draw only the spectrum line (no fill) - Modern primary blue
-    QColor lineColor(59, 130, 246, 255);     // #3b82f6 - Primary blue
-    painter.setPen(QPen(lineColor, 2));
+    // Draw only the spectrum line (no fill) - Theme-aware color
+    painter.setPen(QPen(getSpectrumLineColor(), 2));
     painter.setBrush(Qt::NoBrush);  // No fill
 
     // Draw the spectrum line connecting all points
@@ -417,9 +481,10 @@ void FFTWidget::drawPeakMarkers(QPainter& painter, const QVector<QPointF>& spect
         }
     }
 
-    // Draw peak markers (accent color dots)
-    painter.setPen(QPen(QColor(245, 158, 11), 2));  // #f59e0b - Warning/accent color
-    painter.setBrush(QBrush(QColor(245, 158, 11)));
+    // Draw peak markers (theme-aware accent color dots)
+    QColor accentColor = getAccentColor();
+    painter.setPen(QPen(accentColor, 2));
+    painter.setBrush(QBrush(accentColor));
 
     for (const QPointF& peak : peaks) {
         painter.drawEllipse(peak, 6, 6);
@@ -439,14 +504,14 @@ void FFTWidget::drawTargetIndicators(QPainter& painter)
         // Filter by range (using configured min/max range)
         if (target.radius > m_maxRange || target.radius < m_minRange) continue;
 
-        // Modern light theme target colors
+        // Theme-aware target colors
         QColor targetColor;
         if (target.radial_speed > 1.0f) {
-            targetColor = QColor(239, 68, 68);   // #ef4444 - Red approaching
+            targetColor = getErrorRedColor();    // Red for approaching
         } else if (target.radial_speed < -1.0f) {
-            targetColor = QColor(59, 130, 246);  // #3b82f6 - Blue receding
+            targetColor = getPrimaryBlueColor(); // Blue for receding
         } else {
-            targetColor = QColor(16, 185, 129);  // #10b981 - Green stationary
+            targetColor = getSuccessGreenColor(); // Green for stationary
         }
 
         float rangeSpan = m_maxRange - m_minRange;
@@ -475,11 +540,8 @@ void FFTWidget::drawTargetIndicators(QPainter& painter)
 
 void FFTWidget::drawLabels(QPainter& painter)
 {
-    // Modern light theme text colors
-    QColor textColor(30, 41, 59);          // #1e293b - Primary text
-    QColor gridTextColor(100, 116, 139);   // #64748b - Secondary text
-
-    painter.setPen(QPen(gridTextColor, 1));
+    // Theme-aware text colors
+    painter.setPen(QPen(getSecondaryTextColor(), 1));
     painter.setFont(QFont("Segoe UI", 9));
 
     // INFINEON MAGNITUDE RANGE
@@ -511,7 +573,7 @@ void FFTWidget::drawLabels(QPainter& painter)
     }
 
     // Axis labels
-    painter.setPen(QPen(textColor, 1));
+    painter.setPen(QPen(getTextColor(), 1));
     painter.setFont(QFont("Segoe UI", 11, QFont::DemiBold));
 
     QFontMetrics fm(painter.font());
@@ -532,19 +594,19 @@ void FFTWidget::drawLabels(QPainter& painter)
     painter.drawText(-yLabelRect.width() / 2, 0, yLabel);
     painter.restore();
 
-    // Title - Modern style
+    // Title - Theme-aware style
     painter.setFont(QFont("Segoe UI", 14, QFont::Bold));
-    painter.setPen(QPen(QColor(30, 41, 59), 1)); // #1e293b
+    painter.setPen(QPen(getTextColor(), 1));
     painter.drawText(QPointF(m_plotRect.left(), 20), "FFT Spectrum");
 
     // Antenna info badge
-    painter.setPen(QPen(QColor(59, 130, 246), 1)); // #3b82f6
+    painter.setPen(QPen(getPrimaryBlueColor(), 1));
     painter.setFont(QFont("Segoe UI", 9, QFont::Medium));
     QString antennaInfo = "● Ant. Tx1 Rx1";
     painter.drawText(m_plotRect.right() - 90, 20, antennaInfo);
 
     // Technical info
-    painter.setPen(QPen(QColor(148, 163, 184), 1)); // #94a3b8 - Muted text
+    painter.setPen(QPen(getMutedTextColor(), 1));
     painter.setFont(QFont("Segoe UI", 9));
     QString frameInfo = QString("Samples: %1  |  BW: %2 MHz  |  Sweep: %3 ms")
                        .arg(m_currentFrame.complex_data.size())
@@ -553,7 +615,7 @@ void FFTWidget::drawLabels(QPainter& painter)
     painter.drawText(QPointF(m_plotRect.left(), height() - 10), frameInfo);
     
     // Display current filter settings
-    painter.setPen(QPen(QColor(59, 130, 246), 1)); // #3b82f6 - Primary blue
+    painter.setPen(QPen(getPrimaryBlueColor(), 1));
     QString filterInfo = QString("Range: %1-%2m  |  Angle: %3° to %4°")
                         .arg(m_minRange, 0, 'f', 1)
                         .arg(m_maxRange, 0, 'f', 1)
