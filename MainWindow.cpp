@@ -913,14 +913,35 @@ void MainWindow::onApplySettings()
     msg.settings.enable_mti_filter    = m_dsp.enable_mti_filter;
     msg.settings.mti_filter_length    = m_dsp.mti_filter_length;
 
+    // Apply settings to both PPI and FFT displays (convert cm to meters for range)
+    float minRangeMeters = m_dsp.min_range_cm / 100.0f;
+    float maxRangeMeters = m_dsp.max_range_cm / 100.0f;
+    
+    // Apply range settings
+    m_ppiWidget->setMinRange(minRangeMeters);
+    m_ppiWidget->setMaxRange(maxRangeMeters);
+    m_fftWidget->setMinRange(minRangeMeters);
+    m_fftWidget->setMaxRange(maxRangeMeters);
+    
+    // Apply angle settings
+    m_ppiWidget->setMinAngle(static_cast<float>(m_dsp.min_angle_degree));
+    m_ppiWidget->setMaxAngle(static_cast<float>(m_dsp.max_angle_degree));
+    m_fftWidget->setMinAngle(static_cast<float>(m_dsp.min_angle_degree));
+    m_fftWidget->setMaxAngle(static_cast<float>(m_dsp.max_angle_degree));
+
     QByteArray datagram(reinterpret_cast<const char*>(&msg), sizeof(dsp_message_t));
     QUdpSocket udp;
     qint64 bytesSent = udp.writeDatagram(datagram, QHostAddress("127.0.0.1"), 4000);
 
     if (bytesSent == sizeof(dsp_message_t)) {
-        m_statusLabel->setText("DSP settings sent successfully");
-        qDebug() << "DSP settings sent successfully "<<bytesSent<<" bytes";
-        qDebug() << "MaxRange "<<msg.settings.max_range_cm ;
+        m_statusLabel->setText(QString("DSP settings applied - Range: %1-%2m, Angle: %3° to %4°")
+                              .arg(minRangeMeters, 0, 'f', 1)
+                              .arg(maxRangeMeters, 0, 'f', 1)
+                              .arg(m_dsp.min_angle_degree)
+                              .arg(m_dsp.max_angle_degree));
+        qDebug() << "DSP settings sent successfully" << bytesSent << "bytes";
+        qDebug() << "Range:" << minRangeMeters << "-" << maxRangeMeters << "m";
+        qDebug() << "Angle:" << m_dsp.min_angle_degree << "-" << m_dsp.max_angle_degree << "deg";
     } else {
         m_statusLabel->setText("ERROR: DSP UDP transmission failed");
         qDebug() << "DSP settings transmission failed";
@@ -942,6 +963,24 @@ void MainWindow::onResetSettings()
     m_medianFilterEdit->setText("1");
     m_mtiLengthEdit->setText("2");
     m_speedDist = std::uniform_real_distribution<float>(-50.0f, 50.0f);
+    
+    // Update internal DSP settings
+    m_dsp.min_range_cm = 0;
+    m_dsp.max_range_cm = 5000;
+    m_dsp.min_angle_degree = -60;
+    m_dsp.max_angle_degree = 60;
+    
+    // Apply to both displays (convert cm to meters)
+    m_ppiWidget->setMinRange(0.0f);
+    m_ppiWidget->setMaxRange(50.0f);  // 5000cm = 50m
+    m_ppiWidget->setMinAngle(-60.0f);
+    m_ppiWidget->setMaxAngle(60.0f);
+    
+    m_fftWidget->setMinRange(0.0f);
+    m_fftWidget->setMaxRange(50.0f);
+    m_fftWidget->setMinAngle(-60.0f);
+    m_fftWidget->setMaxAngle(60.0f);
+    
     QMessageBox::information(this, "Settings Reset", "All settings reset to default.");
 }
 
@@ -1007,7 +1046,13 @@ void MainWindow::onMinRangeEdited()
 {
     bool ok;
     int v = m_minRangeEdit->text().toInt(&ok);
-    if (ok) m_dsp.min_range_cm = std::max(0, v);
+    if (ok) {
+        m_dsp.min_range_cm = std::max(0, v);
+        // Apply to FFT widget (convert cm to meters)
+        float minRangeMeters = m_dsp.min_range_cm / 100.0f;
+        m_fftWidget->setMinRange(minRangeMeters);
+        m_ppiWidget->setMinRange(minRangeMeters);
+    }
 }
 
 void MainWindow::onMaxRangeEdited()
@@ -1015,8 +1060,11 @@ void MainWindow::onMaxRangeEdited()
     bool ok;
     int v = m_maxRangeEdit->text().toInt(&ok);
     if (!ok) return;
-    m_dsp.max_range_cm = 10;// std::max(v, static_cast<int>(m_dsp.min_range_cm) + 1);
-    m_ppiWidget->setMaxRange(m_dsp.max_range_cm);
+    m_dsp.max_range_cm = std::max(v, static_cast<int>(m_dsp.min_range_cm) + 1);
+    // Apply to both PPI and FFT widgets (convert cm to meters)
+    float maxRangeMeters = m_dsp.max_range_cm / 100.0f;
+    m_ppiWidget->setMaxRange(maxRangeMeters);
+    m_fftWidget->setMaxRange(maxRangeMeters);
 }
 
 void MainWindow::onMinSpeedEdited()
@@ -1038,14 +1086,24 @@ void MainWindow::onMinAngleEdited()
 {
     bool ok;
     int v = m_minAngleEdit->text().toInt(&ok);
-    if (ok) m_dsp.min_angle_degree = v;
+    if (ok) {
+        m_dsp.min_angle_degree = v;
+        // Apply to both PPI and FFT widgets
+        m_ppiWidget->setMinAngle(static_cast<float>(v));
+        m_fftWidget->setMinAngle(static_cast<float>(v));
+    }
 }
 
 void MainWindow::onMaxAngleEdited()
 {
     bool ok;
     int v = m_maxAngleEdit->text().toInt(&ok);
-    if (ok) m_dsp.max_angle_degree = v;
+    if (ok) {
+        m_dsp.max_angle_degree = v;
+        // Apply to both PPI and FFT widgets
+        m_ppiWidget->setMaxAngle(static_cast<float>(v));
+        m_fftWidget->setMaxAngle(static_cast<float>(v));
+    }
 }
 
 void MainWindow::onRangeThresholdEdited()
@@ -1129,6 +1187,16 @@ void MainWindow::loadSettings()
     
     if (!QFile::exists(settingsPath)) {
         qDebug() << "No saved settings found, using defaults";
+        // Apply default settings to displays
+        m_ppiWidget->setMinRange(0.0f);
+        m_ppiWidget->setMaxRange(50.0f);
+        m_ppiWidget->setMinAngle(-60.0f);
+        m_ppiWidget->setMaxAngle(60.0f);
+        
+        m_fftWidget->setMinRange(0.0f);
+        m_fftWidget->setMaxRange(50.0f);
+        m_fftWidget->setMinAngle(-60.0f);
+        m_fftWidget->setMaxAngle(60.0f);
         return;
     }
     
@@ -1175,7 +1243,23 @@ void MainWindow::loadSettings()
     onMedianFilterEdited();
     onMtiLengthEdited();
     
+    // Apply loaded settings to both displays (range in meters, angles in degrees)
+    float minRangeMeters = m_dsp.min_range_cm / 100.0f;
+    float maxRangeMeters = m_dsp.max_range_cm / 100.0f;
+    
+    m_ppiWidget->setMinRange(minRangeMeters);
+    m_ppiWidget->setMaxRange(maxRangeMeters);
+    m_ppiWidget->setMinAngle(static_cast<float>(m_dsp.min_angle_degree));
+    m_ppiWidget->setMaxAngle(static_cast<float>(m_dsp.max_angle_degree));
+    
+    m_fftWidget->setMinRange(minRangeMeters);
+    m_fftWidget->setMaxRange(maxRangeMeters);
+    m_fftWidget->setMinAngle(static_cast<float>(m_dsp.min_angle_degree));
+    m_fftWidget->setMaxAngle(static_cast<float>(m_dsp.max_angle_degree));
+    
     qDebug() << "Settings loaded from:" << settingsPath;
+    qDebug() << "Applied to displays - Range:" << minRangeMeters << "-" << maxRangeMeters << "m";
+    qDebug() << "Angle:" << m_dsp.min_angle_degree << "-" << m_dsp.max_angle_degree << "deg";
 }
 
 void MainWindow::onDefaultSettings()
@@ -1209,6 +1293,17 @@ void MainWindow::onDefaultSettings()
     m_dsp.mti_filter_length = 2;
     
     m_speedDist = std::uniform_real_distribution<float>(-50.0f, 50.0f);
+    
+    // Apply to both PPI and FFT displays (convert cm to meters)
+    m_ppiWidget->setMinRange(0.0f);
+    m_ppiWidget->setMaxRange(50.0f);  // 5000cm = 50m
+    m_ppiWidget->setMinAngle(-60.0f);
+    m_ppiWidget->setMaxAngle(60.0f);
+    
+    m_fftWidget->setMinRange(0.0f);
+    m_fftWidget->setMaxRange(50.0f);
+    m_fftWidget->setMinAngle(-60.0f);
+    m_fftWidget->setMaxAngle(60.0f);
     
     m_statusLabel->setText("Status: Default settings restored");
     QMessageBox::information(this, "Default Settings", "All settings restored to factory defaults.");

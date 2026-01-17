@@ -154,6 +154,14 @@ public:
     void setRadarParameters(float sampleRate, float sweepTime, float bandwidth, float centerFreq);
     void setMaxRange(float maxRange);
     void setMinRange(float minRange);
+    void setMinAngle(float minAngle);
+    void setMaxAngle(float maxAngle);
+    
+    // Getters
+    float getMaxRange() const { return m_maxRange; }
+    float getMinRange() const { return m_minRange; }
+    float getMinAngle() const { return m_minAngle; }
+    float getMaxAngle() const { return m_maxAngle; }
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -213,6 +221,8 @@ private:
     float m_centerFreq;       // RF center frequency (24.125GHz)
     float m_maxRange;
     float m_minRange;
+    float m_minAngle;         // Minimum angle for target filtering (degrees)
+    float m_maxAngle;         // Maximum angle for target filtering (degrees)
 
     // UI layout
     QRect m_plotRect;
