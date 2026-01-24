@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <math.h>
+#include <QtCore/QDateTime>
 // Rx Data Format enumeration (placeholder)
 //#pragma pack(push, 1)
 enum class Rx_Data_Format_t {
@@ -22,6 +23,10 @@ struct TargetTrack {
     float radial_speed;   // m/s (positive = approaching, negative = receding)
     float azimuth_speed;  // deg/s
     float elevation_speed; // deg/s
+    qint64 lastUpdateTime; // timestamp of last update (milliseconds since epoch)
+    
+    TargetTrack() : target_id(0), level(0), radius(0), azimuth(0), elevation(0),
+                    radial_speed(0), azimuth_speed(0), elevation_speed(0), lastUpdateTime(0) {}
 };
 
 // Target Track Data structure

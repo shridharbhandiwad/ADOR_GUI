@@ -32,6 +32,7 @@ private slots:
     void updateDisplay();
     void readPendingDatagrams();
     void onSimulateDataToggled();
+    void cleanupStaleTracks();  // Remove tracks not updated within timeout
 
     // Radar parameter slots
     void onRangeChanged(int range);
@@ -130,7 +131,10 @@ private:
 
     // Timer
     QTimer* m_updateTimer;
+    QTimer* m_trackCleanupTimer;  // Timer for removing stale tracks
     static constexpr int UPDATE_INTERVAL_MS = 50;
+    static constexpr int TRACK_CLEANUP_INTERVAL_MS = 2000;  // 2 second cleanup interval
+    static constexpr qint64 TRACK_TIMEOUT_MS = 2000;  // Track timeout threshold (2 seconds)
 
     // Data
     TargetTrackData m_currentTargets;

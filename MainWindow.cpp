@@ -43,6 +43,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_trackTable(nullptr)
     , m_udpSocket(nullptr)
     , m_updateTimer(nullptr)
+    , m_trackCleanupTimer(nullptr)
     , m_saveSettingsButton(nullptr)
     , m_defaultSettingsButton(nullptr)
     , m_clearTracksButton(nullptr)
@@ -84,6 +85,9 @@ MainWindow::~MainWindow()
 {
     if (m_updateTimer) {
         m_updateTimer->stop();
+    }
+    if (m_trackCleanupTimer) {
+        m_trackCleanupTimer->stop();
     }
 }
 
@@ -541,6 +545,11 @@ void MainWindow::setupTimer()
     m_updateTimer = new QTimer(this);
     connect(m_updateTimer, &QTimer::timeout, this, &MainWindow::updateDisplay);
     m_updateTimer->start(UPDATE_INTERVAL_MS);
+    
+    // Setup track cleanup timer (2 second interval)
+    m_trackCleanupTimer = new QTimer(this);
+    connect(m_trackCleanupTimer, &QTimer::timeout, this, &MainWindow::cleanupStaleTracks);
+    m_trackCleanupTimer->start(TRACK_CLEANUP_INTERVAL_MS);
 }
 
 void MainWindow::updateDisplay()
@@ -735,6 +744,8 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
 
     // Find if this target already exists in our list
     bool found = false;
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    
     for (auto& target : m_currentTargets.targets) {
         if (target.target_id == packet->target_id) {
             // Update existing target
@@ -745,6 +756,7 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
             target.radial_speed = packet->radial_speed;
             target.azimuth_speed = packet->azimuth_speed;
             target.elevation_speed = packet->elevation_speed;
+            target.lastUpdateTime = currentTime;  // Update timestamp
             found = true;
             qDebug() << "Updated existing target ID:" << packet->target_id;
             break;
@@ -762,6 +774,7 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
         new_target.radial_speed = packet->radial_speed;
         new_target.azimuth_speed = packet->azimuth_speed;
         new_target.elevation_speed = packet->elevation_speed;
+        new_target.lastUpdateTime = currentTime;  // Set initial timestamp
 
         m_currentTargets.targets.push_back(new_target);
         m_currentTargets.numTracks = m_currentTargets.targets.size();
@@ -791,6 +804,7 @@ void MainWindow::parseTrackMessage(const QString& message)
 
     TargetTrack target;
     int parsedTargets = 0;
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
 
     for (int i = 0; i < tokens.size(); ++i) {
         const QString& token = tokens[i];
@@ -799,6 +813,7 @@ void MainWindow::parseTrackMessage(const QString& message)
             tokens[++i].toInt();
         } else if (token == "TgtId:" && i + 1 < tokens.size()) {
             if (parsedTargets > 0) {
+                target.lastUpdateTime = currentTime;  // Set timestamp before pushing
                 m_currentTargets.targets.push_back(target);
                 target = TargetTrack();
             }
@@ -822,6 +837,7 @@ void MainWindow::parseTrackMessage(const QString& message)
     }
 
     if (parsedTargets > 0) {
+        target.lastUpdateTime = currentTime;  // Set timestamp for last target
         m_currentTargets.targets.push_back(target);
     }
 
@@ -2133,4 +2149,41 @@ void MainWindow::onClearTracks()
     m_statusLabel->setText("Status: Track data cleared");
     
     qDebug() << "Track data cleared from PPI and table";
+}
+
+void MainWindow::cleanupStaleTracks()
+{
+    if (m_currentTargets.targets.empty()) {
+        return;
+    }
+    
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    size_t originalCount = m_currentTargets.targets.size();
+    
+    // Remove tracks that haven't been updated within the timeout period
+    auto it = m_currentTargets.targets.begin();
+    while (it != m_currentTargets.targets.end()) {
+        qint64 timeSinceUpdate = currentTime - it->lastUpdateTime;
+        if (timeSinceUpdate > TRACK_TIMEOUT_MS) {
+            qDebug() << "Removing stale track ID:" << it->target_id 
+                     << "- last update was" << timeSinceUpdate << "ms ago";
+            it = m_currentTargets.targets.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    
+    // Update track count
+    m_currentTargets.numTracks = m_currentTargets.targets.size();
+    
+    // If any tracks were removed, update the display
+    if (m_currentTargets.targets.size() != originalCount) {
+        size_t removedCount = originalCount - m_currentTargets.targets.size();
+        qDebug() << "Cleaned up" << removedCount << "stale track(s),"
+                 << m_currentTargets.numTracks << "remaining";
+        
+        // Update PPI widget and track table
+        m_ppiWidget->updateTargets(m_currentTargets);
+        updateTrackTable();
+    }
 }
