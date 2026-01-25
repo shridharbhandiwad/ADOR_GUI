@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find Qt
-find_package(Qt6 QUIET COMPONENTS Core Widgets Network)
+find_package(Qt6 QUIET COMPONENTS Core Widgets Network Qml Quick QuickControls2)
 if (NOT Qt6_FOUND)
-    find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network)
+    find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network Qml Quick QuickControls2)
     set(QT_VERSION_MAJOR 5)
 else()
     set(QT_VERSION_MAJOR 6)
@@ -38,9 +38,9 @@ add_executable(RadarVisualization ${SOURCES} ${HEADERS})
 
 # Link Qt libraries
 if (QT_VERSION_MAJOR EQUAL 6)
-    target_link_libraries(RadarVisualization Qt6::Core Qt6::Widgets Qt6::Network)
+    target_link_libraries(RadarVisualization Qt6::Core Qt6::Widgets Qt6::Network Qt6::Qml Qt6::Quick Qt6::QuickControls2)
 else()
-    target_link_libraries(RadarVisualization Qt5::Core Qt5::Widgets Qt5::Network)
+    target_link_libraries(RadarVisualization Qt5::Core Qt5::Widgets Qt5::Network Qt5::Qml Qt5::Quick Qt5::QuickControls2)
 endif()
 
 # Compiler-specific options

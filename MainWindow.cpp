@@ -59,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_targetCount(0)
     , m_dsp{}  // Zero-initialize the DSP settings struct
     , m_isDarkTheme(false)
+    , m_expectedNumTargets(0)
+    , m_receivedTargetCount(0)
 {
     // Initialize DSP settings with default values matching UI defaults
     m_dsp.range_mvg_avg_length = 1;
@@ -1037,40 +1039,63 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
     qDebug() << "Azimuth Speed:  " << packet->azimuth_speed << "°/s";
     qDebug() << "Elevation Speed:" << packet->elevation_speed << "°/s";
 
-    // Find if this target already exists in our list
+    // EPHEMERAL SYNCHRONIZATION: Frame-based track collection
+    // Tracks are only shown when present in the current frame
+    
+    // Check if this is the start of a new frame (num_targets changed or we've received all expected)
+    if (packet->num_targets != m_expectedNumTargets || m_receivedTargetCount >= m_expectedNumTargets) {
+        // New frame starting - clear the frame buffer
+        m_frameTargets.clear();
+        m_expectedNumTargets = packet->num_targets;
+        m_receivedTargetCount = 0;
+        qDebug() << "Starting new frame - expecting" << m_expectedNumTargets << "targets";
+    }
+
+    // Handle special case: num_targets is 0 (no targets in this frame)
+    if (packet->num_targets == 0) {
+        // Clear all targets - no tracks in this frame
+        m_currentTargets.targets.clear();
+        m_currentTargets.numTracks = 0;
+        qDebug() << "No targets in frame - clearing all tracks";
+        m_statusLabel->setText("Binary Target Data - 0 targets (frame empty)");
+        return;
+    }
+
+    // Create target from packet data
+    TargetTrack new_target;
+    new_target.target_id = packet->target_id;
+    new_target.level = packet->level;
+    new_target.radius = packet->radius;
+    new_target.azimuth = packet->azimuth;
+    new_target.elevation = packet->elevation;
+    new_target.radial_speed = packet->radial_speed;
+    new_target.azimuth_speed = packet->azimuth_speed;
+    new_target.elevation_speed = packet->elevation_speed;
+    new_target.lastUpdateTime = QDateTime::currentMSecsSinceEpoch();
+
+    // Add to frame buffer (check for duplicates in current frame)
     bool found = false;
-    for (auto& target : m_currentTargets.targets) {
+    for (auto& target : m_frameTargets) {
         if (target.target_id == packet->target_id) {
-            // Update existing target
-            target.level = packet->level;
-            target.radius = packet->radius;
-            target.azimuth = packet->azimuth;
-            target.elevation = packet->elevation;
-            target.radial_speed = packet->radial_speed;
-            target.azimuth_speed = packet->azimuth_speed;
-            target.elevation_speed = packet->elevation_speed;
+            // Update existing target in frame buffer
+            target = new_target;
             found = true;
-            qDebug() << "Updated existing target ID:" << packet->target_id;
+            qDebug() << "Updated target ID:" << packet->target_id << "in frame buffer";
             break;
         }
     }
 
     if (!found) {
-        // Add new target
-        TargetTrack new_target;
-        new_target.target_id = packet->target_id;
-        new_target.level = packet->level;
-        new_target.radius = packet->radius;
-        new_target.azimuth = packet->azimuth;
-        new_target.elevation = packet->elevation;
-        new_target.radial_speed = packet->radial_speed;
-        new_target.azimuth_speed = packet->azimuth_speed;
-        new_target.elevation_speed = packet->elevation_speed;
+        m_frameTargets.push_back(new_target);
+        m_receivedTargetCount++;
+        qDebug() << "Added target ID:" << packet->target_id << "to frame buffer (" 
+                 << m_receivedTargetCount << "/" << m_expectedNumTargets << ")";
+    }
 
-        m_currentTargets.targets.push_back(new_target);
-        m_currentTargets.numTracks = m_currentTargets.targets.size();
-        qDebug()<<"new_target.radius "<<new_target.radius;
-        qDebug() << "Added new target ID:" << packet->target_id << "Total targets:" << m_currentTargets.numTracks;
+    // Check if we've received all targets for this frame
+    if (m_receivedTargetCount >= m_expectedNumTargets) {
+        // Apply the frame - replace current targets entirely (ephemeral sync)
+        applyFrameTargets();
     }
 
     // Disable simulation when receiving real data
@@ -1078,8 +1103,9 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
         m_simulationEnabled = false;
     }
 
-    m_statusLabel->setText(QString("Binary Target Data - %1 targets, ID: %2")
-                          .arg(m_currentTargets.numTracks)
+    m_statusLabel->setText(QString("Binary Target Data - %1/%2 targets, ID: %3")
+                          .arg(m_receivedTargetCount)
+                          .arg(m_expectedNumTargets)
                           .arg(packet->target_id));
 }
 
@@ -1186,95 +1212,50 @@ void MainWindow::parseADCMessage(const QString& message)
     }
 }
 
-void MainWindow::updateTrackTimestamps()
+void MainWindow::applyFrameTargets()
 {
-    // Record the current timestamp for each track that was just received/updated
-    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-
-    for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
-        uint32_t trackId = m_currentTargets.targets[i].target_id;
-        m_trackLastSeen[trackId] = currentTime;
-    }
-}
-
-void MainWindow::removeStaleTracksFromData()
-{
-    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-
-    // Find and remove stale tracks from m_currentTargets
-    std::vector<TargetTrack> activeTargets;
-    QList<uint32_t> staleTrackIds;
-
-    for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
-        uint32_t trackId = m_currentTargets.targets[i].target_id;
-
-        if (m_trackLastSeen.contains(trackId)) {
-            qint64 lastSeen = m_trackLastSeen[trackId];
-            qint64 elapsed = currentTime - lastSeen;
-
-            if (elapsed < TRACK_STALE_TIMEOUT_MS) {
-                // Track is still active, keep it
-                activeTargets.push_back(m_currentTargets.targets[i]);
-            } else {
-                // Track is stale, mark for removal from timestamp map
-                staleTrackIds.append(trackId);
-                qDebug() << "Removing stale track ID:" << trackId << "(not seen for" << elapsed << "ms)";
-            }
-        } else {
-            // Track has no timestamp (shouldn't happen normally), remove it
-            qDebug() << "Removing track ID:" << trackId << "(no timestamp)";
-        }
-    }
-
-    // Remove stale tracks from the timestamp map
-    for (uint32_t trackId : staleTrackIds) {
-        m_trackLastSeen.remove(trackId);
-    }
-
-    // Also clean up any orphaned entries in the timestamp map
-    // (tracks that are in the map but not in current targets)
-    QList<uint32_t> orphanedIds;
-    for (auto it = m_trackLastSeen.constBegin(); it != m_trackLastSeen.constEnd(); ++it) {
-        qint64 elapsed = currentTime - it.value();
-        if (elapsed >= TRACK_STALE_TIMEOUT_MS) {
-            orphanedIds.append(it.key());
-        }
-    }
-    for (uint32_t trackId : orphanedIds) {
-        m_trackLastSeen.remove(trackId);
-        qDebug() << "Cleaned up orphaned track ID:" << trackId;
-    }
-
-    // Update the target data with only active tracks
-    m_currentTargets.targets = activeTargets;
-    m_currentTargets.numTracks = static_cast<uint32_t>(activeTargets.size());
+    // EPHEMERAL SYNCHRONIZATION: Replace current targets with frame targets
+    // This ensures only tracks present in the current frame are displayed
+    // Tracks not in this frame are immediately removed from display
+    
+    m_currentTargets.targets = m_frameTargets;
+    m_currentTargets.numTracks = static_cast<uint32_t>(m_frameTargets.size());
+    
+    qDebug() << "Applied frame targets - now showing" << m_currentTargets.numTracks << "tracks";
+    
+    // Clear the frame buffer for the next frame
+    m_frameTargets.clear();
+    m_receivedTargetCount = 0;
+    
+    // Update displays immediately for synchronization
+    m_ppiWidget->updateTargets(m_currentTargets);
+    m_fftWidget->updateTargets(m_currentTargets);
+    updateTrackTable();
 }
 
 void MainWindow::refreshTrackTable()
 {
-    // This is called every 2 seconds to clean up stale tracks
-    // Skip cleanup if simulation is enabled (simulation generates fresh targets each frame)
-    if (!m_simulationEnabled) {
-        removeStaleTracksFromData();
-
-        // Refresh the table display with updated track data
-        m_trackTable->setRowCount(m_currentTargets.numTracks);
-        for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
-            const TargetTrack& target = m_currentTargets.targets[i];
-            m_trackTable->setItem(i, 0, new QTableWidgetItem(QString::number(target.target_id)));
-            m_trackTable->setItem(i, 1, new QTableWidgetItem(QString::number(target.radius, 'f', 2)));
-            m_trackTable->setItem(i, 2, new QTableWidgetItem(QString::number(target.azimuth, 'f', 1)));
-            m_trackTable->setItem(i, 3, new QTableWidgetItem(QString::number(target.radial_speed, 'f', 1)));
-        }
-        m_trackTable->resizeColumnsToContents();
-
-        // Also update the PPI and FFT widgets with the cleaned up data
-        m_ppiWidget->updateTargets(m_currentTargets);
-        m_fftWidget->updateTargets(m_currentTargets);
+    // EPHEMERAL SYNCHRONIZATION: Periodic refresh for UI consistency
+    // Tracks are already managed frame-by-frame in parseBinaryTargetData
+    // This function just ensures the UI stays in sync with current data
+    
+    // Refresh the table display with current track data
+    m_trackTable->setRowCount(m_currentTargets.numTracks);
+    for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
+        const TargetTrack& target = m_currentTargets.targets[i];
+        m_trackTable->setItem(i, 0, new QTableWidgetItem(QString::number(target.target_id)));
+        m_trackTable->setItem(i, 1, new QTableWidgetItem(QString::number(target.radius, 'f', 2)));
+        m_trackTable->setItem(i, 2, new QTableWidgetItem(QString::number(target.azimuth, 'f', 1)));
+        m_trackTable->setItem(i, 3, new QTableWidgetItem(QString::number(target.radial_speed, 'f', 1)));
     }
+    m_trackTable->resizeColumnsToContents();
+
+    // Sync PPI and FFT widgets with current data
+    m_ppiWidget->updateTargets(m_currentTargets);
+    m_fftWidget->updateTargets(m_currentTargets);
 
     qDebug() << "Track table refreshed. Active tracks:" << m_currentTargets.numTracks
-             << "Tracked IDs:" << m_trackLastSeen.keys().size();
+             << "(ephemeral sync mode)";
 }
 
 //==============================================================================
@@ -1440,8 +1421,8 @@ void MainWindow::onResetSettings()
 
 void MainWindow::updateTrackTable()
 {
-    // Update timestamps for all current tracks
-    updateTrackTimestamps();
+    // EPHEMERAL SYNCHRONIZATION: Update track table with current frame data
+    // Table shows only tracks present in the current frame
     m_trackTable->setRowCount(m_currentTargets.numTracks);
     for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
         const TargetTrack& target = m_currentTargets.targets[i];
@@ -2948,8 +2929,16 @@ void MainWindow::onClearTracks()
     m_currentTargets.targets.clear();
     m_currentTargets.numTracks = 0;
     
+    // Clear the frame buffer (ephemeral sync)
+    m_frameTargets.clear();
+    m_expectedNumTargets = 0;
+    m_receivedTargetCount = 0;
+    
     // Clear the PPI widget display
     m_ppiWidget->clearTracks();
+    
+    // Clear FFT widget targets
+    m_fftWidget->updateTargets(m_currentTargets);
     
     // Clear the track table
     m_trackTable->setRowCount(0);
@@ -2960,5 +2949,5 @@ void MainWindow::onClearTracks()
     // Update status
     m_statusLabel->setText("Status: Track data cleared");
     
-    qDebug() << "Track data cleared from PPI and table";
+    qDebug() << "Track data cleared from PPI, FFT, and table (ephemeral sync)";
 }
