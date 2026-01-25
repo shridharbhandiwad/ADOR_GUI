@@ -15,7 +15,6 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QAbstractItemView>
-#include <QStatusBar>
 #include <QDoubleValidator>
 #include <QIntValidator>
 #include <QTimer>
@@ -307,20 +306,6 @@ void MainWindow::setupUI()
         
         QHeaderView::section:last {
             border-top-right-radius: 12px;
-        }
-        
-        /* ========== STATUS BAR ========== */
-        QStatusBar {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #ffffff, stop:1 #f8fafc);
-            color: #64748b;
-            border-top: 1px solid #e2e8f0;
-            padding: 10px 20px;
-            font-size: 12px;
-        }
-        
-        QStatusBar::item {
-            border: none;
         }
         
         /* ========== SPLITTER HANDLES ========== */
@@ -725,87 +710,14 @@ void MainWindow::setupUI()
     m_mainSplitter = nullptr;
     m_rightSplitter = nullptr;
     
-    // Frame count and status labels - will be updated and shown in status bar
+    // Keep labels as hidden placeholders for status updates (not displayed)
     m_frameCountLabel = new QLabel("Frames: 0");
     m_statusLabel = new QLabel("Status: Ready");
-
-    // Create a premium status bar with visual indicators and badges
-    QWidget* statusWidget = new QWidget(this);
-    statusWidget->setStyleSheet("background-color: transparent;");
-    QHBoxLayout* statusLayout = new QHBoxLayout(statusWidget);
-    statusLayout->setContentsMargins(8, 0, 8, 0);
-    statusLayout->setSpacing(16);
+    m_frameCountLabel->hide();
+    m_statusLabel->hide();
     
-    // Application branding badge
-    QLabel* brandLabel = new QLabel("RADAR GUI", this);
-    brandLabel->setStyleSheet(R"(
-        QLabel {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3b82f6, stop:1 #6366f1);
-            color: #ffffff;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 4px;
-            letter-spacing: 1px;
-        }
-    )");
-    statusLayout->addWidget(brandLabel);
-    
-    // Separator
-    QFrame* sep1 = new QFrame(this);
-    sep1->setFrameShape(QFrame::VLine);
-    sep1->setStyleSheet("background-color: #e2e8f0; max-width: 1px;");
-    statusLayout->addWidget(sep1);
-    
-    statusLayout->addStretch();
-    
-    // Frame counter with badge style
-    m_frameCountLabel->setStyleSheet(R"(
-        QLabel {
-            background-color: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            font-weight: 600;
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 4px;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-        }
-    )");
-    statusLayout->addWidget(m_frameCountLabel);
-    
-    // Separator
-    QFrame* sep2 = new QFrame(this);
-    sep2->setFrameShape(QFrame::VLine);
-    sep2->setStyleSheet("background-color: #e2e8f0; max-width: 1px;");
-    statusLayout->addWidget(sep2);
-    
-    // Status indicator with badge
-    m_statusLabel->setStyleSheet(R"(
-        QLabel {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #059669;
-            font-weight: 600;
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 4px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-    )");
-    statusLayout->addWidget(m_statusLabel);
-    
-    statusBar()->addPermanentWidget(statusWidget, 1);
-    statusBar()->setStyleSheet(R"(
-        QStatusBar {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #ffffff, stop:1 #f8fafc);
-            border-top: 1px solid #e2e8f0;
-            padding: 6px 12px;
-            min-height: 36px;
-        }
-        QStatusBar::item {
-            border: none;
-        }
-    )");
+    // Remove the status bar from the main window
+    setStatusBar(nullptr);
 }
 
 void MainWindow::setupNetworking()
@@ -2091,16 +2003,6 @@ QString MainWindow::getLightThemeStyleSheet() const
             letter-spacing: 0.8px;
         }
         
-        /* ========== STATUS BAR ========== */
-        QStatusBar {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #ffffff, stop:1 #f8fafc);
-            color: #64748b;
-            border-top: 1px solid #e2e8f0;
-            padding: 10px 20px;
-            font-size: 12px;
-        }
-        
         /* ========== SPLITTER HANDLES ========== */
         QSplitter::handle {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -2367,20 +2269,6 @@ QString MainWindow::getDarkThemeStyleSheet() const
             border-bottom: 2px solid #334155;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-        }
-        
-        /* ========== STATUS BAR ========== */
-        QStatusBar {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #1e293b, stop:1 #0f172a);
-            color: #94a3b8;
-            border-top: 1px solid #334155;
-            padding: 10px 20px;
-            font-size: 12px;
-        }
-        
-        QStatusBar::item {
-            border: none;
         }
         
         /* ========== SPLITTER HANDLES ========== */
