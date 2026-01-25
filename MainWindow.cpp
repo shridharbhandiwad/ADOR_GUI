@@ -128,24 +128,24 @@ void MainWindow::setupUI()
             font-size: 14px;
             color: #0f172a;
             border: none;
-            border-radius: 16px;
-            margin-top: 20px;
-            padding: 24px 20px 20px 20px;
+            border-radius: 12px;
+            margin-top: 14px;
+            padding: 16px 12px 12px 12px;
             background-color: #ffffff;
         }
         
         QGroupBox::title {
             subcontrol-origin: margin;
             subcontrol-position: top left;
-            left: 20px;
-            top: 4px;
-            padding: 4px 16px;
+            left: 12px;
+            top: 2px;
+            padding: 3px 12px;
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                 stop:0 #3b82f6, stop:1 #6366f1);
             color: #ffffff;
             font-weight: 700;
-            font-size: 13px;
-            border-radius: 8px;
+            font-size: 12px;
+            border-radius: 6px;
             letter-spacing: 0.3px;
         }
         
@@ -429,11 +429,11 @@ void MainWindow::setupUI()
     // ========== CENTER-TOP: PPI Display ==========
     QGroupBox* ppiGroup = new QGroupBox("PPI");
     QVBoxLayout* ppiLayout = new QVBoxLayout(ppiGroup);
-    ppiLayout->setSpacing(8);
-    ppiLayout->setContentsMargins(8, 16, 8, 8);
+    ppiLayout->setSpacing(4);
+    ppiLayout->setContentsMargins(4, 12, 4, 4);  // Reduced margins
 
     m_ppiWidget = new PPIWidget();
-    m_ppiWidget->setMinimumSize(300, 300);
+    m_ppiWidget->setMinimumSize(300, 250);  // Slightly reduced minimum
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
 
     topHorizontalSplitter->addWidget(ppiGroup);
@@ -441,7 +441,7 @@ void MainWindow::setupUI()
     // ========== RIGHT-TOP: Track Table ==========
     QGroupBox* tableGroup = new QGroupBox("Track Table");
     QVBoxLayout* tableLayout = new QVBoxLayout(tableGroup);
-    tableLayout->setContentsMargins(8, 16, 8, 8);
+    tableLayout->setContentsMargins(4, 12, 4, 4);  // Reduced margins
     m_trackTable = new QTableWidget();
     m_trackTable->setColumnCount(4);
     QStringList headers;
@@ -490,17 +490,17 @@ void MainWindow::setupUI()
     // ========== BOTTOM: FFT Display ==========
     QGroupBox* fftGroup = new QGroupBox("FFT");
     QVBoxLayout* fftLayout = new QVBoxLayout(fftGroup);
-    fftLayout->setContentsMargins(8, 16, 8, 8);
+    fftLayout->setContentsMargins(4, 12, 4, 4);  // Reduced margins
     m_fftWidget = new FFTWidget();
     m_fftWidget->setRadarParameters(100000.0f, 0.001f, 50000000.0f, 24000000000.0f);
     m_fftWidget->setMaxRange(50.0f);
-    m_fftWidget->setMinimumSize(300, 200);
+    m_fftWidget->setMinimumSize(300, 150);  // Reduced minimum height
     fftLayout->addWidget(m_fftWidget);
     
     rightVerticalSplitter->addWidget(fftGroup);
     
-    // Set initial sizes for top row (larger) and FFT (smaller)
-    rightVerticalSplitter->setSizes({450, 400});
+    // Set initial sizes for top row (larger) and FFT - balanced for less empty space
+    rightVerticalSplitter->setSizes({500, 350});
 
     // ========== LEFT: DSP Settings Panel (Vertical Layout) ==========
     m_dspSettingsGroup = new QGroupBox("DSP Settings", this);
@@ -1860,24 +1860,24 @@ QString MainWindow::getLightThemeStyleSheet() const
             font-size: 14px;
             color: #0f172a;
             border: none;
-            border-radius: 16px;
-            margin-top: 20px;
-            padding: 24px 20px 20px 20px;
+            border-radius: 12px;
+            margin-top: 14px;
+            padding: 16px 12px 12px 12px;
             background-color: #ffffff;
         }
         
         QGroupBox::title {
             subcontrol-origin: margin;
             subcontrol-position: top left;
-            left: 20px;
-            top: 4px;
-            padding: 4px 16px;
+            left: 12px;
+            top: 2px;
+            padding: 3px 12px;
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                 stop:0 #3b82f6, stop:1 #6366f1);
             color: #ffffff;
             font-weight: 700;
-            font-size: 13px;
-            border-radius: 8px;
+            font-size: 12px;
+            border-radius: 6px;
             letter-spacing: 0.3px;
         }
         
@@ -2123,9 +2123,9 @@ QString MainWindow::getDarkThemeStyleSheet() const
             font-size: 14px;
             color: #f1f5f9;
             border: 1px solid #334155;
-            border-radius: 16px;
-            margin-top: 20px;
-            padding: 24px 20px 20px 20px;
+            border-radius: 12px;
+            margin-top: 14px;
+            padding: 16px 12px 12px 12px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 #1e293b, stop:1 #0f172a);
         }
@@ -2133,15 +2133,15 @@ QString MainWindow::getDarkThemeStyleSheet() const
         QGroupBox::title {
             subcontrol-origin: margin;
             subcontrol-position: top left;
-            left: 20px;
-            top: 4px;
-            padding: 4px 16px;
+            left: 12px;
+            top: 2px;
+            padding: 3px 12px;
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                 stop:0 #3b82f6, stop:1 #8b5cf6);
             color: #ffffff;
             font-weight: 700;
-            font-size: 13px;
-            border-radius: 8px;
+            font-size: 12px;
+            border-radius: 6px;
             letter-spacing: 0.3px;
         }
         
