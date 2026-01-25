@@ -50,7 +50,7 @@ private slots:
     void onSaveSettings();
     void onDefaultSettings();
     void onClearTracks();  // Clear all track data from PPI and table
-    void refreshTrackTable();  // Auto-refresh track table and remove stale tracks
+    void refreshTrackTable();  // Auto-refresh track table (sync with current frame data)
 
     // DSP parameter slots
     void onRangeAvgEdited();
@@ -72,8 +72,7 @@ private:
     void setupNetworking();
     void setupTimer();
     void updateTrackTable();
-    void updateTrackTimestamps();  // Update last seen timestamps for current tracks
-    void removeStaleTracksFromData();  // Remove tracks that haven't been seen recently
+    void applyFrameTargets();  // Apply collected frame targets as current targets (ephemeral sync)
     void generateSimulatedTargetData();
     void generateSimulatedADCData();
     void loadSettings();
@@ -144,11 +143,15 @@ private:
     QTimer* m_updateTimer;
     static constexpr int UPDATE_INTERVAL_MS = 50;
 
-    // Track table auto-refresh timer (2 seconds)
+    // Track table auto-refresh timer (for periodic UI updates)
     QTimer* m_trackRefreshTimer;
-    static constexpr int TRACK_REFRESH_INTERVAL_MS = 2000;
-    static constexpr int TRACK_STALE_TIMEOUT_MS = 2000;  // Remove tracks not seen for 2 seconds
-    QMap<uint32_t, qint64> m_trackLastSeen;  // Track ID -> timestamp of last update
+    static constexpr int TRACK_REFRESH_INTERVAL_MS = 500;  // Faster refresh for ephemeral sync
+    
+    // Frame-based track collection for ephemeral synchronization
+    // Tracks are only shown when present in the current frame
+    std::vector<TargetTrack> m_frameTargets;  // Tracks being collected for current frame
+    uint8_t m_expectedNumTargets;              // Number of targets expected in current frame
+    uint8_t m_receivedTargetCount;             // Number of targets received so far in current frame
 
     // Data
     TargetTrackData m_currentTargets;
