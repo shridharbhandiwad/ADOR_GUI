@@ -461,33 +461,10 @@ void MainWindow::setupUI()
     gridLayout->addWidget(fftGroup, 0, 1);
 
     // ========== BOTTOM-LEFT: DSP Settings Panel ==========
-    QGroupBox* settingsGroup = new QGroupBox("DSP Settings", this);
-    settingsGroup->setStyleSheet(R"(
-        QGroupBox {
-            font-size: 15px;
-            font-weight: 700;
-            padding: 24px 16px 16px 16px;
-            margin-top: 16px;
-            background-color: #ffffff;
-            border: none;
-            border-radius: 16px;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            subcontrol-position: top left;
-            left: 16px;
-            top: 2px;
-            padding: 6px 16px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3b82f6, stop:1 #6366f1);
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 13px;
-            border-radius: 8px;
-            letter-spacing: 0.3px;
-        }
-    )");
+    m_dspSettingsGroup = new QGroupBox("DSP Settings", this);
+    // Styling will be applied dynamically based on theme
     
-    QVBoxLayout* settingsMainLayout = new QVBoxLayout(settingsGroup);
+    QVBoxLayout* settingsMainLayout = new QVBoxLayout(m_dspSettingsGroup);
     settingsMainLayout->setSpacing(12);
     settingsMainLayout->setContentsMargins(12, 20, 12, 12);
     
@@ -498,92 +475,31 @@ void MainWindow::setupUI()
     columnsLayout->setContentsMargins(0, 0, 0, 0);
     
     // Left column - Range & Speed settings with modern card style
-    QGroupBox* leftGroup = new QGroupBox("Range && Speed", this);
-    leftGroup->setStyleSheet(R"(
-        QGroupBox {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 16px 12px 12px 12px;
-            margin-top: 14px;
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f8fafc, stop:1 #f1f5f9);
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            subcontrol-position: top left;
-            left: 12px;
-            top: 2px;
-            padding: 4px 12px;
-            background-color: #0ea5e9;
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 11px;
-            border-radius: 6px;
-            letter-spacing: 0.5px;
-        }
-    )");
-    QGridLayout* leftLayout = new QGridLayout(leftGroup);
+    m_dspLeftGroup = new QGroupBox("Range && Speed", this);
+    // Styling will be applied dynamically based on theme
+    QGridLayout* leftLayout = new QGridLayout(m_dspLeftGroup);
     leftLayout->setSpacing(10);
     leftLayout->setContentsMargins(12, 20, 12, 12);
     
     // Right column - Filter & Tracking settings with modern card style
-    QGroupBox* rightGroup = new QGroupBox("Filter && Tracking", this);
-    rightGroup->setStyleSheet(R"(
-        QGroupBox {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 16px 12px 12px 12px;
-            margin-top: 14px;
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f8fafc, stop:1 #f1f5f9);
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            subcontrol-position: top left;
-            left: 12px;
-            top: 2px;
-            padding: 4px 12px;
-            background-color: #8b5cf6;
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 11px;
-            border-radius: 6px;
-            letter-spacing: 0.5px;
-        }
-    )");
-    QGridLayout* rightLayout = new QGridLayout(rightGroup);
+    m_dspRightGroup = new QGroupBox("Filter && Tracking", this);
+    // Styling will be applied dynamically based on theme
+    QGridLayout* rightLayout = new QGridLayout(m_dspRightGroup);
     rightLayout->setSpacing(10);
     rightLayout->setContentsMargins(12, 20, 12, 12);
 
-    // Enhanced styling for labels and input fields
-    const QString labelStyle = R"(
-        font-size: 12px;
-        font-weight: 600;
-        color: #475569;
-        background-color: transparent;
-        letter-spacing: 0.2px;
-    )";
-    const QString editStyle = R"(
-        font-size: 13px;
-        padding: 8px 12px;
-        font-weight: 500;
-        background-color: #ffffff;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        color: #0f172a;
-    )";
+    // Clear labels vector before adding new ones
+    m_dspLabels.clear();
     
     // Increased width from 80 to 100 to prevent text clamping
+    // Styling will be applied dynamically based on theme
     auto addField = [&](QGridLayout* layout, int row, const QString& label, QLineEdit*& edit, const QString& def) {
         QLabel* l = new QLabel(label, this);
-        l->setStyleSheet(labelStyle);
+        m_dspLabels.append(l);  // Store label for theme updates
         edit = new QLineEdit(def, this);
         edit->setMinimumWidth(100);
         edit->setMaximumWidth(120);
         edit->setMinimumHeight(32);
-        edit->setStyleSheet(editStyle);
         layout->addWidget(l, row, 0);
         layout->addWidget(edit, row, 1);
     };
@@ -610,8 +526,8 @@ void MainWindow::setupUI()
     rightLayout->setColumnMinimumWidth(0, 120);
     rightLayout->setColumnMinimumWidth(1, 100);
     
-    columnsLayout->addWidget(leftGroup, 1);
-    columnsLayout->addWidget(rightGroup, 1);
+    columnsLayout->addWidget(m_dspLeftGroup, 1);
+    columnsLayout->addWidget(m_dspRightGroup, 1);
     
     settingsMainLayout->addWidget(columnsContainer, 1);
     
@@ -757,7 +673,7 @@ void MainWindow::setupUI()
     connect(m_saveSettingsButton,  &QPushButton::clicked,       this, &MainWindow::onSaveSettings);
     connect(m_defaultSettingsButton, &QPushButton::clicked,     this, &MainWindow::onDefaultSettings);
 
-    gridLayout->addWidget(settingsGroup, 1, 0);
+    gridLayout->addWidget(m_dspSettingsGroup, 1, 0);
 
     // ========== BOTTOM-RIGHT: Track Table ==========
     QGroupBox* tableGroup = new QGroupBox("Target Track Table");
@@ -2609,10 +2525,242 @@ void MainWindow::applyTheme(bool isDark)
     if (m_fftWidget) {
         m_fftWidget->setDarkTheme(isDark);
     }
+    
+    // Apply theme to DSP Settings panel
+    applyDspSettingsTheme(isDark);
 
     // Force update of all widgets
     update();
     if (m_trackTable) m_trackTable->update();
+}
+
+void MainWindow::applyDspSettingsTheme(bool isDark)
+{
+    if (isDark) {
+        // Dark theme styles for DSP Settings panel
+        if (m_dspSettingsGroup) {
+            m_dspSettingsGroup->setStyleSheet(R"(
+                QGroupBox {
+                    font-size: 15px;
+                    font-weight: 700;
+                    padding: 24px 16px 16px 16px;
+                    margin-top: 16px;
+                    background-color: #1e293b;
+                    border: 1px solid #334155;
+                    border-radius: 16px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    left: 16px;
+                    top: 2px;
+                    padding: 6px 16px;
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3b82f6, stop:1 #6366f1);
+                    color: #ffffff;
+                    font-weight: 700;
+                    font-size: 13px;
+                    border-radius: 8px;
+                    letter-spacing: 0.3px;
+                }
+            )");
+        }
+        
+        if (m_dspLeftGroup) {
+            m_dspLeftGroup->setStyleSheet(R"(
+                QGroupBox {
+                    font-size: 12px;
+                    font-weight: 600;
+                    padding: 16px 12px 12px 12px;
+                    margin-top: 14px;
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0f172a, stop:1 #1e293b);
+                    border: 1px solid #334155;
+                    border-radius: 12px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    left: 12px;
+                    top: 2px;
+                    padding: 4px 12px;
+                    background-color: #0ea5e9;
+                    color: #ffffff;
+                    font-weight: 600;
+                    font-size: 11px;
+                    border-radius: 6px;
+                    letter-spacing: 0.5px;
+                }
+            )");
+        }
+        
+        if (m_dspRightGroup) {
+            m_dspRightGroup->setStyleSheet(R"(
+                QGroupBox {
+                    font-size: 12px;
+                    font-weight: 600;
+                    padding: 16px 12px 12px 12px;
+                    margin-top: 14px;
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0f172a, stop:1 #1e293b);
+                    border: 1px solid #334155;
+                    border-radius: 12px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    left: 12px;
+                    top: 2px;
+                    padding: 4px 12px;
+                    background-color: #8b5cf6;
+                    color: #ffffff;
+                    font-weight: 600;
+                    font-size: 11px;
+                    border-radius: 6px;
+                    letter-spacing: 0.5px;
+                }
+            )");
+        }
+        
+        // Apply dark theme to labels
+        const QString darkLabelStyle = R"(
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            background-color: transparent;
+            letter-spacing: 0.2px;
+        )";
+        for (QLabel* label : m_dspLabels) {
+            if (label) label->setStyleSheet(darkLabelStyle);
+        }
+        
+        // Apply dark theme to line edits
+        const QString darkEditStyle = R"(
+            font-size: 13px;
+            padding: 8px 12px;
+            font-weight: 500;
+            background-color: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 8px;
+            color: #f1f5f9;
+        )";
+        QList<QLineEdit*> lineEdits = {m_rangeAvgEdit, m_minRangeEdit, m_maxRangeEdit, 
+                                       m_minSpeedEdit, m_maxSpeedEdit, m_minAngleEdit,
+                                       m_maxAngleEdit, m_rangeThresholdEdit, m_speedThresholdEdit,
+                                       m_numTracksEdit, m_medianFilterEdit, m_mtiLengthEdit};
+        for (QLineEdit* edit : lineEdits) {
+            if (edit) edit->setStyleSheet(darkEditStyle);
+        }
+    } else {
+        // Light theme styles for DSP Settings panel
+        if (m_dspSettingsGroup) {
+            m_dspSettingsGroup->setStyleSheet(R"(
+                QGroupBox {
+                    font-size: 15px;
+                    font-weight: 700;
+                    padding: 24px 16px 16px 16px;
+                    margin-top: 16px;
+                    background-color: #ffffff;
+                    border: none;
+                    border-radius: 16px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    left: 16px;
+                    top: 2px;
+                    padding: 6px 16px;
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3b82f6, stop:1 #6366f1);
+                    color: #ffffff;
+                    font-weight: 700;
+                    font-size: 13px;
+                    border-radius: 8px;
+                    letter-spacing: 0.3px;
+                }
+            )");
+        }
+        
+        if (m_dspLeftGroup) {
+            m_dspLeftGroup->setStyleSheet(R"(
+                QGroupBox {
+                    font-size: 12px;
+                    font-weight: 600;
+                    padding: 16px 12px 12px 12px;
+                    margin-top: 14px;
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f8fafc, stop:1 #f1f5f9);
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    left: 12px;
+                    top: 2px;
+                    padding: 4px 12px;
+                    background-color: #0ea5e9;
+                    color: #ffffff;
+                    font-weight: 600;
+                    font-size: 11px;
+                    border-radius: 6px;
+                    letter-spacing: 0.5px;
+                }
+            )");
+        }
+        
+        if (m_dspRightGroup) {
+            m_dspRightGroup->setStyleSheet(R"(
+                QGroupBox {
+                    font-size: 12px;
+                    font-weight: 600;
+                    padding: 16px 12px 12px 12px;
+                    margin-top: 14px;
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f8fafc, stop:1 #f1f5f9);
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    left: 12px;
+                    top: 2px;
+                    padding: 4px 12px;
+                    background-color: #8b5cf6;
+                    color: #ffffff;
+                    font-weight: 600;
+                    font-size: 11px;
+                    border-radius: 6px;
+                    letter-spacing: 0.5px;
+                }
+            )");
+        }
+        
+        // Apply light theme to labels
+        const QString lightLabelStyle = R"(
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            background-color: transparent;
+            letter-spacing: 0.2px;
+        )";
+        for (QLabel* label : m_dspLabels) {
+            if (label) label->setStyleSheet(lightLabelStyle);
+        }
+        
+        // Apply light theme to line edits
+        const QString lightEditStyle = R"(
+            font-size: 13px;
+            padding: 8px 12px;
+            font-weight: 500;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            color: #0f172a;
+        )";
+        QList<QLineEdit*> lineEdits = {m_rangeAvgEdit, m_minRangeEdit, m_maxRangeEdit, 
+                                       m_minSpeedEdit, m_maxSpeedEdit, m_minAngleEdit,
+                                       m_maxAngleEdit, m_rangeThresholdEdit, m_speedThresholdEdit,
+                                       m_numTracksEdit, m_medianFilterEdit, m_mtiLengthEdit};
+        for (QLineEdit* edit : lineEdits) {
+            if (edit) edit->setStyleSheet(lightEditStyle);
+        }
+    }
 }
 
 //==============================================================================
