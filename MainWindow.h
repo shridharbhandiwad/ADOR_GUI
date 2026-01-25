@@ -9,7 +9,6 @@
 #include <QHBoxLayout>
 #include <QTableWidget>
 #include <QLabel>
-#include <QStatusBar>
 #include <QGroupBox>
 #include <QSpinBox>
 #include <QPushButton>
