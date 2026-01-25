@@ -499,8 +499,8 @@ void MainWindow::setupUI()
     
     rightVerticalSplitter->addWidget(fftGroup);
     
-    // Set initial sizes for top row (larger) and FFT (smaller)
-    rightVerticalSplitter->setSizes({500, 300});
+    // Set initial sizes for top row (larger) and FFT (smaller) - 60:40 ratio
+    rightVerticalSplitter->setSizes({600, 400});
 
     // ========== LEFT: DSP Settings Panel (Vertical Layout) ==========
     m_dspSettingsGroup = new QGroupBox("DSP Settings", this);
