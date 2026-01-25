@@ -436,7 +436,7 @@ void MainWindow::setupUI()
     gridLayout->setColumnStretch(0, 1);
     gridLayout->setColumnStretch(1, 1);
 
-    // ========== TOP-LEFT: PPI Display ==========
+    // ========== BOTTOM-RIGHT: PPI Display ==========
     QGroupBox* ppiGroup = new QGroupBox("PPI Display (Target Tracks)");
     QVBoxLayout* ppiLayout = new QVBoxLayout(ppiGroup);
     ppiLayout->setSpacing(8);
@@ -446,7 +446,7 @@ void MainWindow::setupUI()
     m_ppiWidget->setMinimumSize(300, 300);
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
 
-    gridLayout->addWidget(ppiGroup, 0, 0);
+    gridLayout->addWidget(ppiGroup, 1, 1);
 
     // ========== TOP-RIGHT: FFT Display ==========
     QGroupBox* fftGroup = new QGroupBox("FFT Spectrum (Raw ADC Data)");
@@ -675,7 +675,7 @@ void MainWindow::setupUI()
 
     gridLayout->addWidget(m_dspSettingsGroup, 1, 0);
 
-    // ========== BOTTOM-RIGHT: Track Table ==========
+    // ========== TOP-LEFT: Track Table ==========
     QGroupBox* tableGroup = new QGroupBox("Target Track Table");
     QVBoxLayout* tableLayout = new QVBoxLayout(tableGroup);
     tableLayout->setContentsMargins(8, 16, 8, 8);
@@ -717,7 +717,7 @@ void MainWindow::setupUI()
     connect(m_clearTracksButton, &QPushButton::clicked, this, &MainWindow::onClearTracks);
     tableLayout->addWidget(m_clearTracksButton, 0);
     
-    gridLayout->addWidget(tableGroup, 1, 1);
+    gridLayout->addWidget(tableGroup, 0, 0);
 
     // Initialize unused splitters to nullptr (no longer needed but kept for compatibility)
     m_mainSplitter = nullptr;
