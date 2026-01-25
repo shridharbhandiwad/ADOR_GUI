@@ -412,19 +412,22 @@ void MainWindow::setupUI()
     QWidget* centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
-    // Create a 2x2 grid layout for equal-sized quadrants
-    QGridLayout* gridLayout = new QGridLayout(centralWidget);
-    gridLayout->setContentsMargins(8, 8, 8, 8);
-    gridLayout->setSpacing(8);
-    
-    // Set equal row and column stretch factors for equal sizing
-    gridLayout->setRowStretch(0, 1);
-    gridLayout->setRowStretch(1, 1);
-    gridLayout->setColumnStretch(0, 1);
-    gridLayout->setColumnStretch(1, 1);
+    // Create main horizontal layout: DSP Settings (left) | Right side (PPI, Track Table, FFT)
+    QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
+    mainLayout->setContentsMargins(8, 8, 8, 8);
+    mainLayout->setSpacing(8);
 
-    // ========== BOTTOM-RIGHT: PPI Display ==========
-    QGroupBox* ppiGroup = new QGroupBox("PPI Display (Target Tracks)");
+    // ========== RIGHT SIDE: PPI (center-top), Track Table (right-top), FFT (bottom) ==========
+    // Create a vertical splitter for right side: top row and bottom FFT
+    QSplitter* rightVerticalSplitter = new QSplitter(Qt::Vertical);
+    rightVerticalSplitter->setHandleWidth(6);
+    
+    // Top row: PPI (left) and Track Table (right)
+    QSplitter* topHorizontalSplitter = new QSplitter(Qt::Horizontal);
+    topHorizontalSplitter->setHandleWidth(6);
+
+    // ========== CENTER-TOP: PPI Display ==========
+    QGroupBox* ppiGroup = new QGroupBox("PPI");
     QVBoxLayout* ppiLayout = new QVBoxLayout(ppiGroup);
     ppiLayout->setSpacing(8);
     ppiLayout->setContentsMargins(8, 16, 8, 8);
@@ -433,237 +436,10 @@ void MainWindow::setupUI()
     m_ppiWidget->setMinimumSize(300, 300);
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
 
-    gridLayout->addWidget(ppiGroup, 1, 1);
+    topHorizontalSplitter->addWidget(ppiGroup);
 
-    // ========== TOP-RIGHT: FFT Display ==========
-    QGroupBox* fftGroup = new QGroupBox("FFT Spectrum (Raw ADC Data)");
-    QVBoxLayout* fftLayout = new QVBoxLayout(fftGroup);
-    fftLayout->setContentsMargins(8, 16, 8, 8);
-    m_fftWidget = new FFTWidget();
-    m_fftWidget->setRadarParameters(100000.0f, 0.001f, 50000000.0f, 24000000000.0f);
-    m_fftWidget->setMaxRange(50.0f);
-    m_fftWidget->setMinimumSize(300, 300);
-    fftLayout->addWidget(m_fftWidget);
-    
-    gridLayout->addWidget(fftGroup, 0, 1);
-
-    // ========== BOTTOM-LEFT: DSP Settings Panel ==========
-    m_dspSettingsGroup = new QGroupBox("DSP Settings", this);
-    // Styling will be applied dynamically based on theme
-    
-    QVBoxLayout* settingsMainLayout = new QVBoxLayout(m_dspSettingsGroup);
-    settingsMainLayout->setSpacing(12);
-    settingsMainLayout->setContentsMargins(12, 20, 12, 12);
-    
-    // Container for the two columns
-    QWidget* columnsContainer = new QWidget(this);
-    QHBoxLayout* columnsLayout = new QHBoxLayout(columnsContainer);
-    columnsLayout->setSpacing(24);
-    columnsLayout->setContentsMargins(0, 0, 0, 0);
-    
-    // Left column - Range & Speed settings with modern card style
-    m_dspLeftGroup = new QGroupBox("Range && Speed", this);
-    // Styling will be applied dynamically based on theme
-    QGridLayout* leftLayout = new QGridLayout(m_dspLeftGroup);
-    leftLayout->setSpacing(10);
-    leftLayout->setContentsMargins(12, 20, 12, 12);
-    
-    // Right column - Filter & Tracking settings with modern card style
-    m_dspRightGroup = new QGroupBox("Filter && Tracking", this);
-    // Styling will be applied dynamically based on theme
-    QGridLayout* rightLayout = new QGridLayout(m_dspRightGroup);
-    rightLayout->setSpacing(10);
-    rightLayout->setContentsMargins(12, 20, 12, 12);
-
-    // Clear labels vector before adding new ones
-    m_dspLabels.clear();
-    
-    // Increased width from 80 to 100 to prevent text clamping
-    // Styling will be applied dynamically based on theme
-    auto addField = [&](QGridLayout* layout, int row, const QString& label, QLineEdit*& edit, const QString& def) {
-        QLabel* l = new QLabel(label, this);
-        m_dspLabels.append(l);  // Store label for theme updates
-        edit = new QLineEdit(def, this);
-        edit->setMinimumWidth(100);
-        edit->setMaximumWidth(120);
-        edit->setMinimumHeight(32);
-        layout->addWidget(l, row, 0);
-        layout->addWidget(edit, row, 1);
-    };
-
-    // Left column fields - Range & Speed
-    addField(leftLayout, 0, "Range Avg",        m_rangeAvgEdit,        "1");
-    addField(leftLayout, 1, "Min Range (cm)",   m_minRangeEdit,        "0");
-    addField(leftLayout, 2, "Max Range (cm)",   m_maxRangeEdit,        "5000");
-    addField(leftLayout, 3, "Min Speed (km/h)", m_minSpeedEdit,        "-100");
-    addField(leftLayout, 4, "Max Speed (km/h)", m_maxSpeedEdit,        "100");
-    addField(leftLayout, 5, "Range Thresh",     m_rangeThresholdEdit,  "0");
-    
-    // Right column fields - Filter & Tracking
-    addField(rightLayout, 0, "Min Angle (deg)",  m_minAngleEdit,        "-60");
-    addField(rightLayout, 1, "Max Angle (deg)",  m_maxAngleEdit,        "60");
-    addField(rightLayout, 2, "Speed Thresh",     m_speedThresholdEdit,  "0");
-    addField(rightLayout, 3, "Num Tracks",       m_numTracksEdit,       "50");
-    addField(rightLayout, 4, "Median Filter",    m_medianFilterEdit,    "1");
-    addField(rightLayout, 5, "MTI Length",       m_mtiLengthEdit,       "2");
-
-    // Set column widths
-    leftLayout->setColumnMinimumWidth(0, 120);
-    leftLayout->setColumnMinimumWidth(1, 100);
-    rightLayout->setColumnMinimumWidth(0, 120);
-    rightLayout->setColumnMinimumWidth(1, 100);
-    
-    columnsLayout->addWidget(m_dspLeftGroup, 1);
-    columnsLayout->addWidget(m_dspRightGroup, 1);
-    
-    settingsMainLayout->addWidget(columnsContainer, 1);
-    
-    // Create buttons layout - Premium button bar
-    QWidget* buttonContainer = new QWidget(this);
-    buttonContainer->setStyleSheet("background-color: transparent;");
-    QHBoxLayout* buttonLayout = new QHBoxLayout(buttonContainer);
-    buttonLayout->setContentsMargins(0, 8, 0, 0);
-    buttonLayout->setSpacing(12);
-    
-    // Apply button - Premium blue gradient with icon hint
-    m_applyButton = new QPushButton("  Apply Settings", this);
-    m_applyButton->setMinimumHeight(38);
-    m_applyButton->setMinimumWidth(120);
-    m_applyButton->setCursor(Qt::PointingHandCursor);
-    m_applyButton->setStyleSheet(R"(
-        QPushButton {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 8px 16px;
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #3b82f6, stop:1 #2563eb);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            letter-spacing: 0.3px;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #2563eb, stop:1 #1d4ed8);
-        }
-        QPushButton:pressed {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #1d4ed8, stop:1 #1e40af);
-        }
-    )");
-    
-    // Reset button - Premium red gradient
-    m_resetButton = new QPushButton("  Reset", this);
-    m_resetButton->setMinimumHeight(38);
-    m_resetButton->setMinimumWidth(90);
-    m_resetButton->setCursor(Qt::PointingHandCursor);
-    m_resetButton->setStyleSheet(R"(
-        QPushButton {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 8px 16px;
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #ef4444, stop:1 #dc2626);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            letter-spacing: 0.3px;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #dc2626, stop:1 #b91c1c);
-        }
-        QPushButton:pressed {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #b91c1c, stop:1 #991b1b);
-        }
-    )");
-    
-    // Save Settings button - Premium green gradient
-    m_saveSettingsButton = new QPushButton("  Save Settings", this);
-    m_saveSettingsButton->setMinimumHeight(38);
-    m_saveSettingsButton->setMinimumWidth(120);
-    m_saveSettingsButton->setCursor(Qt::PointingHandCursor);
-    m_saveSettingsButton->setStyleSheet(R"(
-        QPushButton {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 8px 16px;
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #10b981, stop:1 #059669);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            letter-spacing: 0.3px;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #059669, stop:1 #047857);
-        }
-        QPushButton:pressed {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #047857, stop:1 #065f46);
-        }
-    )");
-    
-    // Default Settings button - Premium outlined amber style
-    m_defaultSettingsButton = new QPushButton("  Restore Defaults", this);
-    m_defaultSettingsButton->setMinimumHeight(38);
-    m_defaultSettingsButton->setMinimumWidth(130);
-    m_defaultSettingsButton->setCursor(Qt::PointingHandCursor);
-    m_defaultSettingsButton->setStyleSheet(R"(
-        QPushButton {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 8px 16px;
-            background-color: transparent;
-            color: #d97706;
-            border: 2px solid #f59e0b;
-            border-radius: 10px;
-            letter-spacing: 0.3px;
-        }
-        QPushButton:hover {
-            background-color: rgba(245, 158, 11, 0.1);
-            border-color: #d97706;
-            color: #b45309;
-        }
-        QPushButton:pressed {
-            background-color: rgba(245, 158, 11, 0.2);
-            border-color: #b45309;
-        }
-    )");
-    
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(m_applyButton);
-    buttonLayout->addWidget(m_resetButton);
-    buttonLayout->addWidget(m_saveSettingsButton);
-    buttonLayout->addWidget(m_defaultSettingsButton);
-    buttonLayout->addStretch();
-
-    settingsMainLayout->addWidget(buttonContainer, 0);
-
-    // Connect DSP settings signals
-    connect(m_rangeAvgEdit,        &QLineEdit::editingFinished, this, &MainWindow::onRangeAvgEdited);
-    connect(m_minRangeEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMinRangeEdited);
-    connect(m_maxRangeEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMaxRangeEdited);
-    connect(m_minSpeedEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMinSpeedEdited);
-    connect(m_maxSpeedEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMaxSpeedEdited);
-    connect(m_minAngleEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMinAngleEdited);
-    connect(m_maxAngleEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMaxAngleEdited);
-    connect(m_rangeThresholdEdit,  &QLineEdit::editingFinished, this, &MainWindow::onRangeThresholdEdited);
-    connect(m_speedThresholdEdit,  &QLineEdit::editingFinished, this, &MainWindow::onSpeedThresholdEdited);
-    connect(m_numTracksEdit,       &QLineEdit::editingFinished, this, &MainWindow::onNumTracksEdited);
-    connect(m_medianFilterEdit,    &QLineEdit::editingFinished, this, &MainWindow::onMedianFilterEdited);
-    connect(m_mtiLengthEdit,       &QLineEdit::editingFinished, this, &MainWindow::onMtiLengthEdited);
-    connect(m_applyButton,         &QPushButton::clicked,       this, &MainWindow::onApplySettings);
-    connect(m_resetButton,         &QPushButton::clicked,       this, &MainWindow::onResetSettings);
-    connect(m_saveSettingsButton,  &QPushButton::clicked,       this, &MainWindow::onSaveSettings);
-    connect(m_defaultSettingsButton, &QPushButton::clicked,     this, &MainWindow::onDefaultSettings);
-
-    gridLayout->addWidget(m_dspSettingsGroup, 1, 0);
-
-    // ========== TOP-LEFT: Track Table ==========
-    QGroupBox* tableGroup = new QGroupBox("Target Track Table");
+    // ========== RIGHT-TOP: Track Table ==========
+    QGroupBox* tableGroup = new QGroupBox("Track Table");
     QVBoxLayout* tableLayout = new QVBoxLayout(tableGroup);
     tableLayout->setContentsMargins(8, 16, 8, 8);
     m_trackTable = new QTableWidget();
@@ -703,12 +479,248 @@ void MainWindow::setupUI()
     )");
     connect(m_clearTracksButton, &QPushButton::clicked, this, &MainWindow::onClearTracks);
     tableLayout->addWidget(m_clearTracksButton, 0);
-    
-    gridLayout->addWidget(tableGroup, 0, 0);
 
-    // Initialize unused splitters to nullptr (no longer needed but kept for compatibility)
+    topHorizontalSplitter->addWidget(tableGroup);
+    
+    // Set initial sizes for PPI (larger) and Track Table (smaller)
+    topHorizontalSplitter->setSizes({600, 300});
+
+    rightVerticalSplitter->addWidget(topHorizontalSplitter);
+
+    // ========== BOTTOM: FFT Display ==========
+    QGroupBox* fftGroup = new QGroupBox("FFT");
+    QVBoxLayout* fftLayout = new QVBoxLayout(fftGroup);
+    fftLayout->setContentsMargins(8, 16, 8, 8);
+    m_fftWidget = new FFTWidget();
+    m_fftWidget->setRadarParameters(100000.0f, 0.001f, 50000000.0f, 24000000000.0f);
+    m_fftWidget->setMaxRange(50.0f);
+    m_fftWidget->setMinimumSize(300, 200);
+    fftLayout->addWidget(m_fftWidget);
+    
+    rightVerticalSplitter->addWidget(fftGroup);
+    
+    // Set initial sizes for top row (larger) and FFT (smaller)
+    rightVerticalSplitter->setSizes({500, 300});
+
+    // ========== LEFT: DSP Settings Panel (Vertical Layout) ==========
+    m_dspSettingsGroup = new QGroupBox("DSP Settings", this);
+    // Styling will be applied dynamically based on theme
+    
+    QVBoxLayout* settingsMainLayout = new QVBoxLayout(m_dspSettingsGroup);
+    settingsMainLayout->setSpacing(8);
+    settingsMainLayout->setContentsMargins(12, 20, 12, 12);
+    
+    // Single vertical container for settings
+    QWidget* settingsContainer = new QWidget(this);
+    QVBoxLayout* settingsVLayout = new QVBoxLayout(settingsContainer);
+    settingsVLayout->setSpacing(8);
+    settingsVLayout->setContentsMargins(0, 0, 0, 0);
+    
+    // Range & Speed section
+    m_dspLeftGroup = new QGroupBox("Range && Speed", this);
+    QGridLayout* leftLayout = new QGridLayout(m_dspLeftGroup);
+    leftLayout->setSpacing(6);
+    leftLayout->setContentsMargins(10, 16, 10, 10);
+    
+    // Filter & Tracking section
+    m_dspRightGroup = new QGroupBox("Filter && Tracking", this);
+    QGridLayout* rightLayout = new QGridLayout(m_dspRightGroup);
+    rightLayout->setSpacing(6);
+    rightLayout->setContentsMargins(10, 16, 10, 10);
+
+    // Clear labels vector before adding new ones
+    m_dspLabels.clear();
+    
+    // Compact field helper for narrower panel
+    auto addField = [&](QGridLayout* layout, int row, const QString& label, QLineEdit*& edit, const QString& def) {
+        QLabel* l = new QLabel(label, this);
+        m_dspLabels.append(l);  // Store label for theme updates
+        edit = new QLineEdit(def, this);
+        edit->setMinimumWidth(70);
+        edit->setMaximumWidth(100);
+        edit->setMinimumHeight(28);
+        layout->addWidget(l, row, 0);
+        layout->addWidget(edit, row, 1);
+    };
+
+    // Range & Speed fields
+    addField(leftLayout, 0, "Range Avg",        m_rangeAvgEdit,        "1");
+    addField(leftLayout, 1, "Min Range (cm)",   m_minRangeEdit,        "0");
+    addField(leftLayout, 2, "Max Range (cm)",   m_maxRangeEdit,        "5000");
+    addField(leftLayout, 3, "Min Speed (km/h)", m_minSpeedEdit,        "-100");
+    addField(leftLayout, 4, "Max Speed (km/h)", m_maxSpeedEdit,        "100");
+    addField(leftLayout, 5, "Range Thresh",     m_rangeThresholdEdit,  "0");
+    
+    // Filter & Tracking fields
+    addField(rightLayout, 0, "Min Angle (deg)",  m_minAngleEdit,        "-60");
+    addField(rightLayout, 1, "Max Angle (deg)",  m_maxAngleEdit,        "60");
+    addField(rightLayout, 2, "Speed Thresh",     m_speedThresholdEdit,  "0");
+    addField(rightLayout, 3, "Num Tracks",       m_numTracksEdit,       "50");
+    addField(rightLayout, 4, "Median Filter",    m_medianFilterEdit,    "1");
+    addField(rightLayout, 5, "MTI Length",       m_mtiLengthEdit,       "2");
+
+    // Set column widths for narrower panel
+    leftLayout->setColumnMinimumWidth(0, 100);
+    leftLayout->setColumnMinimumWidth(1, 70);
+    rightLayout->setColumnMinimumWidth(0, 100);
+    rightLayout->setColumnMinimumWidth(1, 70);
+    
+    // Stack the two sections vertically
+    settingsVLayout->addWidget(m_dspLeftGroup);
+    settingsVLayout->addWidget(m_dspRightGroup);
+    settingsVLayout->addStretch();
+    
+    settingsMainLayout->addWidget(settingsContainer, 1);
+    
+    // Create buttons layout - Compact vertical layout for narrow panel
+    QWidget* buttonContainer = new QWidget(this);
+    buttonContainer->setStyleSheet("background-color: transparent;");
+    QGridLayout* buttonLayout = new QGridLayout(buttonContainer);
+    buttonLayout->setContentsMargins(0, 8, 0, 0);
+    buttonLayout->setSpacing(8);
+    
+    // Apply button - Premium blue gradient with icon hint
+    m_applyButton = new QPushButton("Apply", this);
+    m_applyButton->setMinimumHeight(34);
+    m_applyButton->setCursor(Qt::PointingHandCursor);
+    m_applyButton->setStyleSheet(R"(
+        QPushButton {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 12px;
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #3b82f6, stop:1 #2563eb);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #2563eb, stop:1 #1d4ed8);
+        }
+        QPushButton:pressed {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #1d4ed8, stop:1 #1e40af);
+        }
+    )");
+    
+    // Reset button - Premium red gradient
+    m_resetButton = new QPushButton("Reset", this);
+    m_resetButton->setMinimumHeight(34);
+    m_resetButton->setCursor(Qt::PointingHandCursor);
+    m_resetButton->setStyleSheet(R"(
+        QPushButton {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 12px;
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #ef4444, stop:1 #dc2626);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #dc2626, stop:1 #b91c1c);
+        }
+        QPushButton:pressed {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #b91c1c, stop:1 #991b1b);
+        }
+    )");
+    
+    // Save Settings button - Premium green gradient
+    m_saveSettingsButton = new QPushButton("Save", this);
+    m_saveSettingsButton->setMinimumHeight(34);
+    m_saveSettingsButton->setCursor(Qt::PointingHandCursor);
+    m_saveSettingsButton->setStyleSheet(R"(
+        QPushButton {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 12px;
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #10b981, stop:1 #059669);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #059669, stop:1 #047857);
+        }
+        QPushButton:pressed {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #047857, stop:1 #065f46);
+        }
+    )");
+    
+    // Default Settings button - Premium outlined amber style
+    m_defaultSettingsButton = new QPushButton("Defaults", this);
+    m_defaultSettingsButton->setMinimumHeight(34);
+    m_defaultSettingsButton->setCursor(Qt::PointingHandCursor);
+    m_defaultSettingsButton->setStyleSheet(R"(
+        QPushButton {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 12px;
+            background-color: transparent;
+            color: #d97706;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        QPushButton:hover {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-color: #d97706;
+            color: #b45309;
+        }
+        QPushButton:pressed {
+            background-color: rgba(245, 158, 11, 0.2);
+            border-color: #b45309;
+        }
+    )");
+    
+    // Arrange buttons in a 2x2 grid for compact display
+    buttonLayout->addWidget(m_applyButton, 0, 0);
+    buttonLayout->addWidget(m_resetButton, 0, 1);
+    buttonLayout->addWidget(m_saveSettingsButton, 1, 0);
+    buttonLayout->addWidget(m_defaultSettingsButton, 1, 1);
+
+    settingsMainLayout->addWidget(buttonContainer, 0);
+
+    // Connect DSP settings signals
+    connect(m_rangeAvgEdit,        &QLineEdit::editingFinished, this, &MainWindow::onRangeAvgEdited);
+    connect(m_minRangeEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMinRangeEdited);
+    connect(m_maxRangeEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMaxRangeEdited);
+    connect(m_minSpeedEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMinSpeedEdited);
+    connect(m_maxSpeedEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMaxSpeedEdited);
+    connect(m_minAngleEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMinAngleEdited);
+    connect(m_maxAngleEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMaxAngleEdited);
+    connect(m_rangeThresholdEdit,  &QLineEdit::editingFinished, this, &MainWindow::onRangeThresholdEdited);
+    connect(m_speedThresholdEdit,  &QLineEdit::editingFinished, this, &MainWindow::onSpeedThresholdEdited);
+    connect(m_numTracksEdit,       &QLineEdit::editingFinished, this, &MainWindow::onNumTracksEdited);
+    connect(m_medianFilterEdit,    &QLineEdit::editingFinished, this, &MainWindow::onMedianFilterEdited);
+    connect(m_mtiLengthEdit,       &QLineEdit::editingFinished, this, &MainWindow::onMtiLengthEdited);
+    connect(m_applyButton,         &QPushButton::clicked,       this, &MainWindow::onApplySettings);
+    connect(m_resetButton,         &QPushButton::clicked,       this, &MainWindow::onResetSettings);
+    connect(m_saveSettingsButton,  &QPushButton::clicked,       this, &MainWindow::onSaveSettings);
+    connect(m_defaultSettingsButton, &QPushButton::clicked,     this, &MainWindow::onDefaultSettings);
+
+    // ========== ASSEMBLE MAIN LAYOUT ==========
+    // Add DSP Settings on the left (fixed width)
+    m_dspSettingsGroup->setMinimumWidth(320);
+    m_dspSettingsGroup->setMaximumWidth(400);
+    mainLayout->addWidget(m_dspSettingsGroup, 0);
+    
+    // Add the right side (PPI, Track Table, FFT) with stretch
+    mainLayout->addWidget(rightVerticalSplitter, 1);
+
+    // Store splitters for compatibility (if needed elsewhere)
     m_mainSplitter = nullptr;
-    m_rightSplitter = nullptr;
+    m_rightSplitter = rightVerticalSplitter;
     
     // Keep labels as hidden placeholders for status updates (not displayed)
     m_frameCountLabel = new QLabel("Frames: 0");
@@ -1011,7 +1023,7 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
 void MainWindow::parseTrackMessage(const QString& message)
 {
     qDebug() << "Parsing text track message";
-    QStringList tokens = message.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+    QStringList tokens = message.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
     m_currentTargets.targets.clear();
     m_currentTargets.numTracks = 0;
 
@@ -1065,7 +1077,7 @@ void MainWindow::parseTrackMessage(const QString& message)
 
 void MainWindow::parseADCMessage(const QString& message)
 {
-    QStringList tokens = message.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
+    QStringList tokens = message.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
     qDebug() << "Parsing text ADC message";
     RawADCFrameTest frame;
     frame.complex_data.clear();
