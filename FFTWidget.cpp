@@ -372,11 +372,43 @@ void FFTWidget::paintEvent(QPaintEvent *event)
 
 void FFTWidget::drawBackground(QPainter& painter)
 {
-    // Theme-aware background colors
-    painter.fillRect(rect(), getBackgroundColor());
-    painter.fillRect(m_plotRect, getPlotBackgroundColor());
-    painter.setPen(QPen(getBorderColor(), 1));
-    painter.drawRect(m_plotRect);
+    // Premium gradient background
+    QLinearGradient bgGradient(0, 0, 0, height());
+    if (m_isDarkTheme) {
+        bgGradient.setColorAt(0, QColor(30, 41, 59));    // #1e293b
+        bgGradient.setColorAt(1, QColor(15, 23, 42));    // #0f172a
+    } else {
+        bgGradient.setColorAt(0, QColor(248, 250, 252)); // #f8fafc
+        bgGradient.setColorAt(1, QColor(241, 245, 249)); // #f1f5f9
+    }
+    painter.fillRect(rect(), bgGradient);
+    
+    // Plot area with subtle gradient
+    QLinearGradient plotGradient(m_plotRect.topLeft(), m_plotRect.bottomLeft());
+    if (m_isDarkTheme) {
+        plotGradient.setColorAt(0, QColor(15, 23, 42));
+        plotGradient.setColorAt(0.5, QColor(20, 30, 50));
+        plotGradient.setColorAt(1, QColor(15, 23, 42));
+    } else {
+        plotGradient.setColorAt(0, QColor(255, 255, 255));
+        plotGradient.setColorAt(0.5, QColor(252, 253, 255));
+        plotGradient.setColorAt(1, QColor(248, 250, 252));
+    }
+    painter.fillRect(m_plotRect, plotGradient);
+    
+    // Premium border with rounded corners effect
+    QColor borderColor = getBorderColor();
+    painter.setPen(QPen(borderColor, 1));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawRoundedRect(m_plotRect, 4, 4);
+    
+    // Subtle inner glow/shadow for depth
+    if (m_isDarkTheme) {
+        QColor glowColor(59, 130, 246, 15);
+        painter.setPen(QPen(glowColor, 3));
+        QRect innerRect = m_plotRect.adjusted(2, 2, -2, -2);
+        painter.drawRoundedRect(innerRect, 3, 3);
+    }
 }
 
 void FFTWidget::drawGrid(QPainter& painter)
@@ -384,18 +416,36 @@ void FFTWidget::drawGrid(QPainter& painter)
     const int GRID_LINES_X = 10;
     const int GRID_LINES_Y = 8;
 
-    // Theme-aware grid color
-    painter.setPen(QPen(getGridColor(), 1));
-
-    // Vertical grid lines (range)
+    // Premium grid styling with gradient lines
+    QColor gridColor = getGridColor();
+    
+    // Vertical grid lines (range) - subtle gradient effect
     for (int i = 0; i <= GRID_LINES_X; ++i) {
         int x = m_plotRect.left() + (i * m_plotRect.width()) / GRID_LINES_X;
+        
+        // Major lines (every 2nd) are slightly more visible
+        if (i % 2 == 0) {
+            painter.setPen(QPen(gridColor, 1, Qt::SolidLine));
+        } else {
+            QColor lightGrid = gridColor;
+            lightGrid.setAlpha(gridColor.alpha() / 2);
+            painter.setPen(QPen(lightGrid, 1, Qt::DotLine));
+        }
         painter.drawLine(x, m_plotRect.top(), x, m_plotRect.bottom());
     }
 
-    // Horizontal grid lines (magnitude)
+    // Horizontal grid lines (magnitude) - subtle styling
     for (int i = 0; i <= GRID_LINES_Y; ++i) {
         int y = m_plotRect.top() + (i * m_plotRect.height()) / GRID_LINES_Y;
+        
+        // Zero line (middle) and boundary lines are more visible
+        if (i == 0 || i == GRID_LINES_Y || i == GRID_LINES_Y / 2) {
+            painter.setPen(QPen(gridColor, 1, Qt::SolidLine));
+        } else {
+            QColor lightGrid = gridColor;
+            lightGrid.setAlpha(gridColor.alpha() / 2);
+            painter.setPen(QPen(lightGrid, 1, Qt::DotLine));
+        }
         painter.drawLine(m_plotRect.left(), y, m_plotRect.right(), y);
     }
 }
@@ -407,8 +457,8 @@ void FFTWidget::drawSpectrum(QPainter& painter)
     QVector<QPointF> spectrumPoints;
 
     // INFINEON-STYLE MAGNITUDE RANGE
-    const float MIN_MAG_DB = -20.0f;  // Matching Infineon GUI
-    const float MAX_MAG_DB = 60.0f;   // Matching Infineon GUI
+    const float MIN_MAG_DB = -20.0f;
+    const float MAX_MAG_DB = 60.0f;
 
     for (size_t i = 0; i < m_magnitudeSpectrum.size(); ++i) {
         float range = m_rangeAxis[i];
@@ -422,7 +472,7 @@ void FFTWidget::drawSpectrum(QPainter& painter)
 
         float x = m_plotRect.left() + ((range - m_minRange) / rangeSpan) * m_plotRect.width();
 
-        // Map magnitude to y-coordinate - INFINEON SCALE
+        // Map magnitude to y-coordinate
         float magDb = m_magnitudeSpectrum[i];
         magDb = std::max(MIN_MAG_DB, std::min(MAX_MAG_DB, magDb));
 
@@ -434,23 +484,58 @@ void FFTWidget::drawSpectrum(QPainter& painter)
 
     if (spectrumPoints.isEmpty()) return;
 
-    // Draw only the spectrum line (no fill) - Theme-aware color
-    painter.setPen(QPen(getSpectrumLineColor(), 2));
-    painter.setBrush(Qt::NoBrush);  // No fill
-
-    // Draw the spectrum line connecting all points
+    // Create filled spectrum area with gradient
     if (spectrumPoints.size() > 1) {
+        QPainterPath fillPath;
+        fillPath.moveTo(spectrumPoints.first().x(), m_plotRect.bottom());
+        fillPath.lineTo(spectrumPoints.first());
+        
+        for (int i = 1; i < spectrumPoints.size(); ++i) {
+            fillPath.lineTo(spectrumPoints[i]);
+        }
+        
+        fillPath.lineTo(spectrumPoints.last().x(), m_plotRect.bottom());
+        fillPath.closeSubpath();
+        
+        // Premium gradient fill under the spectrum line
+        QLinearGradient fillGradient(0, m_plotRect.top(), 0, m_plotRect.bottom());
+        if (m_isDarkTheme) {
+            fillGradient.setColorAt(0, QColor(59, 130, 246, 60));
+            fillGradient.setColorAt(0.5, QColor(59, 130, 246, 30));
+            fillGradient.setColorAt(1, QColor(59, 130, 246, 5));
+        } else {
+            fillGradient.setColorAt(0, QColor(59, 130, 246, 40));
+            fillGradient.setColorAt(0.5, QColor(59, 130, 246, 20));
+            fillGradient.setColorAt(1, QColor(59, 130, 246, 3));
+        }
+        
+        painter.setBrush(fillGradient);
+        painter.setPen(Qt::NoPen);
+        painter.drawPath(fillPath);
+        
+        // Draw the spectrum line with premium styling
         QPainterPath spectrumLine;
         spectrumLine.moveTo(spectrumPoints.first());
-
+        
         for (int i = 1; i < spectrumPoints.size(); ++i) {
             spectrumLine.lineTo(spectrumPoints[i]);
         }
-
+        
+        // Glow effect (subtle)
+        if (m_isDarkTheme) {
+            QColor glowColor = getSpectrumLineColor();
+            glowColor.setAlpha(40);
+            painter.setPen(QPen(glowColor, 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            painter.setBrush(Qt::NoBrush);
+            painter.drawPath(spectrumLine);
+        }
+        
+        // Main spectrum line
+        painter.setPen(QPen(getSpectrumLineColor(), 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         painter.drawPath(spectrumLine);
     }
 
-    // Draw peak markers (like Infineon)
+    // Draw peak markers with premium styling
     drawPeakMarkers(painter, spectrumPoints);
 }
 
@@ -460,11 +545,11 @@ void FFTWidget::drawPeakMarkers(QPainter& painter, const QVector<QPointF>& spect
 
     const float MIN_MAG_DB = -20.0f;
     const float MAX_MAG_DB = 60.0f;
-    const float PEAK_THRESHOLD = 30.0f; // dB threshold for peak detection
+    const float PEAK_THRESHOLD = 30.0f;
 
-    QVector<QPointF> peaks;
+    QVector<QPair<QPointF, float>> peaks; // Store peak position and magnitude
 
-    // Find peaks
+    // Find peaks with magnitude values
     for (int i = 1; i < spectrumPoints.size() - 1; ++i) {
         QPointF prev = spectrumPoints[i-1];
         QPointF curr = spectrumPoints[i];
@@ -472,22 +557,55 @@ void FFTWidget::drawPeakMarkers(QPainter& painter, const QVector<QPointF>& spect
 
         // Check if this is a local maximum
         if (curr.y() < prev.y() && curr.y() < next.y()) {
-            // Convert y back to magnitude for threshold check
             float magDb = MIN_MAG_DB + ((m_plotRect.bottom() - curr.y()) / m_plotRect.height()) * (MAX_MAG_DB - MIN_MAG_DB);
 
             if (magDb > PEAK_THRESHOLD) {
-                peaks.append(curr);
+                peaks.append(qMakePair(curr, magDb));
             }
         }
     }
 
-    // Draw peak markers (theme-aware accent color dots)
-    QColor accentColor = getAccentColor();
-    painter.setPen(QPen(accentColor, 2));
-    painter.setBrush(QBrush(accentColor));
-
-    for (const QPointF& peak : peaks) {
+    // Draw premium peak markers with glow and labels
+    for (const auto& peakData : peaks) {
+        QPointF peak = peakData.first;
+        float magDb = peakData.second;
+        
+        QColor accentColor = getAccentColor();
+        
+        // Draw glow effect
+        QRadialGradient glow(peak, 12);
+        glow.setColorAt(0, QColor(accentColor.red(), accentColor.green(), accentColor.blue(), 80));
+        glow.setColorAt(1, Qt::transparent);
+        painter.setBrush(glow);
+        painter.setPen(Qt::NoPen);
+        painter.drawEllipse(peak, 12, 12);
+        
+        // Draw marker dot with gradient
+        QRadialGradient markerGrad(peak, 6);
+        markerGrad.setColorAt(0, accentColor.lighter(120));
+        markerGrad.setColorAt(1, accentColor);
+        painter.setBrush(markerGrad);
+        painter.setPen(QPen(accentColor.darker(110), 2));
         painter.drawEllipse(peak, 6, 6);
+        
+        // Draw magnitude label above peak
+        painter.save();
+        QString label = QString("%1 dB").arg(magDb, 0, 'f', 1);
+        QFont labelFont("Segoe UI", 8, QFont::DemiBold);
+        painter.setFont(labelFont);
+        QFontMetrics fm(labelFont);
+        
+        QRectF labelBg(peak.x() - fm.horizontalAdvance(label)/2 - 4, peak.y() - 24, 
+                       fm.horizontalAdvance(label) + 8, 16);
+        
+        QColor labelBgColor = m_isDarkTheme ? QColor(15, 23, 42, 220) : QColor(255, 255, 255, 230);
+        painter.setBrush(labelBgColor);
+        painter.setPen(QPen(accentColor, 1));
+        painter.drawRoundedRect(labelBg, 4, 4);
+        
+        painter.setPen(QPen(accentColor, 1));
+        painter.drawText(labelBg, Qt::AlignCenter, label);
+        painter.restore();
     }
 }
 
@@ -540,17 +658,19 @@ void FFTWidget::drawTargetIndicators(QPainter& painter)
 
 void FFTWidget::drawLabels(QPainter& painter)
 {
-    // Theme-aware text colors
-    painter.setPen(QPen(getSecondaryTextColor(), 1));
-    painter.setFont(QFont("Segoe UI", 9));
-
-    // INFINEON MAGNITUDE RANGE
+    // Premium label styling
+    painter.setRenderHint(QPainter::TextAntialiasing, true);
+    
     const float MIN_MAG_DB = -20.0f;
     const float MAX_MAG_DB = 60.0f;
     const int GRID_LINES_X = 10;
     const int GRID_LINES_Y = 8;
 
-    // X-axis labels (Range in meters)
+    // X-axis labels (Range in meters) with premium styling
+    QFont axisFont("Segoe UI", 9);
+    painter.setFont(axisFont);
+    painter.setPen(QPen(getSecondaryTextColor(), 1));
+
     for (int i = 0; i <= GRID_LINES_X; ++i) {
         if (i % 2 == 0 || i == GRID_LINES_X) {
             float range = m_minRange + (float(i) / GRID_LINES_X) * (m_maxRange - m_minRange);
@@ -559,7 +679,7 @@ void FFTWidget::drawLabels(QPainter& painter)
             QString label = QString::number(range, 'f', 0);
             QFontMetrics fm(painter.font());
             QRect textRect = fm.boundingRect(label);
-            painter.drawText(x - textRect.width() / 2, m_plotRect.bottom() + 15, label);
+            painter.drawText(x - textRect.width() / 2, m_plotRect.bottom() + 16, label);
         }
     }
 
@@ -569,57 +689,81 @@ void FFTWidget::drawLabels(QPainter& painter)
         int y = m_plotRect.bottom() - (i * m_plotRect.height()) / GRID_LINES_Y;
 
         QString magText = QString("%1").arg(mag, 0, 'f', 0);
-        painter.drawText(m_plotRect.left() - 35, y + 4, magText);
+        QFontMetrics fm(painter.font());
+        painter.drawText(m_plotRect.left() - fm.horizontalAdvance(magText) - 8, y + 4, magText);
     }
 
-    // Axis labels
+    // Premium axis labels
     painter.setPen(QPen(getTextColor(), 1));
-    painter.setFont(QFont("Segoe UI", 11, QFont::DemiBold));
+    QFont axisLabelFont("Segoe UI", 10, QFont::DemiBold);
+    painter.setFont(axisLabelFont);
 
-    QFontMetrics fm(painter.font());
+    QFontMetrics fm(axisLabelFont);
     QString xLabel = "Range [m]";
     QRect xLabelRect = fm.boundingRect(xLabel);
     painter.drawText(
         m_plotRect.center().x() - xLabelRect.width() / 2,
-        height() - 8,
+        height() - 6,
         xLabel
     );
 
-    // Y-axis label
+    // Y-axis label with rotation
     painter.save();
-    painter.translate(15, m_plotRect.center().y());
+    painter.translate(14, m_plotRect.center().y());
     painter.rotate(-90);
     QString yLabel = "Magnitude [dBFS]";
     QRect yLabelRect = fm.boundingRect(yLabel);
     painter.drawText(-yLabelRect.width() / 2, 0, yLabel);
     painter.restore();
 
-    // Title - Theme-aware style
-    painter.setFont(QFont("Segoe UI", 14, QFont::Bold));
-    painter.setPen(QPen(getTextColor(), 1));
-    painter.drawText(QPointF(m_plotRect.left(), 20), "FFT Spectrum");
-
-    // Antenna info badge
-    painter.setPen(QPen(getPrimaryBlueColor(), 1));
-    painter.setFont(QFont("Segoe UI", 9, QFont::Medium));
-    QString antennaInfo = "● Ant. Tx1 Rx1";
-    painter.drawText(m_plotRect.right() - 90, 20, antennaInfo);
-
-    // Technical info
-    painter.setPen(QPen(getMutedTextColor(), 1));
-    painter.setFont(QFont("Segoe UI", 9));
-    QString frameInfo = QString("Samples: %1  |  BW: %2 MHz  |  Sweep: %3 ms")
-                       .arg(m_currentFrame.complex_data.size())
-                       .arg(m_bandwidth / 1000000.0f, 0, 'f', 0)
-                       .arg(m_sweepTime * 1000.0f, 0, 'f', 1);
-    //painter.drawText(QPointF(m_plotRect.left(), height() - 10), frameInfo);
+    // Premium title card
+    painter.save();
+    QRectF titleBg(m_plotRect.left(), 6, 180, 30);
+    QLinearGradient titleGrad(titleBg.topLeft(), titleBg.bottomRight());
+    if (m_isDarkTheme) {
+        titleGrad.setColorAt(0, QColor(15, 23, 42, 220));
+        titleGrad.setColorAt(1, QColor(30, 41, 59, 200));
+    } else {
+        titleGrad.setColorAt(0, QColor(255, 255, 255, 240));
+        titleGrad.setColorAt(1, QColor(248, 250, 252, 220));
+    }
+    painter.setBrush(titleGrad);
+    painter.setPen(QPen(getBorderColor(), 1));
+    painter.drawRoundedRect(titleBg, 8, 8);
     
-    // Display current filter settings
+    painter.setFont(QFont("Segoe UI", 12, QFont::Bold));
+    painter.setPen(QPen(getTextColor(), 1));
+    painter.drawText(QPointF(m_plotRect.left() + 12, 26), "FFT Spectrum");
+    painter.restore();
+
+    // Antenna info badge with premium styling
+    painter.save();
+    QRectF antennaBg(m_plotRect.right() - 110, 6, 108, 26);
+    QColor badgeColor = m_isDarkTheme ? QColor(59, 130, 246, 40) : QColor(59, 130, 246, 25);
+    painter.fillRect(antennaBg, badgeColor);
+    painter.setPen(QPen(getBorderColor(), 1));
+    painter.drawRoundedRect(antennaBg, 6, 6);
+    
     painter.setPen(QPen(getPrimaryBlueColor(), 1));
-    QString filterInfo = QString("Range: %1-%2m  |  Angle: %3° to %4°")
-                        .arg(m_minRange, 0, 'f', 1)
-                        .arg(m_maxRange, 0, 'f', 1)
-                        .arg(m_minAngle, 0, 'f', 0)
-                        .arg(m_maxAngle, 0, 'f', 0);
-    //painter.drawText(QPointF(m_plotRect.right() - 250, height() - 10), filterInfo);
+    painter.setFont(QFont("Segoe UI", 9, QFont::DemiBold));
+    painter.drawText(m_plotRect.right() - 100, 24, "● Tx1 Rx1");
+    painter.restore();
+
+    // Technical info badge at bottom
+    painter.save();
+    QString frameInfo = QString("Samples: %1  |  BW: %2 MHz")
+                       .arg(m_currentFrame.complex_data.size())
+                       .arg(m_bandwidth / 1000000.0f, 0, 'f', 0);
+    
+    QFont infoFont("Segoe UI", 8);
+    painter.setFont(infoFont);
+    QFontMetrics infoFm(infoFont);
+    int infoWidth = infoFm.horizontalAdvance(frameInfo) + 16;
+    
+    QRectF infoBg(m_plotRect.right() - infoWidth - 4, m_plotRect.bottom() + 4, infoWidth, 20);
+    QColor infoBgColor = m_isDarkTheme ? QColor(15, 23, 42, 180) : QColor(255, 255, 255, 200);
+    painter.fillRect(infoBg, infoBgColor);
+    painter.setPen(QPen(getMutedTextColor(), 1));
+    painter.drawText(infoBg.adjusted(8, 0, -8, 0), Qt::AlignVCenter, frameInfo);
+    painter.restore();
 }
