@@ -757,22 +757,6 @@ void MainWindow::setupUI()
     sep1->setStyleSheet("background-color: #e2e8f0; max-width: 1px;");
     statusLayout->addWidget(sep1);
     
-    // Connection status with indicator dot
-    QLabel* connectionIndicator = new QLabel("●", this);
-    connectionIndicator->setStyleSheet("color: #10b981; font-size: 10px; background-color: transparent;");
-    statusLayout->addWidget(connectionIndicator);
-    
-    QLabel* readyLabel = new QLabel("UDP:5000 Ready", this);
-    readyLabel->setStyleSheet(R"(
-        QLabel {
-            color: #64748b;
-            font-size: 12px;
-            font-weight: 500;
-            background-color: transparent;
-        }
-    )");
-    statusLayout->addWidget(readyLabel);
-    
     statusLayout->addStretch();
     
     // Frame counter with badge style

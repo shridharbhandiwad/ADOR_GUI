@@ -716,39 +716,6 @@ void FFTWidget::drawLabels(QPainter& painter)
     painter.drawText(-yLabelRect.width() / 2, 0, yLabel);
     painter.restore();
 
-    // Premium title card
-    painter.save();
-    QRectF titleBg(m_plotRect.left(), 6, 180, 30);
-    QLinearGradient titleGrad(titleBg.topLeft(), titleBg.bottomRight());
-    if (m_isDarkTheme) {
-        titleGrad.setColorAt(0, QColor(15, 23, 42, 220));
-        titleGrad.setColorAt(1, QColor(30, 41, 59, 200));
-    } else {
-        titleGrad.setColorAt(0, QColor(255, 255, 255, 240));
-        titleGrad.setColorAt(1, QColor(248, 250, 252, 220));
-    }
-    painter.setBrush(titleGrad);
-    painter.setPen(QPen(getBorderColor(), 1));
-    painter.drawRoundedRect(titleBg, 8, 8);
-    
-    painter.setFont(QFont("Segoe UI", 12, QFont::Bold));
-    painter.setPen(QPen(getTextColor(), 1));
-    painter.drawText(QPointF(m_plotRect.left() + 12, 26), "FFT Spectrum");
-    painter.restore();
-
-    // Antenna info badge with premium styling
-    painter.save();
-    QRectF antennaBg(m_plotRect.right() - 110, 6, 108, 26);
-    QColor badgeColor = m_isDarkTheme ? QColor(59, 130, 246, 40) : QColor(59, 130, 246, 25);
-    painter.fillRect(antennaBg, badgeColor);
-    painter.setPen(QPen(getBorderColor(), 1));
-    painter.drawRoundedRect(antennaBg, 6, 6);
-    
-    painter.setPen(QPen(getPrimaryBlueColor(), 1));
-    painter.setFont(QFont("Segoe UI", 9, QFont::DemiBold));
-    painter.drawText(m_plotRect.right() - 100, 24, "● Tx1 Rx1");
-    painter.restore();
-
     // Technical info badge at bottom
     painter.save();
     QString frameInfo = QString("Samples: %1  |  BW: %2 MHz")

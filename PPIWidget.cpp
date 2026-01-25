@@ -844,52 +844,6 @@ void PPIWidget::drawLabels(QPainter& painter)
         painter.drawText(labelPos, azText);
     }
 
-    // Premium title card with gradient background
-    painter.save();
-    
-    // Title background
-    QRectF titleBg(8, 8, 220, 70);
-    QLinearGradient titleGrad(titleBg.topLeft(), titleBg.bottomRight());
-    if (m_isDarkTheme) {
-        titleGrad.setColorAt(0, QColor(15, 23, 42, 220));
-        titleGrad.setColorAt(1, QColor(30, 41, 59, 200));
-    } else {
-        titleGrad.setColorAt(0, QColor(255, 255, 255, 240));
-        titleGrad.setColorAt(1, QColor(248, 250, 252, 220));
-    }
-    painter.setBrush(titleGrad);
-    painter.setPen(QPen(getBorderColor(), 1));
-    painter.drawRoundedRect(titleBg, 12, 12);
-    
-    // Title text
-    painter.setFont(QFont("Segoe UI", 13, QFont::Bold));
-    painter.setPen(QPen(getTextColor(), 1));
-    painter.drawText(QPointF(16, 28), "PPI Display");
-    
-    // Subtitle
-    painter.setFont(QFont("Segoe UI", 9, QFont::Medium));
-    painter.setPen(QPen(getMutedTextColor(), 1));
-    painter.drawText(QPointF(16, 44), "Target Tracking View");
-
-    // FoV badge
-    painter.setFont(QFont("Segoe UI", 9, QFont::DemiBold));
-    QString fovText = QString("FoV: %1° to %2°").arg(m_minAngle, 0, 'f', 0).arg(m_maxAngle, 0, 'f', 0);
-    QColor fovBadgeColor = m_isDarkTheme ? QColor(59, 130, 246, 40) : QColor(59, 130, 246, 25);
-    QRectF fovBadge(16, 52, 95, 18);
-    painter.fillRect(fovBadge, fovBadgeColor);
-    painter.setPen(QPen(getPrimaryBlueColor(), 1));
-    painter.drawText(QPointF(20, 65), fovText);
-
-    // Range badge
-    QString rangeText = QString("R: %1-%2m").arg(m_minRange, 0, 'f', 0).arg(m_maxRange, 0, 'f', 0);
-    QColor rangeBadgeColor = m_isDarkTheme ? QColor(16, 185, 129, 40) : QColor(16, 185, 129, 25);
-    QRectF rangeBadge(118, 52, 95, 18);
-    painter.fillRect(rangeBadge, rangeBadgeColor);
-    painter.setPen(QPen(getSuccessGreenColor(), 1));
-    painter.drawText(QPointF(122, 65), rangeText);
-    
-    painter.restore();
-
     // Legend at bottom with premium styling
     painter.save();
     QRectF legendBg(8, height() - 45, 320, 38);
