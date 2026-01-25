@@ -61,7 +61,7 @@ bool UdpHandler::connectToHost(const QString& host, int port)
 
     // Connect signals
     connect(udpSocket.get(), &QUdpSocket::readyRead, this, &UdpHandler::readPendingDatagrams);
-    connect(udpSocket.get(), QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::error),
+    connect(udpSocket.get(), &QAbstractSocket::errorOccurred,
             [this](QAbstractSocket::SocketError error) {
                 Q_UNUSED(error);
                 emit errorOccurred(QString("UDP Socket Error: %1").arg(udpSocket->errorString()));
@@ -179,7 +179,7 @@ bool UdpHandler::parseDetectionData(const QString& data)
 
 //    return false;
 
-    QStringList lines = data.split("\n", QString::SkipEmptyParts);
+    QStringList lines = data.split("\n", Qt::SkipEmptyParts);
 
     //QVector<DetectionData> targets;
     DetectionData targets;
@@ -187,7 +187,7 @@ bool UdpHandler::parseDetectionData(const QString& data)
     for (const QString &line : lines) {
         //if (!line.contains("NumTargets:")) continue;
 
-        QStringList parts = line.split(" ", QString::SkipEmptyParts);
+        QStringList parts = line.split(" ", Qt::SkipEmptyParts);
         //qDebug()<<"parts "<<parts.size();
         TargetDetection target;
         for (int i = 0; i < parts.size(); ++i) {
