@@ -22,10 +22,10 @@ FFTWidget::FFTWidget(QWidget *parent)
     , m_minRange(0.0f)
     , m_minAngle(-60.0f)         // Default min angle
     , m_maxAngle(60.0f)          // Default max angle
-    , m_margin(50)
+    , m_margin(35)               // Reduced margin for less empty space (was 50)
     , m_isDarkTheme(false)       // Default to light theme
 {
-    setMinimumSize(400, 300);
+    setMinimumSize(400, 200);    // Reduced minimum height (was 300)
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
 }

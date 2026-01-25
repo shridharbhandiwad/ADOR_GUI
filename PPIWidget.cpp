@@ -386,10 +386,13 @@ void PPIWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
 
-    // Calculate plot area (semi-circle)
-    int margin = 40;
-    int availableWidth = width() - 2 * margin;
-    int availableHeight = height() - 2 * margin;
+    // Calculate plot area (semi-circle) - reduced margins for less empty space
+    int marginH = 20;  // Horizontal margin (reduced from 40)
+    int marginV = 30;  // Vertical margin (for labels at top)
+    int marginBottom = 50;  // Bottom margin for legend
+    
+    int availableWidth = width() - 2 * marginH;
+    int availableHeight = height() - marginV - marginBottom;
 
     // For semi-circle, height should be at least half of width
     int diameter = std::min(availableWidth, availableHeight * 2);
@@ -397,12 +400,12 @@ void PPIWidget::resizeEvent(QResizeEvent *event)
 
     m_plotRect = QRect(
         (width() - diameter) / 2,
-        height() - margin - m_plotRadius,
+        height() - marginBottom - m_plotRadius,
         diameter,
         m_plotRadius
     );
 
-    m_center = QPointF(width() / 2.0f, height() - margin);
+    m_center = QPointF(width() / 2.0f, height() - marginBottom);
 }
 
 void PPIWidget::paintEvent(QPaintEvent *event)
@@ -844,9 +847,9 @@ void PPIWidget::drawLabels(QPainter& painter)
         painter.drawText(labelPos, azText);
     }
 
-    // Legend at bottom with premium styling
+    // Legend at bottom with premium styling - compact version
     painter.save();
-    QRectF legendBg(8, height() - 45, 320, 38);
+    QRectF legendBg(8, height() - 42, 300, 34);
     QLinearGradient legendGrad(legendBg.topLeft(), legendBg.bottomRight());
     if (m_isDarkTheme) {
         legendGrad.setColorAt(0, QColor(15, 23, 42, 200));
@@ -857,11 +860,11 @@ void PPIWidget::drawLabels(QPainter& painter)
     }
     painter.setBrush(legendGrad);
     painter.setPen(QPen(getBorderColor(), 1));
-    painter.drawRoundedRect(legendBg, 8, 8);
+    painter.drawRoundedRect(legendBg, 6, 6);
     
-    painter.setFont(QFont("Segoe UI", 8));
+    painter.setFont(QFont("Segoe UI", 7));
     painter.setPen(QPen(getMutedTextColor(), 1));
-    painter.drawText(QPointF(16, height() - 28), "● Blue: Active FoV   ● Bright: In FoV   ● Dim: Outside FoV");
+    painter.drawText(QPointF(14, height() - 22), "● Blue: Active FoV   ● Bright: In FoV   ● Dim: Outside FoV");
     painter.restore();
 }
 
