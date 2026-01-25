@@ -589,25 +589,53 @@ void PPIWidget::drawHoverTooltip(QPainter& painter)
 
 void PPIWidget::drawBackground(QPainter& painter)
 {
-    // Fill background with theme-aware color
-    painter.fillRect(rect(), getBackgroundColor());
-
-    // Draw semi-circular plot area with subtle gradient (theme-aware)
-    QRadialGradient gradient(m_center, m_plotRadius);
+    // Fill background with elegant gradient (theme-aware)
+    QLinearGradient bgGradient(0, 0, 0, height());
     if (m_isDarkTheme) {
-        gradient.setColorAt(0, QColor(30, 41, 59));    // #1e293b - Dark center
-        gradient.setColorAt(1, QColor(15, 23, 42));    // #0f172a - Darker edge
+        bgGradient.setColorAt(0, QColor(30, 41, 59));    // #1e293b
+        bgGradient.setColorAt(1, QColor(15, 23, 42));    // #0f172a
     } else {
-        gradient.setColorAt(0, QColor(255, 255, 255)); // White center
-        gradient.setColorAt(1, QColor(241, 245, 249)); // #f1f5f9 - Slightly darker edge
+        bgGradient.setColorAt(0, QColor(248, 250, 252)); // #f8fafc
+        bgGradient.setColorAt(1, QColor(241, 245, 249)); // #f1f5f9
+    }
+    painter.fillRect(rect(), bgGradient);
+
+    // Draw semi-circular plot area with premium radar-style gradient
+    QRadialGradient radarGradient(m_center, m_plotRadius);
+    if (m_isDarkTheme) {
+        radarGradient.setColorAt(0, QColor(30, 41, 59, 255));    // Center
+        radarGradient.setColorAt(0.3, QColor(22, 33, 50, 255));
+        radarGradient.setColorAt(0.7, QColor(15, 23, 42, 255));
+        radarGradient.setColorAt(1.0, QColor(10, 15, 30, 255));    // Edge - deeper blue
+    } else {
+        radarGradient.setColorAt(0, QColor(255, 255, 255, 255)); // Pure white center
+        radarGradient.setColorAt(0.4, QColor(250, 252, 255, 255));
+        radarGradient.setColorAt(0.8, QColor(241, 245, 249, 255));
+        radarGradient.setColorAt(1.0, QColor(226, 232, 240, 255)); // Soft gray edge
     }
     
-    painter.setBrush(gradient);
-    painter.setPen(QPen(getBorderColor(), 2));
+    painter.setBrush(radarGradient);
+    
+    // Premium border with subtle glow effect
+    QColor borderColor = getBorderColor();
+    QPen borderPen(borderColor, 2);
+    painter.setPen(borderPen);
 
     QRectF ellipseRect(m_center.x() - m_plotRadius, m_center.y() - m_plotRadius,
                        2 * m_plotRadius, 2 * m_plotRadius);
-    painter.drawChord(ellipseRect, 0, 180 * 16); // Draw upper semi-circle
+    
+    // Draw subtle outer glow (only in dark theme)
+    if (m_isDarkTheme) {
+        QColor glowColor(59, 130, 246, 30);
+        painter.setPen(QPen(glowColor, 6));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawChord(ellipseRect, 0, 180 * 16);
+    }
+    
+    // Draw main radar circle
+    painter.setBrush(radarGradient);
+    painter.setPen(borderPen);
+    painter.drawChord(ellipseRect, 0, 180 * 16);
 }
 
 void PPIWidget::drawFoVHighlight(QPainter& painter)
@@ -765,31 +793,40 @@ void PPIWidget::drawTargets(QPainter& painter)
 
 void PPIWidget::drawLabels(QPainter& painter)
 {
-    painter.setPen(QPen(getSecondaryTextColor(), 1)); // Theme-aware secondary text
-    painter.setFont(QFont("Segoe UI", 10));
+    // Premium range labels with enhanced styling
+    QFont rangeFont("Segoe UI", 9, QFont::Medium);
+    painter.setFont(rangeFont);
+    painter.setPen(QPen(getSecondaryTextColor(), 1));
 
-    // Range labels
     for (int i = 1; i <= NUM_RANGE_RINGS; ++i) {
         float range = (float(i) / NUM_RANGE_RINGS) * m_maxRange;
         float radius = (float(i) / NUM_RANGE_RINGS) * m_plotRadius;
 
         QPointF labelPos(m_center.x() + radius * 0.707f, m_center.y() - radius * 0.707f);
-        QString rangeText = QString("%1").arg(range, 0, 'f', 1) + "m";
+        QString rangeText = QString("%1m").arg(range, 0, 'f', 0);
+        
+        // Draw subtle background for range labels
+        QFontMetrics fm(rangeFont);
+        QRect textRect = fm.boundingRect(rangeText);
+        QRectF bgRect(labelPos.x() - 2, labelPos.y() - textRect.height() + 2, 
+                      textRect.width() + 4, textRect.height() + 2);
+        
+        QColor labelBg = m_isDarkTheme ? QColor(15, 23, 42, 180) : QColor(255, 255, 255, 200);
+        painter.fillRect(bgRect, labelBg);
         painter.drawText(labelPos, rangeText);
     }
 
-    // Azimuth labels
-    QFont azFont("Segoe UI", 11, QFont::DemiBold);
+    // Azimuth labels with premium styling
+    QFont azFont("Segoe UI", 10, QFont::DemiBold);
     painter.setFont(azFont);
-    painter.setPen(QPen(getSecondaryTextColor(), 1));
 
     for (int i = 0; i < NUM_AZIMUTH_LINES; i += 2) {
         float azimuth = MIN_AZIMUTH + (float(i) / (NUM_AZIMUTH_LINES - 1)) * (MAX_AZIMUTH - MIN_AZIMUTH);
         float radians = qDegreesToRadians(90.0f - azimuth);
 
         QPointF labelPos(
-            m_center.x() + (m_plotRadius + 20) * std::cos(radians),
-            m_center.y() - (m_plotRadius + 20) * std::sin(radians)
+            m_center.x() + (m_plotRadius + 22) * std::cos(radians),
+            m_center.y() - (m_plotRadius + 22) * std::sin(radians)
         );
 
         QString azText = QString("%1°").arg(azimuth, 0, 'f', 0);
@@ -797,37 +834,81 @@ void PPIWidget::drawLabels(QPainter& painter)
         QRect textRect = fm.boundingRect(azText);
         labelPos -= QPointF(textRect.width() / 2, -textRect.height() / 2);
 
-        // Highlight FoV boundary labels (using configured min/max angles)
+        // Highlight FoV boundary labels with accent color
         if (std::abs(azimuth - m_minAngle) < 1.0f || std::abs(azimuth - m_maxAngle) < 1.0f) {
-            painter.setPen(QPen(getPrimaryBlueColor(), 1)); // Theme-aware primary blue for FoV boundaries
+            painter.setPen(QPen(getPrimaryBlueColor(), 1));
         } else {
-            painter.setPen(QPen(getSecondaryTextColor(), 1)); // Theme-aware secondary text
+            painter.setPen(QPen(getSecondaryTextColor(), 1));
         }
 
         painter.drawText(labelPos, azText);
     }
 
-    // Title and FoV indicator
-    painter.setFont(QFont("Segoe UI", 14, QFont::Bold));
-    painter.setPen(QPen(getTextColor(), 1)); // Theme-aware title text
-    painter.drawText(QPointF(10, 25), "PPI Display - Target Tracks");
+    // Premium title card with gradient background
+    painter.save();
+    
+    // Title background
+    QRectF titleBg(8, 8, 220, 70);
+    QLinearGradient titleGrad(titleBg.topLeft(), titleBg.bottomRight());
+    if (m_isDarkTheme) {
+        titleGrad.setColorAt(0, QColor(15, 23, 42, 220));
+        titleGrad.setColorAt(1, QColor(30, 41, 59, 200));
+    } else {
+        titleGrad.setColorAt(0, QColor(255, 255, 255, 240));
+        titleGrad.setColorAt(1, QColor(248, 250, 252, 220));
+    }
+    painter.setBrush(titleGrad);
+    painter.setPen(QPen(getBorderColor(), 1));
+    painter.drawRoundedRect(titleBg, 12, 12);
+    
+    // Title text
+    painter.setFont(QFont("Segoe UI", 13, QFont::Bold));
+    painter.setPen(QPen(getTextColor(), 1));
+    painter.drawText(QPointF(16, 28), "PPI Display");
+    
+    // Subtitle
+    painter.setFont(QFont("Segoe UI", 9, QFont::Medium));
+    painter.setPen(QPen(getMutedTextColor(), 1));
+    painter.drawText(QPointF(16, 44), "Target Tracking View");
 
-    // FoV information (show actual min/max angles)
-    painter.setFont(QFont("Segoe UI", 10, QFont::Medium));
-    painter.setPen(QPen(getPrimaryBlueColor(), 1)); // Theme-aware primary blue for FoV info
+    // FoV badge
+    painter.setFont(QFont("Segoe UI", 9, QFont::DemiBold));
     QString fovText = QString("FoV: %1° to %2°").arg(m_minAngle, 0, 'f', 0).arg(m_maxAngle, 0, 'f', 0);
-    painter.drawText(QPointF(10, 45), fovText);
+    QColor fovBadgeColor = m_isDarkTheme ? QColor(59, 130, 246, 40) : QColor(59, 130, 246, 25);
+    QRectF fovBadge(16, 52, 95, 18);
+    painter.fillRect(fovBadge, fovBadgeColor);
+    painter.setPen(QPen(getPrimaryBlueColor(), 1));
+    painter.drawText(QPointF(20, 65), fovText);
 
-    // Range information
-    painter.setPen(QPen(getSuccessGreenColor(), 1)); // Theme-aware success green
-    QString rangeText = QString("Range: %1m to %2m").arg(m_minRange, 0, 'f', 1).arg(m_maxRange, 0, 'f', 1);
-    painter.drawText(QPointF(10, 65), rangeText);
+    // Range badge
+    QString rangeText = QString("R: %1-%2m").arg(m_minRange, 0, 'f', 0).arg(m_maxRange, 0, 'f', 0);
+    QColor rangeBadgeColor = m_isDarkTheme ? QColor(16, 185, 129, 40) : QColor(16, 185, 129, 25);
+    QRectF rangeBadge(118, 52, 95, 18);
+    painter.fillRect(rangeBadge, rangeBadgeColor);
+    painter.setPen(QPen(getSuccessGreenColor(), 1));
+    painter.drawText(QPointF(122, 65), rangeText);
+    
+    painter.restore();
 
-    // Legend
-    painter.setFont(QFont("Segoe UI", 9));
-    painter.setPen(QPen(getMutedTextColor(), 1)); // Theme-aware muted text
-    painter.drawText(QPointF(10, height() - 30), "Blue area: Active FoV");
-    painter.drawText(QPointF(10, height() - 15), "Bright targets: Within FoV, Dim targets: Outside FoV");
+    // Legend at bottom with premium styling
+    painter.save();
+    QRectF legendBg(8, height() - 45, 320, 38);
+    QLinearGradient legendGrad(legendBg.topLeft(), legendBg.bottomRight());
+    if (m_isDarkTheme) {
+        legendGrad.setColorAt(0, QColor(15, 23, 42, 200));
+        legendGrad.setColorAt(1, QColor(30, 41, 59, 180));
+    } else {
+        legendGrad.setColorAt(0, QColor(255, 255, 255, 220));
+        legendGrad.setColorAt(1, QColor(248, 250, 252, 200));
+    }
+    painter.setBrush(legendGrad);
+    painter.setPen(QPen(getBorderColor(), 1));
+    painter.drawRoundedRect(legendBg, 8, 8);
+    
+    painter.setFont(QFont("Segoe UI", 8));
+    painter.setPen(QPen(getMutedTextColor(), 1));
+    painter.drawText(QPointF(16, height() - 28), "● Blue: Active FoV   ● Bright: In FoV   ● Dim: Outside FoV");
+    painter.restore();
 }
 
 QColor PPIWidget::getTargetColor(float radialSpeed) const
