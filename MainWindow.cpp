@@ -33,6 +33,7 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QFileInfo>
+#include <QScreen>
 #include <cmath>
 #include <cstring>
 
@@ -95,6 +96,13 @@ void MainWindow::setupUI()
 {
     setWindowTitle("ZopplerSystems RadarGUI");
     setMinimumSize(1200, 800);
+    
+    // Maximize window to screen size on startup
+    if (QScreen* screen = QGuiApplication::primaryScreen()) {
+        QRect screenGeometry = screen->availableGeometry();
+        setGeometry(screenGeometry);
+    }
+    showMaximized();
 
     // Apply premium engineering dashboard theme
     QString lightTheme = R"(
@@ -417,20 +425,43 @@ void MainWindow::setupUI()
     QWidget* centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
-    m_mainSplitter = new QSplitter(Qt::Horizontal, centralWidget);
+    // Create a 2x2 grid layout for equal-sized quadrants
+    QGridLayout* gridLayout = new QGridLayout(centralWidget);
+    gridLayout->setContentsMargins(8, 8, 8, 8);
+    gridLayout->setSpacing(8);
+    
+    // Set equal row and column stretch factors for equal sizing
+    gridLayout->setRowStretch(0, 1);
+    gridLayout->setRowStretch(1, 1);
+    gridLayout->setColumnStretch(0, 1);
+    gridLayout->setColumnStretch(1, 1);
 
-    // Left side: PPI Display
+    // ========== TOP-LEFT: PPI Display ==========
     QGroupBox* ppiGroup = new QGroupBox("PPI Display (Target Tracks)");
     QVBoxLayout* ppiLayout = new QVBoxLayout(ppiGroup);
     ppiLayout->setSpacing(8);
+    ppiLayout->setContentsMargins(8, 16, 8, 8);
 
     m_ppiWidget = new PPIWidget();
-    m_ppiWidget->setMinimumSize(400, 400);
+    m_ppiWidget->setMinimumSize(300, 300);
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
 
-    // DSP Settings Panel - Premium card design with two column layout
+    gridLayout->addWidget(ppiGroup, 0, 0);
+
+    // ========== TOP-RIGHT: FFT Display ==========
+    QGroupBox* fftGroup = new QGroupBox("FFT Spectrum (Raw ADC Data)");
+    QVBoxLayout* fftLayout = new QVBoxLayout(fftGroup);
+    fftLayout->setContentsMargins(8, 16, 8, 8);
+    m_fftWidget = new FFTWidget();
+    m_fftWidget->setRadarParameters(100000.0f, 0.001f, 50000000.0f, 24000000000.0f);
+    m_fftWidget->setMaxRange(50.0f);
+    m_fftWidget->setMinimumSize(300, 300);
+    fftLayout->addWidget(m_fftWidget);
+    
+    gridLayout->addWidget(fftGroup, 0, 1);
+
+    // ========== BOTTOM-LEFT: DSP Settings Panel ==========
     QGroupBox* settingsGroup = new QGroupBox("DSP Settings", this);
-    settingsGroup->setMaximumHeight(400);
     settingsGroup->setStyleSheet(R"(
         QGroupBox {
             font-size: 15px;
@@ -456,9 +487,15 @@ void MainWindow::setupUI()
         }
     )");
     
-    QHBoxLayout* mainSettingsLayout = new QHBoxLayout(settingsGroup);
-    mainSettingsLayout->setSpacing(24);
-    mainSettingsLayout->setContentsMargins(8, 12, 8, 8);
+    QVBoxLayout* settingsMainLayout = new QVBoxLayout(settingsGroup);
+    settingsMainLayout->setSpacing(12);
+    settingsMainLayout->setContentsMargins(12, 20, 12, 12);
+    
+    // Container for the two columns
+    QWidget* columnsContainer = new QWidget(this);
+    QHBoxLayout* columnsLayout = new QHBoxLayout(columnsContainer);
+    columnsLayout->setSpacing(24);
+    columnsLayout->setContentsMargins(0, 0, 0, 0);
     
     // Left column - Range & Speed settings with modern card style
     QGroupBox* leftGroup = new QGroupBox("Range && Speed", this);
@@ -488,7 +525,7 @@ void MainWindow::setupUI()
     )");
     QGridLayout* leftLayout = new QGridLayout(leftGroup);
     leftLayout->setSpacing(10);
-    leftLayout->setContentsMargins(12, 16, 12, 12);
+    leftLayout->setContentsMargins(12, 20, 12, 12);
     
     // Right column - Filter & Tracking settings with modern card style
     QGroupBox* rightGroup = new QGroupBox("Filter && Tracking", this);
@@ -518,7 +555,7 @@ void MainWindow::setupUI()
     )");
     QGridLayout* rightLayout = new QGridLayout(rightGroup);
     rightLayout->setSpacing(10);
-    rightLayout->setContentsMargins(12, 16, 12, 12);
+    rightLayout->setContentsMargins(12, 20, 12, 12);
 
     // Enhanced styling for labels and input fields
     const QString labelStyle = R"(
@@ -538,12 +575,14 @@ void MainWindow::setupUI()
         color: #0f172a;
     )";
     
+    // Increased width from 80 to 100 to prevent text clamping
     auto addField = [&](QGridLayout* layout, int row, const QString& label, QLineEdit*& edit, const QString& def) {
         QLabel* l = new QLabel(label, this);
         l->setStyleSheet(labelStyle);
         edit = new QLineEdit(def, this);
-        edit->setMaximumWidth(80);
-        edit->setMinimumHeight(28);
+        edit->setMinimumWidth(100);
+        edit->setMaximumWidth(120);
+        edit->setMinimumHeight(32);
         edit->setStyleSheet(editStyle);
         layout->addWidget(l, row, 0);
         layout->addWidget(edit, row, 1);
@@ -566,31 +605,33 @@ void MainWindow::setupUI()
     addField(rightLayout, 5, "MTI Length",       m_mtiLengthEdit,       "2");
 
     // Set column widths
-    leftLayout->setColumnMinimumWidth(0, 110);
-    leftLayout->setColumnMinimumWidth(1, 80);
-    rightLayout->setColumnMinimumWidth(0, 110);
-    rightLayout->setColumnMinimumWidth(1, 80);
+    leftLayout->setColumnMinimumWidth(0, 120);
+    leftLayout->setColumnMinimumWidth(1, 100);
+    rightLayout->setColumnMinimumWidth(0, 120);
+    rightLayout->setColumnMinimumWidth(1, 100);
     
-    mainSettingsLayout->addWidget(leftGroup);
-    mainSettingsLayout->addWidget(rightGroup);
+    columnsLayout->addWidget(leftGroup, 1);
+    columnsLayout->addWidget(rightGroup, 1);
     
-    // Create buttons layout BELOW the DSP Settings group - Premium button bar
+    settingsMainLayout->addWidget(columnsContainer, 1);
+    
+    // Create buttons layout - Premium button bar
     QWidget* buttonContainer = new QWidget(this);
     buttonContainer->setStyleSheet("background-color: transparent;");
     QHBoxLayout* buttonLayout = new QHBoxLayout(buttonContainer);
-    buttonLayout->setContentsMargins(0, 12, 0, 0);
-    buttonLayout->setSpacing(16);
+    buttonLayout->setContentsMargins(0, 8, 0, 0);
+    buttonLayout->setSpacing(12);
     
     // Apply button - Premium blue gradient with icon hint
     m_applyButton = new QPushButton("  Apply Settings", this);
-    m_applyButton->setMinimumHeight(42);
-    m_applyButton->setMinimumWidth(140);
+    m_applyButton->setMinimumHeight(38);
+    m_applyButton->setMinimumWidth(120);
     m_applyButton->setCursor(Qt::PointingHandCursor);
     m_applyButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            padding: 10px 24px;
+            padding: 8px 16px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 #3b82f6, stop:1 #2563eb);
             color: white;
@@ -610,14 +651,14 @@ void MainWindow::setupUI()
     
     // Reset button - Premium red gradient
     m_resetButton = new QPushButton("  Reset", this);
-    m_resetButton->setMinimumHeight(42);
-    m_resetButton->setMinimumWidth(110);
+    m_resetButton->setMinimumHeight(38);
+    m_resetButton->setMinimumWidth(90);
     m_resetButton->setCursor(Qt::PointingHandCursor);
     m_resetButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            padding: 10px 24px;
+            padding: 8px 16px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 #ef4444, stop:1 #dc2626);
             color: white;
@@ -637,14 +678,14 @@ void MainWindow::setupUI()
     
     // Save Settings button - Premium green gradient
     m_saveSettingsButton = new QPushButton("  Save Settings", this);
-    m_saveSettingsButton->setMinimumHeight(42);
-    m_saveSettingsButton->setMinimumWidth(140);
+    m_saveSettingsButton->setMinimumHeight(38);
+    m_saveSettingsButton->setMinimumWidth(120);
     m_saveSettingsButton->setCursor(Qt::PointingHandCursor);
     m_saveSettingsButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            padding: 10px 24px;
+            padding: 8px 16px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 #10b981, stop:1 #059669);
             color: white;
@@ -664,14 +705,14 @@ void MainWindow::setupUI()
     
     // Default Settings button - Premium outlined amber style
     m_defaultSettingsButton = new QPushButton("  Restore Defaults", this);
-    m_defaultSettingsButton->setMinimumHeight(42);
-    m_defaultSettingsButton->setMinimumWidth(160);
+    m_defaultSettingsButton->setMinimumHeight(38);
+    m_defaultSettingsButton->setMinimumWidth(130);
     m_defaultSettingsButton->setCursor(Qt::PointingHandCursor);
     m_defaultSettingsButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            padding: 10px 24px;
+            padding: 8px 16px;
             background-color: transparent;
             color: #d97706;
             border: 2px solid #f59e0b;
@@ -696,6 +737,8 @@ void MainWindow::setupUI()
     buttonLayout->addWidget(m_defaultSettingsButton);
     buttonLayout->addStretch();
 
+    settingsMainLayout->addWidget(buttonContainer, 0);
+
     // Connect DSP settings signals
     connect(m_rangeAvgEdit,        &QLineEdit::editingFinished, this, &MainWindow::onRangeAvgEdited);
     connect(m_minRangeEdit,        &QLineEdit::editingFinished, this, &MainWindow::onMinRangeEdited);
@@ -714,25 +757,12 @@ void MainWindow::setupUI()
     connect(m_saveSettingsButton,  &QPushButton::clicked,       this, &MainWindow::onSaveSettings);
     connect(m_defaultSettingsButton, &QPushButton::clicked,     this, &MainWindow::onDefaultSettings);
 
-    ppiLayout->addWidget(settingsGroup, 0);  // Stretch factor 0 to keep compact
-    ppiLayout->addWidget(buttonContainer, 0);  // Add buttons below settings
-    m_mainSplitter->addWidget(ppiGroup);
+    gridLayout->addWidget(settingsGroup, 1, 0);
 
-    // Right side
-    m_rightSplitter = new QSplitter(Qt::Vertical);
-
-    // FFT Display
-    QGroupBox* fftGroup = new QGroupBox("FFT Spectrum (Raw ADC Data)");
-    QVBoxLayout* fftLayout = new QVBoxLayout(fftGroup);
-    m_fftWidget = new FFTWidget();
-    m_fftWidget->setRadarParameters(100000.0f, 0.001f, 50000000.0f, 24000000000.0f);
-    m_fftWidget->setMaxRange(50.0f);
-    fftLayout->addWidget(m_fftWidget);
-    m_rightSplitter->addWidget(fftGroup);
-
-    // Track Table
+    // ========== BOTTOM-RIGHT: Track Table ==========
     QGroupBox* tableGroup = new QGroupBox("Target Track Table");
     QVBoxLayout* tableLayout = new QVBoxLayout(tableGroup);
+    tableLayout->setContentsMargins(8, 16, 8, 8);
     m_trackTable = new QTableWidget();
     m_trackTable->setColumnCount(4);
     QStringList headers;
@@ -741,17 +771,17 @@ void MainWindow::setupUI()
     m_trackTable->horizontalHeader()->setStretchLastSection(true);
     m_trackTable->setAlternatingRowColors(true);
     m_trackTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tableLayout->addWidget(m_trackTable);
+    tableLayout->addWidget(m_trackTable, 1);
     
     // Clear Tracks button with premium styling
     m_clearTracksButton = new QPushButton("  Clear All Tracks", this);
-    m_clearTracksButton->setMinimumHeight(40);
+    m_clearTracksButton->setMinimumHeight(38);
     m_clearTracksButton->setCursor(Qt::PointingHandCursor);
     m_clearTracksButton->setStyleSheet(R"(
         QPushButton {
             font-size: 12px;
             font-weight: 600;
-            padding: 10px 20px;
+            padding: 8px 16px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 #f87171, stop:1 #ef4444);
             color: white;
@@ -769,24 +799,17 @@ void MainWindow::setupUI()
         }
     )");
     connect(m_clearTracksButton, &QPushButton::clicked, this, &MainWindow::onClearTracks);
-    tableLayout->addWidget(m_clearTracksButton);
+    tableLayout->addWidget(m_clearTracksButton, 0);
     
-    m_rightSplitter->addWidget(tableGroup);
+    gridLayout->addWidget(tableGroup, 1, 1);
 
-    m_mainSplitter->addWidget(m_rightSplitter);
-    m_mainSplitter->setSizes({800, 400});
-    m_rightSplitter->setSizes({400, 400});
-
-    QVBoxLayout* mainLayout = new QVBoxLayout(centralWidget);
-    mainLayout->setContentsMargins(8, 4, 8, 4);  // Reduced top margin to remove upper space
-    mainLayout->setSpacing(4);
+    // Initialize unused splitters to nullptr (no longer needed but kept for compatibility)
+    m_mainSplitter = nullptr;
+    m_rightSplitter = nullptr;
     
     // Frame count and status labels - will be updated and shown in status bar
     m_frameCountLabel = new QLabel("Frames: 0");
     m_statusLabel = new QLabel("Status: Ready");
-    
-    // Add main splitter directly without the upper control panel
-    mainLayout->addWidget(m_mainSplitter);
 
     // Create a premium status bar with visual indicators and badges
     QWidget* statusWidget = new QWidget(this);
