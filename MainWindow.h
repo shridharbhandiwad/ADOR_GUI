@@ -17,6 +17,7 @@
 #include <random>
 #include <QMap>
 #include <QDateTime>
+#include <QVector>
 
 #include "PPIWidget.h"
 #include "FFTWidget.h"
@@ -128,6 +129,12 @@ private:
     QLineEdit* m_numTracksEdit;
     QLineEdit* m_medianFilterEdit;
     QLineEdit* m_mtiLengthEdit;
+    
+    // DSP Settings panel group boxes (for theme-aware styling)
+    QGroupBox* m_dspSettingsGroup;
+    QGroupBox* m_dspLeftGroup;
+    QGroupBox* m_dspRightGroup;
+    QVector<QLabel*> m_dspLabels;  // Store labels for theme updates
 
     // Network
     QUdpSocket* m_udpSocket;
@@ -165,6 +172,7 @@ private:
 
     bool m_isDarkTheme;
     void applyTheme(bool isDark);
+    void applyDspSettingsTheme(bool isDark);  // Apply theme to DSP Settings panel
     QString getLightThemeStyleSheet() const;
     QString getDarkThemeStyleSheet() const;
 };

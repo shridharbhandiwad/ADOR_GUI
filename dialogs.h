@@ -258,6 +258,10 @@ public:
     
     DSP_Settings_t getSettings() const;
     void setSettings(const DSP_Settings_t& settings);
+    
+    // Theme support
+    void setDarkTheme(bool isDark);
+    bool isDarkTheme() const { return m_isDarkTheme; }
 
 signals:
     void settingsChanged(const DSP_Settings_t& settings);
@@ -270,6 +274,9 @@ private slots:
     void updateUIFromSettings();
 
 private:
+    // Theme state
+    bool m_isDarkTheme;
+    void applyThemeStyleSheet();
     // Detection threshold settings
     QSpinBox* detectionThresholdSpinBox;
     QSpinBox* cfarThresholdSpinBox;

@@ -732,6 +732,7 @@ void FilterConfigDialog::setSettings(const FilterSettings& settings)
 // DSP Settings Dialog Implementation
 DSPSettingsDialog::DSPSettingsDialog(QWidget* parent)
     : QDialog(parent)
+    , m_isDarkTheme(false)  // Default to light theme
 {
     setWindowTitle("DSP Settings");
     setModal(true);
@@ -739,6 +740,7 @@ DSPSettingsDialog::DSPSettingsDialog(QWidget* parent)
     
     setupUI();
     connectSignals();
+    applyThemeStyleSheet();  // Apply initial theme
     
     // Load default settings
     DSP_Settings_t defaults;
@@ -746,6 +748,442 @@ DSPSettingsDialog::DSPSettingsDialog(QWidget* parent)
 }
 
 DSPSettingsDialog::~DSPSettingsDialog() = default;
+
+void DSPSettingsDialog::setDarkTheme(bool isDark)
+{
+    if (m_isDarkTheme != isDark) {
+        m_isDarkTheme = isDark;
+        applyThemeStyleSheet();
+    }
+}
+
+void DSPSettingsDialog::applyThemeStyleSheet()
+{
+    if (m_isDarkTheme) {
+        // Dark theme stylesheet
+        setStyleSheet(R"(
+            /* ========== DIALOG - DARK THEME ========== */
+            QDialog {
+                background-color: #1e293b;
+                color: #e2e8f0;
+            }
+            
+            /* ========== TAB WIDGET - DARK ========== */
+            QTabWidget::pane {
+                border: 1px solid #334155;
+                background-color: #1e293b;
+                border-radius: 4px;
+            }
+            QTabBar::tab {
+                background-color: #334155;
+                color: #94a3b8;
+                border: 1px solid #475569;
+                border-bottom: none;
+                padding: 8px 16px;
+                margin-right: 2px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+            QTabBar::tab:selected {
+                background-color: #1e293b;
+                color: #f1f5f9;
+                border-bottom: 2px solid #3b82f6;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #475569;
+                color: #e2e8f0;
+            }
+            
+            /* ========== GROUP BOX - DARK ========== */
+            QGroupBox {
+                font-weight: bold;
+                color: #e2e8f0;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                margin-top: 12px;
+                padding-top: 10px;
+                background-color: #0f172a;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                padding: 4px 8px;
+                color: #60a5fa;
+                background-color: #1e293b;
+                border-radius: 4px;
+            }
+            
+            /* ========== LABELS - DARK ========== */
+            QLabel {
+                color: #cbd5e1;
+                background-color: transparent;
+            }
+            
+            /* ========== SPIN BOXES - DARK ========== */
+            QSpinBox, QDoubleSpinBox {
+                background-color: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #f1f5f9;
+                selection-background-color: #3b82f6;
+            }
+            QSpinBox:focus, QDoubleSpinBox:focus {
+                border-color: #3b82f6;
+            }
+            QSpinBox::up-button, QDoubleSpinBox::up-button,
+            QSpinBox::down-button, QDoubleSpinBox::down-button {
+                background-color: #334155;
+                border: none;
+                width: 16px;
+            }
+            QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+            QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+                background-color: #475569;
+            }
+            QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-bottom: 6px solid #94a3b8;
+                width: 0;
+                height: 0;
+            }
+            QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 6px solid #94a3b8;
+                width: 0;
+                height: 0;
+            }
+            
+            /* ========== COMBO BOX - DARK ========== */
+            QComboBox {
+                background-color: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #f1f5f9;
+                min-width: 100px;
+            }
+            QComboBox:focus {
+                border-color: #3b82f6;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 20px;
+                border-left: 1px solid #334155;
+                background-color: #334155;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 6px solid #94a3b8;
+                width: 0;
+                height: 0;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #1e293b;
+                border: 1px solid #334155;
+                color: #f1f5f9;
+                selection-background-color: #3b82f6;
+            }
+            
+            /* ========== CHECK BOX - DARK ========== */
+            QCheckBox {
+                color: #cbd5e1;
+                spacing: 8px;
+            }
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+                border: 2px solid #475569;
+                border-radius: 4px;
+                background-color: #0f172a;
+            }
+            QCheckBox::indicator:checked {
+                background-color: #3b82f6;
+                border-color: #3b82f6;
+            }
+            QCheckBox::indicator:hover {
+                border-color: #60a5fa;
+            }
+            
+            /* ========== SLIDER - DARK ========== */
+            QSlider::groove:horizontal {
+                border: 1px solid #334155;
+                height: 8px;
+                background: #0f172a;
+                border-radius: 4px;
+            }
+            QSlider::handle:horizontal {
+                background: #3b82f6;
+                border: none;
+                width: 18px;
+                margin: -5px 0;
+                border-radius: 9px;
+            }
+            QSlider::handle:horizontal:hover {
+                background: #60a5fa;
+            }
+            QSlider::sub-page:horizontal {
+                background: #3b82f6;
+                border-radius: 4px;
+            }
+            
+            /* ========== BUTTONS - DARK ========== */
+            QPushButton {
+                background-color: #334155;
+                color: #f1f5f9;
+                border: 1px solid #475569;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-weight: 500;
+                min-width: 80px;
+            }
+            QPushButton:hover {
+                background-color: #475569;
+                border-color: #64748b;
+            }
+            QPushButton:pressed {
+                background-color: #1e293b;
+            }
+            QPushButton:disabled {
+                background-color: #1e293b;
+                color: #64748b;
+                border-color: #334155;
+            }
+            
+            /* Send button special styling */
+            QPushButton#sendButton {
+                background-color: #22c55e;
+                color: white;
+                border: none;
+            }
+            QPushButton#sendButton:hover {
+                background-color: #16a34a;
+            }
+            QPushButton#sendButton:pressed {
+                background-color: #15803d;
+            }
+        )");
+        
+        // Update the send button color manually since object name might not work
+        if (sendButton) {
+            sendButton->setStyleSheet("QPushButton { background-color: #22c55e; color: white; font-weight: bold; } QPushButton:hover { background-color: #16a34a; }");
+        }
+    } else {
+        // Light theme stylesheet
+        setStyleSheet(R"(
+            /* ========== DIALOG - LIGHT THEME ========== */
+            QDialog {
+                background-color: #f8fafc;
+                color: #1e293b;
+            }
+            
+            /* ========== TAB WIDGET - LIGHT ========== */
+            QTabWidget::pane {
+                border: 1px solid #e2e8f0;
+                background-color: #ffffff;
+                border-radius: 4px;
+            }
+            QTabBar::tab {
+                background-color: #f1f5f9;
+                color: #64748b;
+                border: 1px solid #e2e8f0;
+                border-bottom: none;
+                padding: 8px 16px;
+                margin-right: 2px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+            QTabBar::tab:selected {
+                background-color: #ffffff;
+                color: #1e293b;
+                border-bottom: 2px solid #3b82f6;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #e2e8f0;
+                color: #334155;
+            }
+            
+            /* ========== GROUP BOX - LIGHT ========== */
+            QGroupBox {
+                font-weight: bold;
+                color: #1e293b;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                margin-top: 12px;
+                padding-top: 10px;
+                background-color: #ffffff;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                padding: 4px 8px;
+                color: #3b82f6;
+                background-color: #f8fafc;
+                border-radius: 4px;
+            }
+            
+            /* ========== LABELS - LIGHT ========== */
+            QLabel {
+                color: #475569;
+                background-color: transparent;
+            }
+            
+            /* ========== SPIN BOXES - LIGHT ========== */
+            QSpinBox, QDoubleSpinBox {
+                background-color: #ffffff;
+                border: 1px solid #cbd5e1;
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #1e293b;
+                selection-background-color: #3b82f6;
+            }
+            QSpinBox:focus, QDoubleSpinBox:focus {
+                border-color: #3b82f6;
+            }
+            QSpinBox::up-button, QDoubleSpinBox::up-button,
+            QSpinBox::down-button, QDoubleSpinBox::down-button {
+                background-color: #f1f5f9;
+                border: none;
+                width: 16px;
+            }
+            QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+            QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {
+                background-color: #e2e8f0;
+            }
+            QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-bottom: 6px solid #64748b;
+                width: 0;
+                height: 0;
+            }
+            QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 6px solid #64748b;
+                width: 0;
+                height: 0;
+            }
+            
+            /* ========== COMBO BOX - LIGHT ========== */
+            QComboBox {
+                background-color: #ffffff;
+                border: 1px solid #cbd5e1;
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #1e293b;
+                min-width: 100px;
+            }
+            QComboBox:focus {
+                border-color: #3b82f6;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 20px;
+                border-left: 1px solid #e2e8f0;
+                background-color: #f1f5f9;
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 6px solid #64748b;
+                width: 0;
+                height: 0;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #ffffff;
+                border: 1px solid #e2e8f0;
+                color: #1e293b;
+                selection-background-color: #3b82f6;
+            }
+            
+            /* ========== CHECK BOX - LIGHT ========== */
+            QCheckBox {
+                color: #475569;
+                spacing: 8px;
+            }
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+                border: 2px solid #cbd5e1;
+                border-radius: 4px;
+                background-color: #ffffff;
+            }
+            QCheckBox::indicator:checked {
+                background-color: #3b82f6;
+                border-color: #3b82f6;
+            }
+            QCheckBox::indicator:hover {
+                border-color: #3b82f6;
+            }
+            
+            /* ========== SLIDER - LIGHT ========== */
+            QSlider::groove:horizontal {
+                border: 1px solid #e2e8f0;
+                height: 8px;
+                background: #f1f5f9;
+                border-radius: 4px;
+            }
+            QSlider::handle:horizontal {
+                background: #3b82f6;
+                border: none;
+                width: 18px;
+                margin: -5px 0;
+                border-radius: 9px;
+            }
+            QSlider::handle:horizontal:hover {
+                background: #2563eb;
+            }
+            QSlider::sub-page:horizontal {
+                background: #3b82f6;
+                border-radius: 4px;
+            }
+            
+            /* ========== BUTTONS - LIGHT ========== */
+            QPushButton {
+                background-color: #f1f5f9;
+                color: #1e293b;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-weight: 500;
+                min-width: 80px;
+            }
+            QPushButton:hover {
+                background-color: #e2e8f0;
+                border-color: #cbd5e1;
+            }
+            QPushButton:pressed {
+                background-color: #cbd5e1;
+            }
+            QPushButton:disabled {
+                background-color: #f8fafc;
+                color: #94a3b8;
+                border-color: #e2e8f0;
+            }
+        )");
+        
+        // Update the send button color
+        if (sendButton) {
+            sendButton->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; } QPushButton:hover { background-color: #45a049; }");
+        }
+    }
+}
 
 void DSPSettingsDialog::setupUI()
 {
