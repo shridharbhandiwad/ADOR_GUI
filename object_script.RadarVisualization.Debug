@@ -1,0 +1,12 @@
+debug/main.o
+debug/MainWindow.o
+debug/PPIWidget.o
+debug/FFTWidget.o
+debug/dialogs.o
+debug/udphandler.o
+debug/qrc_qml.o
+debug/moc_MainWindow.o
+debug/moc_PPIWidget.o
+debug/moc_FFTWidget.o
+debug/moc_dialogs.o
+debug/moc_udphandler.o

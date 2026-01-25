@@ -1,0 +1,12 @@
+release/main.o
+release/MainWindow.o
+release/PPIWidget.o
+release/FFTWidget.o
+release/dialogs.o
+release/udphandler.o
+release/qrc_qml.o
+release/moc_MainWindow.o
+release/moc_PPIWidget.o
+release/moc_FFTWidget.o
+release/moc_dialogs.o
+release/moc_udphandler.o

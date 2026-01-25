@@ -57,6 +57,7 @@ private slots:
     void readPendingDatagrams();
     void cleanupOldDetections();
     void updateStatistics();
+    void onSocketError(QAbstractSocket::SocketError socketError);
 
 private:
     // Connection
