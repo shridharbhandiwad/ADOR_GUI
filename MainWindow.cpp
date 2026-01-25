@@ -1500,7 +1500,7 @@ void MainWindow::createMenuBar()
             border-bottom: 1px solid #e2e8f0;
             padding: 6px 12px;
             spacing: 6px;
-            min-height: 32px;
+            min-height: 16px;
         }
         QMenuBar::item {
             background-color: transparent;
