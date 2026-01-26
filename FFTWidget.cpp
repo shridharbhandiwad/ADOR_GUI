@@ -22,7 +22,7 @@ FFTWidget::FFTWidget(QWidget *parent)
     , m_minRange(0.0f)
     , m_minAngle(-60.0f)         // Default min angle
     , m_maxAngle(60.0f)          // Default max angle
-    , m_margin(35)               // Reduced margin for less empty space (was 50)
+    , m_margin(55)               // Increased margin to accommodate Y-axis label and numbers
     , m_isDarkTheme(false)       // Default to light theme
 {
     setMinimumSize(400, 200);    // Reduced minimum height (was 300)
@@ -366,7 +366,7 @@ void FFTWidget::paintEvent(QPaintEvent *event)
     drawBackground(painter);
     drawGrid(painter);
     drawSpectrum(painter);
-    drawTargetIndicators(painter);
+    // Target indicators removed - they are shown in PPI view only
     drawLabels(painter);
 }
 
@@ -707,13 +707,13 @@ void FFTWidget::drawLabels(QPainter& painter)
         xLabel
     );
 
-    // Y-axis label with rotation
+    // Y-axis label with rotation - positioned to avoid overlap with axis numbers
     painter.save();
-    painter.translate(14, m_plotRect.center().y());
+    painter.translate(12, m_plotRect.center().y());
     painter.rotate(-90);
     QString yLabel = "Magnitude [dBFS]";
     QRect yLabelRect = fm.boundingRect(yLabel);
-    painter.drawText(-yLabelRect.width() / 2, 0, yLabel);
+    painter.drawText(-yLabelRect.width() / 2, 4, yLabel);
     painter.restore();
 
     // Technical info badge at bottom
