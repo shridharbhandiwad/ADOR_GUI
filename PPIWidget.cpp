@@ -847,9 +847,21 @@ void PPIWidget::drawLabels(QPainter& painter)
         painter.drawText(labelPos, azText);
     }
 
-    // Legend at bottom with premium styling - compact version
+    // Legend at bottom with premium styling - centered to avoid angle label overlap
     painter.save();
-    QRectF legendBg(8, height() - 42, 300, 34);
+    
+    // Calculate legend dimensions and center position
+    QString legendText = "● Blue: Active FoV   ● Bright: In FoV   ● Dim: Outside FoV";
+    QFont legendFont("Segoe UI", 9);
+    painter.setFont(legendFont);
+    QFontMetrics legendFm(legendFont);
+    int legendTextWidth = legendFm.horizontalAdvance(legendText);
+    int legendWidth = legendTextWidth + 16;  // Add padding
+    int legendHeight = 28;
+    int legendX = (width() - legendWidth) / 2;  // Center horizontally
+    int legendY = height() - legendHeight - 6;  // Position at bottom with small margin
+    
+    QRectF legendBg(legendX, legendY, legendWidth, legendHeight);
     QLinearGradient legendGrad(legendBg.topLeft(), legendBg.bottomRight());
     if (m_isDarkTheme) {
         legendGrad.setColorAt(0, QColor(15, 23, 42, 200));
@@ -862,9 +874,11 @@ void PPIWidget::drawLabels(QPainter& painter)
     painter.setPen(QPen(getBorderColor(), 1));
     painter.drawRoundedRect(legendBg, 6, 6);
     
-    painter.setFont(QFont("Segoe UI", 9));
     painter.setPen(QPen(getMutedTextColor(), 1));
-    painter.drawText(QPointF(14, height() - 22), "● Blue: Active FoV   ● Bright: In FoV   ● Dim: Outside FoV");
+    // Center text within the legend box
+    int textX = legendX + (legendWidth - legendTextWidth) / 2;
+    int textY = legendY + (legendHeight + legendFm.ascent() - legendFm.descent()) / 2;
+    painter.drawText(QPointF(textX, textY), legendText);
     painter.restore();
 }
 
