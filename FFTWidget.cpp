@@ -591,7 +591,7 @@ void FFTWidget::drawPeakMarkers(QPainter& painter, const QVector<QPointF>& spect
         // Draw magnitude label above peak
         painter.save();
         QString label = QString("%1 dB").arg(magDb, 0, 'f', 1);
-        QFont labelFont("Segoe UI", 8, QFont::DemiBold);
+        QFont labelFont("Segoe UI", 10, QFont::DemiBold);
         painter.setFont(labelFont);
         QFontMetrics fm(labelFont);
         
@@ -643,7 +643,7 @@ void FFTWidget::drawTargetIndicators(QPainter& painter)
 
         // Draw target label with angle info
         painter.setPen(QPen(targetColor, 1));
-        painter.setFont(QFont("Arial", 8, QFont::Bold));
+        painter.setFont(QFont("Arial", 10, QFont::Bold));
 
         QString targetInfo = QString("T%1 (%2°)").arg(target.target_id).arg(target.azimuth, 0, 'f', 1);
         QFontMetrics fm(painter.font());
@@ -667,7 +667,7 @@ void FFTWidget::drawLabels(QPainter& painter)
     const int GRID_LINES_Y = 8;
 
     // X-axis labels (Range in meters) with premium styling
-    QFont axisFont("Segoe UI", 9);
+    QFont axisFont("Segoe UI", 11);
     painter.setFont(axisFont);
     painter.setPen(QPen(getSecondaryTextColor(), 1));
 
@@ -695,7 +695,7 @@ void FFTWidget::drawLabels(QPainter& painter)
 
     // Premium axis labels
     painter.setPen(QPen(getTextColor(), 1));
-    QFont axisLabelFont("Segoe UI", 10, QFont::DemiBold);
+    QFont axisLabelFont("Segoe UI", 12, QFont::DemiBold);
     painter.setFont(axisLabelFont);
 
     QFontMetrics fm(axisLabelFont);
@@ -722,7 +722,7 @@ void FFTWidget::drawLabels(QPainter& painter)
                        .arg(m_currentFrame.complex_data.size())
                        .arg(m_bandwidth / 1000000.0f, 0, 'f', 0);
     
-    QFont infoFont("Segoe UI", 8);
+    QFont infoFont("Segoe UI", 10);
     painter.setFont(infoFont);
     QFontMetrics infoFm(infoFont);
     int infoWidth = infoFm.horizontalAdvance(frameInfo) + 16;

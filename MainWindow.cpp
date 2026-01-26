@@ -119,13 +119,13 @@ void MainWindow::setupUI()
             background-color: transparent;
             color: #1e293b;
             font-family: 'Segoe UI', 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 13px;
+            font-size: 15px;
         }
         
         /* ========== CARD-STYLE GROUP BOXES ========== */
         QGroupBox {
             font-weight: 600;
-            font-size: 14px;
+            font-size: 16px;
             color: #0f172a;
             border: none;
             border-radius: 12px;
@@ -144,7 +144,7 @@ void MainWindow::setupUI()
                 stop:0 #3b82f6, stop:1 #6366f1);
             color: #ffffff;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 14px;
             border-radius: 6px;
             letter-spacing: 0.3px;
         }
@@ -165,7 +165,7 @@ void MainWindow::setupUI()
             padding: 10px 14px;
             color: #0f172a;
             font-weight: 500;
-            font-size: 13px;
+            font-size: 15px;
             selection-background-color: #3b82f6;
             selection-color: #ffffff;
         }
@@ -229,7 +229,7 @@ void MainWindow::setupUI()
             border-radius: 10px;
             color: #ffffff;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 15px;
             padding: 12px 24px;
             min-height: 20px;
             letter-spacing: 0.3px;
@@ -292,7 +292,7 @@ void MainWindow::setupUI()
                 stop:0 #f8fafc, stop:1 #f1f5f9);
             color: #64748b;
             font-weight: 700;
-            font-size: 11px;
+            font-size: 13px;
             padding: 14px 16px;
             border: none;
             border-bottom: 2px solid #e2e8f0;
@@ -394,7 +394,7 @@ void MainWindow::setupUI()
             border: 1px solid #334155;
             border-radius: 8px;
             padding: 10px 14px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 500;
         }
         
@@ -458,7 +458,7 @@ void MainWindow::setupUI()
     m_clearTracksButton->setCursor(Qt::PointingHandCursor);
     m_clearTracksButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
             padding: 8px 16px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -585,7 +585,7 @@ void MainWindow::setupUI()
     m_applyButton->setCursor(Qt::PointingHandCursor);
     m_applyButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             padding: 6px 12px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -611,7 +611,7 @@ void MainWindow::setupUI()
     m_resetButton->setCursor(Qt::PointingHandCursor);
     m_resetButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             padding: 6px 12px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -637,7 +637,7 @@ void MainWindow::setupUI()
     m_saveSettingsButton->setCursor(Qt::PointingHandCursor);
     m_saveSettingsButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             padding: 6px 12px;
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -663,7 +663,7 @@ void MainWindow::setupUI()
     m_defaultSettingsButton->setCursor(Qt::PointingHandCursor);
     m_defaultSettingsButton->setStyleSheet(R"(
         QPushButton {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             padding: 6px 12px;
             background-color: transparent;
@@ -1531,7 +1531,7 @@ void MainWindow::createMenuBar()
         QMenu::item {
             padding: 10px 32px 10px 16px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 500;
             color: #374151;
             margin: 2px 4px;
@@ -1851,13 +1851,13 @@ QString MainWindow::getLightThemeStyleSheet() const
             background-color: transparent;
             color: #1e293b;
             font-family: 'Segoe UI', 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 13px;
+            font-size: 15px;
         }
         
         /* ========== CARD-STYLE GROUP BOXES ========== */
         QGroupBox {
             font-weight: 600;
-            font-size: 14px;
+            font-size: 16px;
             color: #0f172a;
             border: none;
             border-radius: 12px;
@@ -1876,7 +1876,7 @@ QString MainWindow::getLightThemeStyleSheet() const
                 stop:0 #3b82f6, stop:1 #6366f1);
             color: #ffffff;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 14px;
             border-radius: 6px;
             letter-spacing: 0.3px;
         }
@@ -1897,7 +1897,7 @@ QString MainWindow::getLightThemeStyleSheet() const
             padding: 10px 14px;
             color: #0f172a;
             font-weight: 500;
-            font-size: 13px;
+            font-size: 15px;
             selection-background-color: #3b82f6;
             selection-color: #ffffff;
         }
@@ -1954,7 +1954,7 @@ QString MainWindow::getLightThemeStyleSheet() const
             border-radius: 10px;
             color: #ffffff;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 15px;
             padding: 12px 24px;
             min-height: 20px;
             letter-spacing: 0.3px;
@@ -2007,7 +2007,7 @@ QString MainWindow::getLightThemeStyleSheet() const
                 stop:0 #f8fafc, stop:1 #f1f5f9);
             color: #64748b;
             font-weight: 700;
-            font-size: 11px;
+            font-size: 13px;
             padding: 14px 16px;
             border: none;
             border-bottom: 2px solid #e2e8f0;
@@ -2093,7 +2093,7 @@ QString MainWindow::getLightThemeStyleSheet() const
             border: 1px solid #334155;
             border-radius: 8px;
             padding: 10px 14px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 500;
         }
     )";
@@ -2114,13 +2114,13 @@ QString MainWindow::getDarkThemeStyleSheet() const
             background-color: transparent;
             color: #e2e8f0;
             font-family: 'Segoe UI', 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-size: 13px;
+            font-size: 15px;
         }
         
         /* ========== CARD-STYLE GROUP BOXES ========== */
         QGroupBox {
             font-weight: 600;
-            font-size: 14px;
+            font-size: 16px;
             color: #f1f5f9;
             border: 1px solid #334155;
             border-radius: 12px;
@@ -2140,7 +2140,7 @@ QString MainWindow::getDarkThemeStyleSheet() const
                 stop:0 #3b82f6, stop:1 #8b5cf6);
             color: #ffffff;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 14px;
             border-radius: 6px;
             letter-spacing: 0.3px;
         }
@@ -2161,7 +2161,7 @@ QString MainWindow::getDarkThemeStyleSheet() const
             padding: 10px 14px;
             color: #f1f5f9;
             font-weight: 500;
-            font-size: 13px;
+            font-size: 15px;
             selection-background-color: #3b82f6;
             selection-color: #ffffff;
         }
@@ -2218,7 +2218,7 @@ QString MainWindow::getDarkThemeStyleSheet() const
             border-radius: 10px;
             color: #ffffff;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 15px;
             padding: 12px 24px;
             min-height: 20px;
             letter-spacing: 0.3px;
@@ -2275,7 +2275,7 @@ QString MainWindow::getDarkThemeStyleSheet() const
                 stop:0 #1e293b, stop:1 #0f172a);
             color: #94a3b8;
             font-weight: 700;
-            font-size: 11px;
+            font-size: 13px;
             padding: 14px 16px;
             border: none;
             border-bottom: 2px solid #334155;
@@ -2369,7 +2369,7 @@ QString MainWindow::getDarkThemeStyleSheet() const
             border: 1px solid #475569;
             border-radius: 8px;
             padding: 10px 14px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 500;
         }
     )";
@@ -2406,7 +2406,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         if (m_dspSettingsGroup) {
             m_dspSettingsGroup->setStyleSheet(R"(
                 QGroupBox {
-                    font-size: 15px;
+                    font-size: 17px;
                     font-weight: 700;
                     padding: 24px 16px 16px 16px;
                     margin-top: 16px;
@@ -2423,7 +2423,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3b82f6, stop:1 #6366f1);
                     color: #ffffff;
                     font-weight: 700;
-                    font-size: 13px;
+                    font-size: 15px;
                     border-radius: 8px;
                     letter-spacing: 0.3px;
                 }
@@ -2433,7 +2433,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         if (m_dspLeftGroup) {
             m_dspLeftGroup->setStyleSheet(R"(
                 QGroupBox {
-                    font-size: 12px;
+                    font-size: 14px;
                     font-weight: 600;
                     padding: 16px 12px 12px 12px;
                     margin-top: 14px;
@@ -2449,8 +2449,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     padding: 4px 12px;
                     background-color: #0ea5e9;
                     color: #ffffff;
-                    font-weight: 600;
-                    font-size: 11px;
+            font-weight: 600;
+            font-size: 13px;
                     border-radius: 6px;
                     letter-spacing: 0.5px;
                 }
@@ -2460,7 +2460,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         if (m_dspRightGroup) {
             m_dspRightGroup->setStyleSheet(R"(
                 QGroupBox {
-                    font-size: 12px;
+                    font-size: 14px;
                     font-weight: 600;
                     padding: 16px 12px 12px 12px;
                     margin-top: 14px;
@@ -2476,8 +2476,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     padding: 4px 12px;
                     background-color: #8b5cf6;
                     color: #ffffff;
-                    font-weight: 600;
-                    font-size: 11px;
+            font-weight: 600;
+            font-size: 13px;
                     border-radius: 6px;
                     letter-spacing: 0.5px;
                 }
@@ -2486,7 +2486,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         
         // Apply dark theme to labels
         const QString darkLabelStyle = R"(
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
             color: #94a3b8;
             background-color: transparent;
@@ -2518,7 +2518,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         if (m_dspSettingsGroup) {
             m_dspSettingsGroup->setStyleSheet(R"(
                 QGroupBox {
-                    font-size: 15px;
+                    font-size: 17px;
                     font-weight: 700;
                     padding: 24px 16px 16px 16px;
                     margin-top: 16px;
@@ -2535,7 +2535,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3b82f6, stop:1 #6366f1);
                     color: #ffffff;
                     font-weight: 700;
-                    font-size: 13px;
+                    font-size: 15px;
                     border-radius: 8px;
                     letter-spacing: 0.3px;
                 }
@@ -2545,7 +2545,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         if (m_dspLeftGroup) {
             m_dspLeftGroup->setStyleSheet(R"(
                 QGroupBox {
-                    font-size: 12px;
+                    font-size: 14px;
                     font-weight: 600;
                     padding: 16px 12px 12px 12px;
                     margin-top: 14px;
@@ -2561,8 +2561,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     padding: 4px 12px;
                     background-color: #0ea5e9;
                     color: #ffffff;
-                    font-weight: 600;
-                    font-size: 11px;
+            font-weight: 600;
+            font-size: 13px;
                     border-radius: 6px;
                     letter-spacing: 0.5px;
                 }
@@ -2572,7 +2572,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         if (m_dspRightGroup) {
             m_dspRightGroup->setStyleSheet(R"(
                 QGroupBox {
-                    font-size: 12px;
+                    font-size: 14px;
                     font-weight: 600;
                     padding: 16px 12px 12px 12px;
                     margin-top: 14px;
@@ -2588,8 +2588,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     padding: 4px 12px;
                     background-color: #8b5cf6;
                     color: #ffffff;
-                    font-weight: 600;
-                    font-size: 11px;
+            font-weight: 600;
+            font-size: 13px;
                     border-radius: 6px;
                     letter-spacing: 0.5px;
                 }
@@ -2598,7 +2598,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         
         // Apply light theme to labels
         const QString lightLabelStyle = R"(
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
             color: #475569;
             background-color: transparent;

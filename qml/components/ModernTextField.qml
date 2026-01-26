@@ -34,7 +34,7 @@ Item {
         // Label
         Text {
             text: modernTextField.label
-            font.pixelSize: 13
+            font.pixelSize: 15
             font.weight: Font.Medium
             font.family: modernTextField.fontFamily
             color: textSecondary
@@ -49,7 +49,7 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 44
             
-            font.pixelSize: 14
+            font.pixelSize: 16
             font.family: modernTextField.fontFamily
             color: textPrimary
             placeholderText: modernTextField.placeholderText

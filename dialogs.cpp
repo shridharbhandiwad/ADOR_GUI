@@ -60,7 +60,7 @@ void UdpConfigDialog::setupUI()
     
     // Statistics
     statisticsLabel = new QLabel("Packets: 0 received, 0 dropped, 0.0 pps");
-    statisticsLabel->setStyleSheet("QLabel { color: gray; font-size: 10px; }");
+    statisticsLabel->setStyleSheet("QLabel { color: gray; font-size: 12px; }");
     layout->addWidget(statisticsLabel);
     
     // Buttons

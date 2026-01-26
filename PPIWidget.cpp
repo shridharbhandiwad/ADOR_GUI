@@ -505,7 +505,7 @@ void PPIWidget::drawHoverTooltip(QPainter& painter)
     painter.save();
     
     // Set up font for measurement
-    QFont tooltipFont("Segoe UI", 10);
+    QFont tooltipFont("Segoe UI", 12);
     painter.setFont(tooltipFont);
     QFontMetrics fm(tooltipFont);
     
@@ -788,7 +788,7 @@ void PPIWidget::drawTargets(QPainter& painter)
         // Draw target ID (theme-aware text color)
         QColor idTextColor = m_isDarkTheme ? QColor(226, 232, 240) : Qt::white;
         painter.setPen(QPen(idTextColor, 1));
-        painter.setFont(QFont("Arial", inFoV ? 9 : 7)); // Larger text in FoV
+        painter.setFont(QFont("Arial", inFoV ? 11 : 9)); // Larger text in FoV
         QPointF textPos = targetPos + QPointF(0, -targetSize - 5);
         painter.drawText(textPos, QString::number(target.target_id));
     }
@@ -797,7 +797,7 @@ void PPIWidget::drawTargets(QPainter& painter)
 void PPIWidget::drawLabels(QPainter& painter)
 {
     // Premium range labels with enhanced styling
-    QFont rangeFont("Segoe UI", 9, QFont::Medium);
+    QFont rangeFont("Segoe UI", 11, QFont::Medium);
     painter.setFont(rangeFont);
     painter.setPen(QPen(getSecondaryTextColor(), 1));
 
@@ -820,7 +820,7 @@ void PPIWidget::drawLabels(QPainter& painter)
     }
 
     // Azimuth labels with premium styling
-    QFont azFont("Segoe UI", 10, QFont::DemiBold);
+    QFont azFont("Segoe UI", 12, QFont::DemiBold);
     painter.setFont(azFont);
 
     for (int i = 0; i < NUM_AZIMUTH_LINES; i += 2) {
@@ -862,7 +862,7 @@ void PPIWidget::drawLabels(QPainter& painter)
     painter.setPen(QPen(getBorderColor(), 1));
     painter.drawRoundedRect(legendBg, 6, 6);
     
-    painter.setFont(QFont("Segoe UI", 7));
+    painter.setFont(QFont("Segoe UI", 9));
     painter.setPen(QPen(getMutedTextColor(), 1));
     painter.drawText(QPointF(14, height() - 22), "● Blue: Active FoV   ● Bright: In FoV   ● Dim: Outside FoV");
     painter.restore();

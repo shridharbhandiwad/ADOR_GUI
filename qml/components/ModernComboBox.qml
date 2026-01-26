@@ -33,7 +33,7 @@ Item {
         // Label
         Text {
             text: modernComboBox.label
-            font.pixelSize: 13
+            font.pixelSize: 15
             font.weight: Font.Medium
             font.family: modernComboBox.fontFamily
             color: textSecondary
@@ -53,7 +53,7 @@ Item {
                 rightPadding: comboBox.indicator.width + 16
                 
                 text: comboBox.displayText
-                font.pixelSize: 14
+                font.pixelSize: 16
                 font.family: modernComboBox.fontFamily
                 color: textPrimary
                 verticalAlignment: Text.AlignVCenter
@@ -150,7 +150,7 @@ Item {
                 contentItem: Text {
                     text: modelData
                     color: highlighted ? primaryColor : textPrimary
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     font.family: modernComboBox.fontFamily
                     font.weight: highlighted ? Font.Medium : Font.Normal
                     elide: Text.ElideRight

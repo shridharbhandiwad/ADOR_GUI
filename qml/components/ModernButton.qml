@@ -19,7 +19,7 @@ Button {
     
     contentItem: Text {
         text: modernButton.text
-        font.pixelSize: small ? 13 : 14
+        font.pixelSize: small ? 15 : 16
         font.weight: Font.Medium
         font.family: modernButton.fontFamily
         color: outline ? (modernButton.down ? primaryPressed : 
