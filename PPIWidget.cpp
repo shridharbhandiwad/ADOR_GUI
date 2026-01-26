@@ -847,7 +847,7 @@ void PPIWidget::drawLabels(QPainter& painter)
         painter.drawText(labelPos, azText);
     }
 
-    // Legend at bottom with premium styling - centered to avoid angle label overlap
+    // FoV Legend at bottom with premium styling - centered to avoid angle label overlap
     painter.save();
     
     // Calculate legend dimensions and center position
@@ -879,6 +879,100 @@ void PPIWidget::drawLabels(QPainter& painter)
     int textX = legendX + (legendWidth - legendTextWidth) / 2;
     int textY = legendY + (legendHeight + legendFm.ascent() - legendFm.descent()) / 2;
     painter.drawText(QPointF(textX, textY), legendText);
+    painter.restore();
+    
+    // Target Colors Legend - top left corner
+    painter.save();
+    
+    QFont targetLegendFont("Segoe UI", 9);
+    painter.setFont(targetLegendFont);
+    QFontMetrics targetFm(targetLegendFont);
+    
+    // Define legend items with colors and text
+    struct LegendItem {
+        QColor color;
+        QString label;
+    };
+    
+    std::vector<LegendItem> targetLegendItems = {
+        { getErrorRedColor(), "Approaching" },
+        { getSuccessGreenColor(), "Stationary" },
+        { getPrimaryBlueColor(), "Receding" }
+    };
+    
+    // Calculate dimensions
+    int itemSpacing = 8;
+    int dotSize = 10;
+    int dotTextSpacing = 5;
+    int targetLegendPadding = 10;
+    int totalItemsWidth = 0;
+    
+    for (const auto& item : targetLegendItems) {
+        totalItemsWidth += dotSize + dotTextSpacing + targetFm.horizontalAdvance(item.label) + itemSpacing;
+    }
+    totalItemsWidth -= itemSpacing;  // Remove last spacing
+    
+    int targetLegendWidth = totalItemsWidth + 2 * targetLegendPadding;
+    int targetLegendHeight = 28;
+    int targetLegendX = 10;  // Left margin
+    int targetLegendY = 10;  // Top margin
+    
+    // Draw background
+    QRectF targetLegendBg(targetLegendX, targetLegendY, targetLegendWidth, targetLegendHeight);
+    QLinearGradient targetLegendGrad(targetLegendBg.topLeft(), targetLegendBg.bottomRight());
+    if (m_isDarkTheme) {
+        targetLegendGrad.setColorAt(0, QColor(15, 23, 42, 220));
+        targetLegendGrad.setColorAt(1, QColor(30, 41, 59, 200));
+    } else {
+        targetLegendGrad.setColorAt(0, QColor(255, 255, 255, 240));
+        targetLegendGrad.setColorAt(1, QColor(248, 250, 252, 220));
+    }
+    painter.setBrush(targetLegendGrad);
+    painter.setPen(QPen(getBorderColor(), 1));
+    painter.drawRoundedRect(targetLegendBg, 6, 6);
+    
+    // Draw title "Target Speed:" before items
+    QString titleText = "Target Speed:";
+    int titleWidth = targetFm.horizontalAdvance(titleText);
+    
+    // Recalculate with title
+    targetLegendWidth = titleWidth + 10 + totalItemsWidth + 2 * targetLegendPadding;
+    targetLegendBg = QRectF(targetLegendX, targetLegendY, targetLegendWidth, targetLegendHeight);
+    
+    // Redraw background with correct width
+    if (m_isDarkTheme) {
+        targetLegendGrad.setColorAt(0, QColor(15, 23, 42, 220));
+        targetLegendGrad.setColorAt(1, QColor(30, 41, 59, 200));
+    } else {
+        targetLegendGrad.setColorAt(0, QColor(255, 255, 255, 240));
+        targetLegendGrad.setColorAt(1, QColor(248, 250, 252, 220));
+    }
+    targetLegendGrad.setStart(targetLegendBg.topLeft());
+    targetLegendGrad.setFinalStop(targetLegendBg.bottomRight());
+    painter.setBrush(targetLegendGrad);
+    painter.drawRoundedRect(targetLegendBg, 6, 6);
+    
+    // Draw title
+    painter.setPen(QPen(getTextColor(), 1));
+    int currentX = targetLegendX + targetLegendPadding;
+    int centerY = targetLegendY + targetLegendHeight / 2;
+    painter.drawText(QPointF(currentX, centerY + targetFm.ascent() / 2 - 1), titleText);
+    currentX += titleWidth + 10;
+    
+    // Draw legend items
+    for (const auto& item : targetLegendItems) {
+        // Draw colored dot
+        painter.setBrush(item.color);
+        painter.setPen(QPen(item.color.darker(120), 1));
+        painter.drawEllipse(QPointF(currentX + dotSize / 2, centerY), dotSize / 2.0, dotSize / 2.0);
+        currentX += dotSize + dotTextSpacing;
+        
+        // Draw label
+        painter.setPen(QPen(getMutedTextColor(), 1));
+        painter.drawText(QPointF(currentX, centerY + targetFm.ascent() / 2 - 1), item.label);
+        currentX += targetFm.horizontalAdvance(item.label) + itemSpacing;
+    }
+    
     painter.restore();
 }
 
