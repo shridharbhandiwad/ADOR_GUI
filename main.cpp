@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     app.setOrganizationDomain("radar.systems");
     
     // Set modern font
-    QFont defaultFont("Segoe UI", 10);
+    QFont defaultFont("Segoe UI", 12);
     defaultFont.setStyleHint(QFont::SansSerif);
     app.setFont(defaultFont);
     

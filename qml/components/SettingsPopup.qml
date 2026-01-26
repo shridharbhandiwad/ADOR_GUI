@@ -128,7 +128,7 @@ Popup {
                 
                 Text {
                     text: "Settings"
-                    font.pixelSize: 18
+                    font.pixelSize: 20
                     font.weight: Font.DemiBold
                     font.family: fontFamily
                     color: textPrimary
@@ -140,7 +140,7 @@ Popup {
                 
                 Text {
                     text: "Customize your experience"
-                    font.pixelSize: 12
+                    font.pixelSize: 16
                     font.family: fontFamily
                     color: textSecondary
                     
@@ -160,7 +160,7 @@ Popup {
                 Text {
                     anchors.centerIn: parent
                     text: "✕"
-                    font.pixelSize: 14
+                    font.pixelSize: 16
                     color: textSecondary
                 }
                 
@@ -197,7 +197,7 @@ Popup {
             // Section Title
             Text {
                 text: "APPEARANCE"
-                font.pixelSize: 11
+                    font.pixelSize: 13
                 font.weight: Font.DemiBold
                 font.family: fontFamily
                 font.letterSpacing: 1
@@ -246,7 +246,7 @@ Popup {
                         Text {
                             anchors.centerIn: parent
                             text: ThemeManager.isDarkTheme ? "🌙" : "☀️"
-                            font.pixelSize: 18
+                            font.pixelSize: 20
                         }
                         
                         Behavior on color {
@@ -264,7 +264,7 @@ Popup {
                         
                         Text {
                             text: "Theme"
-                            font.pixelSize: 14
+                            font.pixelSize: 16
                             font.weight: Font.Medium
                             font.family: fontFamily
                             color: textPrimary
@@ -276,7 +276,7 @@ Popup {
                         
                         Text {
                             text: ThemeManager.isDarkTheme ? "Dark mode enabled" : "Light mode enabled"
-                            font.pixelSize: 12
+                            font.pixelSize: 16
                             font.family: fontFamily
                             color: textSecondary
                             
@@ -359,14 +359,14 @@ Popup {
                             Text {
                                 anchors.centerIn: parent
                                 text: "☀️"
-                                font.pixelSize: 14
+                                font.pixelSize: 16
                             }
                         }
                         
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "Light"
-                            font.pixelSize: 12
+                            font.pixelSize: 16
                             font.weight: !ThemeManager.isDarkTheme ? Font.DemiBold : Font.Normal
                             font.family: fontFamily
                             color: "#1e293b"
@@ -387,7 +387,7 @@ Popup {
                         Text {
                             anchors.centerIn: parent
                             text: "✓"
-                            font.pixelSize: 12
+                            font.pixelSize: 16
                             font.weight: Font.Bold
                             color: "#ffffff"
                         }
@@ -429,14 +429,14 @@ Popup {
                             Text {
                                 anchors.centerIn: parent
                                 text: "🌙"
-                                font.pixelSize: 14
+                                font.pixelSize: 16
                             }
                         }
                         
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "Dark"
-                            font.pixelSize: 12
+                            font.pixelSize: 16
                             font.weight: ThemeManager.isDarkTheme ? Font.DemiBold : Font.Normal
                             font.family: fontFamily
                             color: "#f1f5f9"
@@ -457,7 +457,7 @@ Popup {
                         Text {
                             anchors.centerIn: parent
                             text: "✓"
-                            font.pixelSize: 12
+                            font.pixelSize: 16
                             font.weight: Font.Bold
                             color: "#ffffff"
                         }

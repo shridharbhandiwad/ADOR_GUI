@@ -21,12 +21,12 @@ QtObject {
     
     // Typography
     readonly property string fontFamily: "Segoe UI, Inter, -apple-system, BlinkMacSystemFont, sans-serif"
-    readonly property int fontSizeXs: 11
-    readonly property int fontSizeSm: 12
-    readonly property int fontSizeMd: 14
-    readonly property int fontSizeLg: 16
-    readonly property int fontSizeXl: 18
-    readonly property int fontSize2Xl: 24
+    readonly property int fontSizeXs: 13
+    readonly property int fontSizeSm: 14
+    readonly property int fontSizeMd: 16
+    readonly property int fontSizeLg: 18
+    readonly property int fontSizeXl: 20
+    readonly property int fontSize2Xl: 28
     
     // Spacing
     readonly property int spacingXs: 4

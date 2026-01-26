@@ -33,7 +33,7 @@ Item {
         // Label
         Text {
             text: modernSpinBox.label
-            font.pixelSize: 13
+            font.pixelSize: 15
             font.weight: Font.Medium
             font.family: modernSpinBox.fontFamily
             color: textSecondary
@@ -54,7 +54,7 @@ Item {
                 z: 2
                 text: spinBox.textFromValue(spinBox.value, spinBox.locale) + modernSpinBox.suffix
                 
-                font.pixelSize: 14
+                font.pixelSize: 16
                 font.family: modernSpinBox.fontFamily
                 color: textPrimary
                 selectionColor: primaryColor
@@ -82,7 +82,7 @@ Item {
                 
                 Text {
                     text: "+"
-                    font.pixelSize: 18
+                    font.pixelSize: 20
                     font.weight: Font.Medium
                     color: spinBox.up.pressed ? primaryColor : textSecondary
                     anchors.centerIn: parent
@@ -103,7 +103,7 @@ Item {
                 
                 Text {
                     text: "-"
-                    font.pixelSize: 18
+                    font.pixelSize: 20
                     font.weight: Font.Medium
                     color: spinBox.down.pressed ? primaryColor : textSecondary
                     anchors.centerIn: parent

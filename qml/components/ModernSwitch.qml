@@ -32,7 +32,7 @@ Item {
             
             Text {
                 text: modernSwitch.label
-                font.pixelSize: 14
+                font.pixelSize: 16
                 font.weight: Font.Medium
                 font.family: modernSwitch.fontFamily
                 color: textPrimary
@@ -43,7 +43,7 @@ Item {
             
             Text {
                 text: modernSwitch.description
-                font.pixelSize: 12
+                font.pixelSize: 14
                 font.family: modernSwitch.fontFamily
                 color: textSecondary
                 visible: modernSwitch.description.length > 0

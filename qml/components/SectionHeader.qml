@@ -17,7 +17,7 @@ Item {
         
         Text {
             text: sectionHeader.title
-            font.pixelSize: 12
+            font.pixelSize: 14
             font.weight: Font.DemiBold
             font.family: sectionHeader.fontFamily
             font.letterSpacing: 0.5

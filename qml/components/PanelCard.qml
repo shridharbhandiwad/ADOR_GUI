@@ -62,7 +62,7 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text: panelCard.iconText
-                    font.pixelSize: 24
+                    font.pixelSize: 26
                     color: primaryColor
                     
                     Behavior on color { ColorAnimation { duration: 200 } }
@@ -75,7 +75,7 @@ Rectangle {
                 
                 Text {
                     text: panelCard.title
-                    font.pixelSize: 18
+                    font.pixelSize: 20
                     font.weight: Font.DemiBold
                     font.family: panelCard.fontFamily
                     color: textPrimary
@@ -85,7 +85,7 @@ Rectangle {
                 
                 Text {
                     text: panelCard.subtitle
-                    font.pixelSize: 13
+                    font.pixelSize: 15
                     font.family: panelCard.fontFamily
                     color: textSecondary
                     visible: panelCard.subtitle.length > 0

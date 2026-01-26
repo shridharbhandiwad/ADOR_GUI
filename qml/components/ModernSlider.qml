@@ -37,7 +37,7 @@ Item {
             
             Text {
                 text: modernSlider.label
-                font.pixelSize: 13
+                font.pixelSize: 15
                 font.weight: Font.Medium
                 font.family: modernSlider.fontFamily
                 color: textSecondary
@@ -49,7 +49,7 @@ Item {
             
             Text {
                 text: Math.round(slider.value) + modernSlider.suffix
-                font.pixelSize: 14
+                font.pixelSize: 16
                 font.weight: Font.DemiBold
                 font.family: modernSlider.fontFamily
                 color: primaryColor
@@ -131,7 +131,7 @@ Item {
             
             Text {
                 text: slider.from + suffix
-                font.pixelSize: 11
+                font.pixelSize: 13
                 font.family: modernSlider.fontFamily
                 color: textSecondary
                 
@@ -142,7 +142,7 @@ Item {
             
             Text {
                 text: slider.to + suffix
-                font.pixelSize: 11
+                font.pixelSize: 13
                 font.family: modernSlider.fontFamily
                 color: textSecondary
                 
