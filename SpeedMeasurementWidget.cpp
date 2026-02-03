@@ -21,7 +21,7 @@ SpeedometerGauge::SpeedometerGauge(QWidget *parent)
     , m_isDarkTheme(false)
     , m_radius(0.0f)
 {
-    setMinimumSize(320, 320);
+    setMinimumSize(400, 400);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     // Setup animation timer for smooth needle movement
@@ -796,7 +796,7 @@ void ModernSpeedButton::paintEvent(QPaintEvent *event)
     
     // Draw text
     painter.setPen(Qt::white);
-    QFont btnFont("Segoe UI", 15, QFont::DemiBold);
+    QFont btnFont("Segoe UI", 13, QFont::DemiBold);
     painter.setFont(btnFont);
     painter.drawText(btnRect, Qt::AlignCenter, text());
 }
@@ -976,7 +976,7 @@ void SpeedMeasurementWidget::setupUI()
     
     // Speedometer gauge
     m_speedometer = new SpeedometerGauge(this);
-    m_speedometer->setMinimumSize(380, 380);
+    m_speedometer->setMinimumSize(450, 450);
     leftLayout->addWidget(m_speedometer, 1, Qt::AlignCenter);
     
     // Status label below speedometer
