@@ -20,6 +20,7 @@ SOURCES += \
     MainWindow.cpp \
     PPIWidget.cpp \
     FFTWidget.cpp \
+    SpeedMeasurementWidget.cpp \
     dialogs.cpp \
     udphandler.cpp
 
@@ -28,6 +29,7 @@ HEADERS += \
     MainWindow.h \
     PPIWidget.h \
     FFTWidget.h \
+    SpeedMeasurementWidget.h \
     dialogs.h \
     udphandler.h \
     structures.h

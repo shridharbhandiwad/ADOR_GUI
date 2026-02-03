@@ -1,66 +1,191 @@
 #ifndef SPEEDMEASUREMENTWIDGET_H
 #define SPEEDMEASUREMENTWIDGET_H
 
-#include <QWidget>
-#include <QPainter>
-#include <QTimer>
-#include <QPushButton>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGroupBox>
+#include &lt;QWidget&gt;
+#include &lt;QPainter&gt;
+#include &lt;QTimer&gt;
+#include &lt;QPushButton&gt;
+#include &lt;QLabel&gt;
+#include &lt;QVBoxLayout&gt;
+#include &lt;QHBoxLayout&gt;
+#include &lt;QGroupBox&gt;
+#include &lt;QFrame&gt;
+#include &lt;QPropertyAnimation&gt;
+#include &lt;QGraphicsDropShadowEffect&gt;
 #include "DataStructures.h"
+
+// Theme definition structure for consistent theming
+struct SpeedWidgetTheme {
+    // Background colors
+    QColor backgroundColor;
+    QColor cardBackground;
+    
+    // Primary colors
+    QColor primaryColor;
+    QColor primaryHover;
+    QColor accentColor;
+    
+    // Text colors
+    QColor textPrimary;
+    QColor textSecondary;
+    QColor textMuted;
+    
+    // Gauge colors
+    QColor gaugeBackground;
+    QColor gaugeInnerRing;
+    QColor gaugeArcColor;
+    QColor gaugeGlowColor;
+    QColor needleColor;
+    QColor needleGlow;
+    QColor centerCapColor;
+    
+    // Speed zones
+    QColor normalZone;
+    QColor warningZone;
+    QColor dangerZone;
+    
+    // Border colors
+    QColor borderColor;
+    QColor borderFocus;
+    
+    // Shadow
+    QColor shadowColor;
+    
+    // Button colors
+    QColor buttonBackground;
+    QColor buttonHover;
+    QColor buttonText;
+};
 
 class SpeedometerGauge : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(float animatedSpeed READ getAnimatedSpeed WRITE setAnimatedSpeed)
+    Q_PROPERTY(float glowIntensity READ getGlowIntensity WRITE setGlowIntensity)
 
 public:
     explicit SpeedometerGauge(QWidget *parent = nullptr);
     
     void setSpeed(float speed);
     float getSpeed() const { return m_currentSpeed; }
+    float getAnimatedSpeed() const { return m_animatedSpeed; }
+    void setAnimatedSpeed(float speed);
+    float getGlowIntensity() const { return m_glowIntensity; }
+    void setGlowIntensity(float intensity);
     void setMaxSpeed(float maxSpeed);
     float getMaxSpeed() const { return m_maxSpeed; }
     void setDarkTheme(bool isDark);
     bool isDarkTheme() const { return m_isDarkTheme; }
+    void setTheme(const SpeedWidgetTheme&amp; theme);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-    void drawBackground(QPainter& painter);
-    void drawOuterRing(QPainter& painter);
-    void drawSpeedScale(QPainter& painter);
-    void drawNeedle(QPainter& painter);
-    void drawCenterCap(QPainter& painter);
-    void drawSpeedMarkers(QPainter& painter);
+    void drawBackground(QPainter&amp; painter);
+    void drawOuterGlow(QPainter&amp; painter);
+    void drawGaugeArc(QPainter&amp; painter);
+    void drawProgressArc(QPainter&amp; painter);
+    void drawTickMarks(QPainter&amp; painter);
+    void drawSpeedLabels(QPainter&amp; painter);
+    void drawNeedle(QPainter&amp; painter);
+    void drawCenterHub(QPainter&amp; painter);
+    void drawDigitalDisplay(QPainter&amp; painter);
+    void drawSpeedZones(QPainter&amp; painter);
     
-    // Theme-aware color methods
-    QColor getBackgroundColor() const;
-    QColor getOuterRingColor() const;
-    QColor getInnerBackgroundColor() const;
-    QColor getScaleTextColor() const;
-    QColor getNeedleColor() const;
-    QColor getCenterCapColor() const;
-    QColor getHighSpeedZoneColor() const;
+    void updateThemeColors();
     
-    float m_currentSpeed;      // Current speed in km/h
-    float m_maxSpeed;          // Maximum speed on scale
-    float m_animatedSpeed;     // For smooth animation
+    float m_currentSpeed;
+    float m_maxSpeed;
+    float m_animatedSpeed;
+    float m_glowIntensity;
     bool m_isDarkTheme;
+    
+    SpeedWidgetTheme m_theme;
     
     QRect m_gaugeRect;
     QPointF m_center;
     float m_radius;
     
-    // Animation timer
     QTimer* m_animationTimer;
+    QPropertyAnimation* m_glowAnimation;
     
-    // Constants
-    static constexpr float START_ANGLE = 225.0f;   // Starting angle (bottom-left)
-    static constexpr float SWEEP_ANGLE = -270.0f;  // Sweep clockwise (270 degrees total)
+    // Constants for gauge geometry
+    static constexpr float START_ANGLE = 225.0f;
+    static constexpr float SWEEP_ANGLE = -270.0f;
+    static constexpr float WARNING_THRESHOLD = 0.7f;  // 70% of max speed
+    static constexpr float DANGER_THRESHOLD = 0.85f;  // 85% of max speed
+};
+
+// Modern styled card widget for sections
+class SpeedCard : public QFrame
+{
+    Q_OBJECT
+
+public:
+    explicit SpeedCard(QWidget *parent = nullptr);
+    void setDarkTheme(bool isDark);
+    void setTheme(const SpeedWidgetTheme&amp; theme);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    bool m_isDarkTheme;
+    SpeedWidgetTheme m_theme;
+};
+
+// Digital display widget with animated numbers
+class DigitalSpeedDisplay : public QWidget
+{
+    Q_OBJECT
+    Q_PROPERTY(float displayValue READ getDisplayValue WRITE setDisplayValue)
+
+public:
+    explicit DigitalSpeedDisplay(QWidget *parent = nullptr);
+    
+    void setValue(float value);
+    float getDisplayValue() const { return m_displayValue; }
+    void setDisplayValue(float value);
+    void setUnit(const QString&amp; unit);
+    void setDarkTheme(bool isDark);
+    void setTheme(const SpeedWidgetTheme&amp; theme);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    float m_targetValue;
+    float m_displayValue;
+    QString m_unit;
+    bool m_isDarkTheme;
+    SpeedWidgetTheme m_theme;
+    QPropertyAnimation* m_valueAnimation;
+};
+
+// Modern styled button
+class ModernSpeedButton : public QPushButton
+{
+    Q_OBJECT
+
+public:
+    explicit ModernSpeedButton(const QString&amp; text, QWidget *parent = nullptr);
+    void setDarkTheme(bool isDark);
+    void setTheme(const SpeedWidgetTheme&amp; theme);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+    void enterEvent(QEnterEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+
+private:
+    bool m_isDarkTheme;
+    bool m_hovered;
+    bool m_pressed;
+    SpeedWidgetTheme m_theme;
 };
 
 class SpeedMeasurementWidget : public QWidget
@@ -72,7 +197,7 @@ public:
     ~SpeedMeasurementWidget();
     
     void updateSpeed(float speed);
-    void updateFromTargets(const TargetTrackData& targets);
+    void updateFromTargets(const TargetTrackData&amp; targets);
     void setDarkTheme(bool isDark);
     bool isDarkTheme() const { return m_isDarkTheme; }
 
@@ -82,21 +207,24 @@ public slots:
 private:
     void setupUI();
     void updateTopSpeed(float speed);
+    void applyTheme();
+    SpeedWidgetTheme createLightTheme() const;
+    SpeedWidgetTheme createDarkTheme() const;
     
     // UI Components
     SpeedometerGauge* m_speedometer;
     QLabel* m_actualSpeedLabel;
-    QLabel* m_topSpeedValue;
+    DigitalSpeedDisplay* m_topSpeedDisplay;
     QLabel* m_topSpeedLabel;
-    QGroupBox* m_outputGroup;
-    QPushButton* m_resetButton;
+    SpeedCard* m_topSpeedCard;
+    SpeedCard* m_outputCard;
+    ModernSpeedButton* m_resetButton;
+    QLabel* m_statusLabel;
     
     // Data
     float m_topSpeed;
     bool m_isDarkTheme;
-    
-    // Theme-aware styling
-    void applyTheme();
+    SpeedWidgetTheme m_currentTheme;
 };
 
 #endif // SPEEDMEASUREMENTWIDGET_H
