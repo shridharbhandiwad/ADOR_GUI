@@ -34,6 +34,8 @@
 #include <QTextStream>
 #include <QFileInfo>
 #include <QScreen>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <cmath>
 #include <cstring>
 
@@ -49,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_trackRefreshTimer(nullptr)
     , m_saveSettingsButton(nullptr)
     , m_defaultSettingsButton(nullptr)
+    , m_loadFromFileButton(nullptr)
+    , m_saveToFileButton(nullptr)
     , m_clearTracksButton(nullptr)
     , m_simulationEnabled(false)  // Simulation disabled by default
     , m_randomEngine(std::random_device{}())
@@ -686,11 +690,65 @@ void MainWindow::setupUI()
         }
     )");
     
-    // Arrange buttons in a 2x2 grid for compact display
+    // Load From File button - Premium outlined purple style
+    m_loadFromFileButton = new QPushButton("Load From File", this);
+    m_loadFromFileButton->setMinimumHeight(34);
+    m_loadFromFileButton->setCursor(Qt::PointingHandCursor);
+    m_loadFromFileButton->setStyleSheet(R"(
+        QPushButton {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 12px;
+            background-color: transparent;
+            color: #7c3aed;
+            border: 2px solid #8b5cf6;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        QPushButton:hover {
+            background-color: rgba(139, 92, 246, 0.1);
+            border-color: #7c3aed;
+            color: #6d28d9;
+        }
+        QPushButton:pressed {
+            background-color: rgba(139, 92, 246, 0.2);
+            border-color: #6d28d9;
+        }
+    )");
+    
+    // Save to File button - Premium outlined teal style
+    m_saveToFileButton = new QPushButton("Save to File", this);
+    m_saveToFileButton->setMinimumHeight(34);
+    m_saveToFileButton->setCursor(Qt::PointingHandCursor);
+    m_saveToFileButton->setStyleSheet(R"(
+        QPushButton {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 12px;
+            background-color: transparent;
+            color: #0d9488;
+            border: 2px solid #14b8a6;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        QPushButton:hover {
+            background-color: rgba(20, 184, 166, 0.1);
+            border-color: #0d9488;
+            color: #0f766e;
+        }
+        QPushButton:pressed {
+            background-color: rgba(20, 184, 166, 0.2);
+            border-color: #0f766e;
+        }
+    )");
+    
+    // Arrange buttons in a 3x2 grid for compact display
     buttonLayout->addWidget(m_applyButton, 0, 0);
     buttonLayout->addWidget(m_resetButton, 0, 1);
     buttonLayout->addWidget(m_saveSettingsButton, 1, 0);
     buttonLayout->addWidget(m_defaultSettingsButton, 1, 1);
+    buttonLayout->addWidget(m_loadFromFileButton, 2, 0);
+    buttonLayout->addWidget(m_saveToFileButton, 2, 1);
 
     settingsMainLayout->addWidget(buttonContainer, 0);
 
@@ -711,6 +769,8 @@ void MainWindow::setupUI()
     connect(m_resetButton,         &QPushButton::clicked,       this, &MainWindow::onResetSettings);
     connect(m_saveSettingsButton,  &QPushButton::clicked,       this, &MainWindow::onSaveSettings);
     connect(m_defaultSettingsButton, &QPushButton::clicked,     this, &MainWindow::onDefaultSettings);
+    connect(m_loadFromFileButton,  &QPushButton::clicked,       this, &MainWindow::onLoadFromFile);
+    connect(m_saveToFileButton,    &QPushButton::clicked,       this, &MainWindow::onSaveToFile);
 
     // ========== ASSEMBLE MAIN LAYOUT ==========
     // Add DSP Settings on the left (fixed width)
@@ -2865,6 +2925,154 @@ void MainWindow::onDefaultSettings()
     
     m_statusLabel->setText("Status: Default settings restored");
     QMessageBox::information(this, "Default Settings", "All settings restored to factory defaults.");
+}
+
+void MainWindow::onLoadFromFile()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Load DSP Settings",
+        QString(),
+        "JSON Files (*.json);;All Files (*)");
+    
+    if (fileName.isEmpty()) {
+        return;
+    }
+    
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, "Load Error", 
+            QString("Could not open file for reading:\n%1").arg(fileName));
+        return;
+    }
+    
+    QByteArray data = file.readAll();
+    file.close();
+    
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    
+    if (parseError.error != QJsonParseError::NoError) {
+        QMessageBox::warning(this, "Parse Error", 
+            QString("Failed to parse JSON file:\n%1").arg(parseError.errorString()));
+        return;
+    }
+    
+    if (!doc.isObject()) {
+        QMessageBox::warning(this, "Format Error", 
+            "Invalid JSON format: Expected an object.");
+        return;
+    }
+    
+    QJsonObject obj = doc.object();
+    
+    // Load values from JSON and update UI fields
+    if (obj.contains("range_avg"))
+        m_rangeAvgEdit->setText(QString::number(obj["range_avg"].toInt(1)));
+    if (obj.contains("min_range_cm"))
+        m_minRangeEdit->setText(QString::number(obj["min_range_cm"].toInt(0)));
+    if (obj.contains("max_range_cm"))
+        m_maxRangeEdit->setText(QString::number(obj["max_range_cm"].toInt(5000)));
+    if (obj.contains("min_speed_kmh"))
+        m_minSpeedEdit->setText(QString::number(obj["min_speed_kmh"].toInt(0)));
+    if (obj.contains("max_speed_kmh"))
+        m_maxSpeedEdit->setText(QString::number(obj["max_speed_kmh"].toInt(100)));
+    if (obj.contains("min_angle_degree"))
+        m_minAngleEdit->setText(QString::number(obj["min_angle_degree"].toInt(0)));
+    if (obj.contains("max_angle_degree"))
+        m_maxAngleEdit->setText(QString::number(obj["max_angle_degree"].toInt(0)));
+    if (obj.contains("range_threshold"))
+        m_rangeThresholdEdit->setText(QString::number(obj["range_threshold"].toInt(0)));
+    if (obj.contains("speed_threshold"))
+        m_speedThresholdEdit->setText(QString::number(obj["speed_threshold"].toInt(0)));
+    if (obj.contains("num_tracks"))
+        m_numTracksEdit->setText(QString::number(obj["num_tracks"].toInt(50)));
+    if (obj.contains("median_filter"))
+        m_medianFilterEdit->setText(QString::number(obj["median_filter"].toInt(1)));
+    if (obj.contains("mti_length"))
+        m_mtiLengthEdit->setText(QString::number(obj["mti_length"].toInt(2)));
+    
+    // Update internal DSP settings from loaded values
+    onRangeAvgEdited();
+    onMinRangeEdited();
+    onMaxRangeEdited();
+    onMinSpeedEdited();
+    onMaxSpeedEdited();
+    onMinAngleEdited();
+    onMaxAngleEdited();
+    onRangeThresholdEdited();
+    onSpeedThresholdEdited();
+    onNumTracksEdited();
+    onMedianFilterEdited();
+    onMtiLengthEdited();
+    
+    // Apply loaded settings to both displays (range in meters, angles in degrees)
+    float minRangeMeters = m_dsp.min_range_cm / 100.0f;
+    float maxRangeMeters = m_dsp.max_range_cm / 100.0f;
+    
+    m_ppiWidget->setMinRange(minRangeMeters);
+    m_ppiWidget->setMaxRange(maxRangeMeters);
+    m_ppiWidget->setMinAngle(static_cast<float>(m_dsp.min_angle_degree));
+    m_ppiWidget->setMaxAngle(static_cast<float>(m_dsp.max_angle_degree));
+    
+    m_fftWidget->setMinRange(minRangeMeters);
+    m_fftWidget->setMaxRange(maxRangeMeters);
+    m_fftWidget->setMinAngle(static_cast<float>(m_dsp.min_angle_degree));
+    m_fftWidget->setMaxAngle(static_cast<float>(m_dsp.max_angle_degree));
+    
+    m_statusLabel->setText("Status: Settings loaded from file");
+    QMessageBox::information(this, "Settings Loaded", 
+        QString("DSP settings have been loaded from:\n%1").arg(fileName));
+}
+
+void MainWindow::onSaveToFile()
+{
+    QString fileName = QFileDialog::getSaveFileName(
+        this,
+        "Save DSP Settings",
+        "dsp_settings.json",
+        "JSON Files (*.json);;All Files (*)");
+    
+    if (fileName.isEmpty()) {
+        return;
+    }
+    
+    // Ensure .json extension
+    if (!fileName.endsWith(".json", Qt::CaseInsensitive)) {
+        fileName += ".json";
+    }
+    
+    // Build JSON object from current settings
+    QJsonObject obj;
+    obj["range_avg"] = m_rangeAvgEdit->text().toInt();
+    obj["min_range_cm"] = m_minRangeEdit->text().toInt();
+    obj["max_range_cm"] = m_maxRangeEdit->text().toInt();
+    obj["min_speed_kmh"] = m_minSpeedEdit->text().toInt();
+    obj["max_speed_kmh"] = m_maxSpeedEdit->text().toInt();
+    obj["min_angle_degree"] = m_minAngleEdit->text().toInt();
+    obj["max_angle_degree"] = m_maxAngleEdit->text().toInt();
+    obj["range_threshold"] = m_rangeThresholdEdit->text().toInt();
+    obj["speed_threshold"] = m_speedThresholdEdit->text().toInt();
+    obj["num_tracks"] = m_numTracksEdit->text().toInt();
+    obj["median_filter"] = m_medianFilterEdit->text().toInt();
+    obj["mti_length"] = m_mtiLengthEdit->text().toInt();
+    
+    QJsonDocument doc(obj);
+    QByteArray jsonData = doc.toJson(QJsonDocument::Indented);
+    
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly)) {
+        QMessageBox::warning(this, "Save Error", 
+            QString("Could not open file for writing:\n%1").arg(fileName));
+        return;
+    }
+    
+    file.write(jsonData);
+    file.close();
+    
+    m_statusLabel->setText("Status: Settings saved to file");
+    QMessageBox::information(this, "Settings Saved", 
+        QString("DSP settings have been saved to:\n%1").arg(fileName));
 }
 
 void MainWindow::onClearTracks()
