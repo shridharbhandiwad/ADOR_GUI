@@ -6,13 +6,15 @@ import QtGraphicalEffects 1.15
 Item {
     id: modernSwitch
     
-    // Theme properties
+    // Theme properties - Simplified classic palette
     property color primaryColor: ThemeManager.primaryColor
-    property color successColor: ThemeManager.successColor
     property color textPrimary: ThemeManager.textPrimary
     property color textSecondary: ThemeManager.textSecondary
     property color trackOffColor: ThemeManager.trackOffColor
     property string fontFamily: ThemeManager.fontFamily
+    
+    // Deprecated - kept for compatibility, now uses primaryColor
+    property color successColor: primaryColor
     
     // Switch properties
     property string label: ""
@@ -63,7 +65,8 @@ Item {
                 x: switchControl.leftPadding
                 y: parent.height / 2 - height / 2
                 radius: 14
-                color: switchControl.checked ? successColor : trackOffColor
+                // Uses primary color for classic unified look
+                color: switchControl.checked ? primaryColor : trackOffColor
                 
                 Behavior on color {
                     ColorAnimation { duration: 200 }

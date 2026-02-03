@@ -6,12 +6,11 @@ import QtGraphicalEffects 1.15
 Rectangle {
     id: angleCorrectionPanel
     
-    // Theme properties
+    // Theme properties - Simplified classic palette
     property color cardBackground: ThemeManager.cardBackground
     property color primaryColor: ThemeManager.primaryColor
     property color primaryHover: ThemeManager.primaryHover
     property color primaryPressed: ThemeManager.primaryPressed
-    property color accentColor: ThemeManager.accentColor
     property color textPrimary: ThemeManager.textPrimary
     property color textSecondary: ThemeManager.textSecondary
     property color textMuted: ThemeManager.textMuted
@@ -20,6 +19,9 @@ Rectangle {
     property color inputBackground: ThemeManager.inputBackground
     property color hoverBackground: ThemeManager.hoverBackground
     property string fontFamily: ThemeManager.fontFamily
+    
+    // Deprecated - kept for compatibility, now uses primaryColor
+    property color accentColor: primaryColor
     
     // State
     property bool useAngleMethod: true
@@ -342,13 +344,13 @@ Rectangle {
                     }
                 }
                 
-                // Visualization hint
+                // Visualization hint - Classic unified design with primary color
                 Rectangle {
                     Layout.fillWidth: true
                     height: 60
                     radius: 10
-                    color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.1)
-                    border.color: Qt.rgba(accentColor.r, accentColor.g, accentColor.b, 0.3)
+                    color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05)
+                    border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
                     
                     Behavior on color { ColorAnimation { duration: 200 } }
                     Behavior on border.color { ColorAnimation { duration: 200 } }
@@ -359,8 +361,12 @@ Rectangle {
                         spacing: 12
                         
                         Text {
-                            text: "💡"
-                            font.pixelSize: 20
+                            text: "ℹ"
+                            font.pixelSize: 18
+                            font.weight: Font.Bold
+                            color: primaryColor
+                            
+                            Behavior on color { ColorAnimation { duration: 200 } }
                         }
                         
                         Text {

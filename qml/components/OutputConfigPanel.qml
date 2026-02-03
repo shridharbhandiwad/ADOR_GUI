@@ -6,12 +6,11 @@ import QtGraphicalEffects 1.15
 Rectangle {
     id: outputConfigPanel
     
-    // Theme properties
+    // Theme properties - Simplified classic palette
     property color cardBackground: ThemeManager.cardBackground
     property color primaryColor: ThemeManager.primaryColor
     property color primaryHover: ThemeManager.primaryHover
     property color primaryPressed: ThemeManager.primaryPressed
-    property color accentColor: ThemeManager.accentColor
     property color textPrimary: ThemeManager.textPrimary
     property color textSecondary: ThemeManager.textSecondary
     property color textMuted: ThemeManager.textMuted
@@ -20,6 +19,9 @@ Rectangle {
     property color inputBackground: ThemeManager.inputBackground
     property color hoverBackground: ThemeManager.hoverBackground
     property string fontFamily: ThemeManager.fontFamily
+    
+    // Deprecated - kept for compatibility, now uses primaryColor
+    property color accentColor: primaryColor
     
     color: cardBackground
     radius: 16

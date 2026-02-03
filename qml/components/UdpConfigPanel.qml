@@ -6,12 +6,11 @@ import QtGraphicalEffects 1.15
 Rectangle {
     id: udpConfigPanel
     
-    // Theme properties
+    // Theme properties - Simplified classic palette
     property color cardBackground: ThemeManager.cardBackground
     property color primaryColor: ThemeManager.primaryColor
     property color primaryHover: ThemeManager.primaryHover
     property color primaryPressed: ThemeManager.primaryPressed
-    property color successColor: ThemeManager.successColor
     property color errorColor: ThemeManager.errorColor
     property color textPrimary: ThemeManager.textPrimary
     property color textSecondary: ThemeManager.textSecondary
@@ -20,6 +19,9 @@ Rectangle {
     property color borderFocus: ThemeManager.borderFocus
     property color inputBackground: ThemeManager.inputBackground
     property string fontFamily: ThemeManager.fontFamily
+    
+    // Deprecated - kept for compatibility, now uses primaryColor
+    property color successColor: primaryColor
     
     // State
     property bool isConnected: false
@@ -69,12 +71,12 @@ Rectangle {
             
             Item { Layout.fillWidth: true }
             
-            // Status badge
+            // Status badge - Classic design with primary/error colors only
             Rectangle {
                 width: statusRow.width + 12
                 height: 24
                 radius: 12
-                color: isConnected ? Qt.rgba(successColor.r, successColor.g, successColor.b, 0.15) :
+                color: isConnected ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15) :
                                     Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.15)
                 
                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -88,7 +90,7 @@ Rectangle {
                         width: 6
                         height: 6
                         radius: 3
-                        color: isConnected ? successColor : errorColor
+                        color: isConnected ? primaryColor : errorColor
                         anchors.verticalCenter: parent.verticalCenter
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
@@ -106,7 +108,7 @@ Rectangle {
                         font.pixelSize: 11
                         font.weight: Font.Medium
                         font.family: fontFamily
-                        color: isConnected ? successColor : errorColor
+                        color: isConnected ? primaryColor : errorColor
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                     }
@@ -182,7 +184,7 @@ Rectangle {
                     fontFamily: udpConfigPanel.fontFamily
                 }
                 
-                // Stats cards
+                // Stats cards - Classic unified design with primary color
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 3
@@ -195,7 +197,7 @@ Rectangle {
                         height: 80
                         radius: 12
                         color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05)
-                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.2)
+                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                         Behavior on border.color { ColorAnimation { duration: 200 } }
@@ -227,13 +229,15 @@ Rectangle {
                         }
                     }
                     
-                    // Packets dropped
+                    // Packets dropped - Keep error color as this is a critical indicator
                     Rectangle {
                         Layout.fillWidth: true
                         height: 80
                         radius: 12
-                        color: Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.05)
-                        border.color: Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.2)
+                        color: packetsDropped > 0 ? Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.05) : 
+                               Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.03)
+                        border.color: packetsDropped > 0 ? Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.2) :
+                                      Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                         Behavior on border.color { ColorAnimation { duration: 200 } }
@@ -247,7 +251,7 @@ Rectangle {
                                 font.pixelSize: 24
                                 font.weight: Font.Bold
                                 font.family: fontFamily
-                                color: errorColor
+                                color: packetsDropped > 0 ? errorColor : textMuted
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
                                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -265,13 +269,13 @@ Rectangle {
                         }
                     }
                     
-                    // Packet rate
+                    // Packet rate - Uses primary color for unified classic look
                     Rectangle {
                         Layout.fillWidth: true
                         height: 80
                         radius: 12
-                        color: Qt.rgba(successColor.r, successColor.g, successColor.b, 0.05)
-                        border.color: Qt.rgba(successColor.r, successColor.g, successColor.b, 0.2)
+                        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05)
+                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                         Behavior on border.color { ColorAnimation { duration: 200 } }
@@ -285,7 +289,7 @@ Rectangle {
                                 font.pixelSize: 24
                                 font.weight: Font.Bold
                                 font.family: fontFamily
-                                color: successColor
+                                color: primaryColor
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
                                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -306,15 +310,17 @@ Rectangle {
             }
         }
         
-        // Connect button (kept as it's specific to UDP)
+        // Connect button - Uses primary color for both states (classic unified look)
         ModernButton {
             text: isConnected ? "Disconnect" : "Connect"
             Layout.fillWidth: true
             Layout.preferredHeight: 36
+            outline: isConnected  // Outline style when connected for visual distinction
             
-            primaryColor: isConnected ? errorColor : udpConfigPanel.primaryColor
-            primaryHover: isConnected ? Qt.darker(errorColor, 1.1) : udpConfigPanel.primaryHover
-            primaryPressed: isConnected ? Qt.darker(errorColor, 1.2) : udpConfigPanel.primaryPressed
+            primaryColor: udpConfigPanel.primaryColor
+            primaryHover: udpConfigPanel.primaryHover
+            primaryPressed: udpConfigPanel.primaryPressed
+            textColor: udpConfigPanel.textPrimary
             fontFamily: udpConfigPanel.fontFamily
             
             onClicked: {
