@@ -230,6 +230,7 @@ QWidget* MainWindow::createDetectionTab()
     trackTable->setColumnCount(4);
     QStringList headers = {"Track ID", "Radius (m)", "Radial Speed (m/s)", "Azimuth (°)"};
     trackTable->setHorizontalHeaderLabels(headers);
+    trackTable->verticalHeader()->setVisible(false);  // Hide row numbers to remove black column on left
     trackTable->setAlternatingRowColors(true);
     trackTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     trackTable->setSortingEnabled(true);

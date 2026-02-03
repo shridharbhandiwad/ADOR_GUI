@@ -452,6 +452,7 @@ void MainWindow::setupUI()
     headers << "ID" << "Range (m)" << "Azimuth (°)" << "Radial Speed (m/s)";
     m_trackTable->setHorizontalHeaderLabels(headers);
     m_trackTable->horizontalHeader()->setStretchLastSection(true);
+    m_trackTable->verticalHeader()->setVisible(false);  // Hide row numbers to remove black column on left
     m_trackTable->setAlternatingRowColors(true);
     m_trackTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableLayout->addWidget(m_trackTable, 1);
