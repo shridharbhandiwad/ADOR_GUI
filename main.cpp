@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     
     // Set application properties
-    app.setApplicationName("ZopplerSystems RadarGUI");
+    app.setApplicationName("RadarGUI");
     app.setApplicationVersion("2.0.0");
     app.setOrganizationName("Zoppler Systems");
     app.setOrganizationDomain("zoppler.systems");

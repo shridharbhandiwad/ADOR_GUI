@@ -1819,8 +1819,8 @@ void MainWindow::createMenuBar()
     // Logo icon
     QLabel* logoLabel = new QLabel(brandingWidget);
     QPixmap logoPixmap(":/resources/zoppler_logo.png");
-    logoLabel->setPixmap(logoPixmap.scaled(24, 24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    logoLabel->setFixedSize(24, 24);
+    logoLabel->setPixmap(logoPixmap.scaled(36, 36, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    logoLabel->setFixedSize(36, 36);
     brandingLayout->addWidget(logoLabel);
     
     // Company name label
