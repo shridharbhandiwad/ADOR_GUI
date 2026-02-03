@@ -9,7 +9,7 @@ Button {
     property color primaryColor: ThemeManager.primaryColor
     property color primaryHover: ThemeManager.primaryHover
     property color primaryPressed: ThemeManager.primaryPressed
-    property color textColor: "#ffffff"
+    property color textColor: ThemeManager.buttonTextColor  // Dynamic based on theme
     property string fontFamily: ThemeManager.fontFamily
     property bool outline: false
     property bool small: false

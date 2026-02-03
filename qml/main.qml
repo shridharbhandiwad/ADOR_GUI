@@ -305,19 +305,41 @@ ApplicationWindow {
             }
 
             MenuItem {
-                text: qsTr("☀️  Light Theme")
+                text: qsTr("Light Theme")
                 checkable: true
                 checked: !ThemeManager.isDarkTheme
                 onTriggered: ThemeManager.setTheme(false)
 
-                contentItem: Text {
-                    text: parent.text
-                    font.pixelSize: 13
-                    font.family: root.fontFamily
-                    color: parent.highlighted ? primaryColor : textPrimary
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
+                contentItem: Row {
+                    spacing: 10
                     leftPadding: 12
+                    
+                    // Light theme indicator
+                    Rectangle {
+                        width: 14
+                        height: 14
+                        radius: 7
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: "#1a1a1a"
+                        
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 6
+                            height: 6
+                            radius: 3
+                            color: "#fafafa"
+                        }
+                    }
+                    
+                    Text {
+                        text: "Light Theme"
+                        font.pixelSize: 13
+                        font.family: root.fontFamily
+                        font.weight: !ThemeManager.isDarkTheme ? Font.Medium : Font.Normal
+                        color: parent.parent.highlighted ? primaryColor : textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
                 }
 
                 background: Rectangle {
@@ -333,19 +355,43 @@ ApplicationWindow {
             }
 
             MenuItem {
-                text: qsTr("🌙  Dark Theme")
+                text: qsTr("Dark Theme")
                 checkable: true
                 checked: ThemeManager.isDarkTheme
                 onTriggered: ThemeManager.setTheme(true)
 
-                contentItem: Text {
-                    text: parent.text
-                    font.pixelSize: 13
-                    font.family: root.fontFamily
-                    color: parent.highlighted ? primaryColor : textPrimary
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
+                contentItem: Row {
+                    spacing: 10
                     leftPadding: 12
+                    
+                    // Dark theme indicator
+                    Rectangle {
+                        width: 14
+                        height: 14
+                        radius: 7
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: "#fafafa"
+                        border.color: "#d4d4d4"
+                        border.width: 1
+                        
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 6
+                            height: 6
+                            radius: 3
+                            color: "#1a1a1a"
+                        }
+                    }
+                    
+                    Text {
+                        text: "Dark Theme"
+                        font.pixelSize: 13
+                        font.family: root.fontFamily
+                        font.weight: ThemeManager.isDarkTheme ? Font.Medium : Font.Normal
+                        color: parent.parent.highlighted ? primaryColor : textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
                 }
 
                 background: Rectangle {
@@ -557,34 +603,53 @@ ApplicationWindow {
             Row {
                 spacing: 24
 
-                // Connection status
+                // Connection status - Monochrome design
                 Row {
                     spacing: 8
 
+                    // Status indicator with ring design for elegance
                     Rectangle {
-                        width: 10
-                        height: 10
-                        radius: 5
+                        width: 12
+                        height: 12
+                        radius: 6
                         anchors.verticalCenter: parent.verticalCenter
-                        color: udpPanel.isConnected ? successColor : errorColor
+                        color: "transparent"
+                        border.color: udpPanel.isConnected ? primaryColor : textMuted
+                        border.width: 2
 
-                        Behavior on color {
+                        Behavior on border.color {
                             ColorAnimation { duration: 200 }
                         }
 
+                        // Inner filled circle when connected
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 6
+                            height: 6
+                            radius: 3
+                            color: primaryColor
+                            visible: udpPanel.isConnected
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
+                        }
+
+                        // Pulsing animation only when disconnected
                         SequentialAnimation on opacity {
                             running: !udpPanel.isConnected
                             loops: Animation.Infinite
-                            NumberAnimation { to: 0.4; duration: 800; easing.type: Easing.InOutQuad }
-                            NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutQuad }
+                            NumberAnimation { to: 0.4; duration: 1000; easing.type: Easing.InOutSine }
+                            NumberAnimation { to: 1.0; duration: 1000; easing.type: Easing.InOutSine }
                         }
                     }
 
                     Text {
                         text: udpPanel.isConnected ? "Connected" : "Disconnected"
                         font.pixelSize: 13
+                        font.weight: udpPanel.isConnected ? Font.Medium : Font.Normal
                         font.family: root.fontFamily
-                        color: textSecondary
+                        color: udpPanel.isConnected ? textPrimary : textMuted
                         anchors.verticalCenter: parent.verticalCenter
 
                         Behavior on color {
@@ -635,19 +700,45 @@ ApplicationWindow {
                     }
                 }
 
-                // Theme indicator
+                // Theme indicator - Elegant monochrome design
                 Row {
                     spacing: 8
 
-                    Text {
-                        text: ThemeManager.isDarkTheme ? "🌙" : "☀️"
-                        font.pixelSize: 14
+                    // Theme icon - minimalist circle design
+                    Rectangle {
+                        width: 16
+                        height: 16
+                        radius: 8
                         anchors.verticalCenter: parent.verticalCenter
+                        color: "transparent"
+                        border.color: primaryColor
+                        border.width: 1.5
+                        
+                        // Half fill based on theme
+                        Rectangle {
+                            anchors.left: ThemeManager.isDarkTheme ? parent.left : undefined
+                            anchors.right: ThemeManager.isDarkTheme ? undefined : parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.margins: 2
+                            width: 5
+                            height: 10
+                            radius: ThemeManager.isDarkTheme ? Qt.size(2.5, 0).width : Qt.size(0, 2.5).width
+                            color: primaryColor
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
+                        }
+                        
+                        Behavior on border.color {
+                            ColorAnimation { duration: 200 }
+                        }
                     }
 
                     Text {
                         text: ThemeManager.themeName
                         font.pixelSize: 13
+                        font.weight: Font.Medium
                         font.family: root.fontFamily
                         color: textSecondary
                         anchors.verticalCenter: parent.verticalCenter

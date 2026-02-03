@@ -18,67 +18,70 @@ QtObject {
     }
     
     // ============================================
-    // CLASSIC COLOR PALETTE - SIMPLIFIED
-    // Using only 2-3 core colors for a clean, professional UI
-    // Primary: Blue (#2563eb) - Main interactive elements
-    // Neutral: Slate grays - Backgrounds, text, borders
+    // CLASSIC MONOCHROME PALETTE
+    // Elegant two-tone design for timeless professional look
+    // Light Theme: Dark grey/black accents on light background
+    // Dark Theme: White/light grey accents on dark background
+    // No blue, green, red - all meanings derived from grey tones
     // ============================================
     
     // ============================================
-    // LIGHT THEME COLORS - Classic Clean Look
+    // LIGHT THEME COLORS - Classic Monochrome
+    // Primary accent: Dark charcoal grey
     // ============================================
-    readonly property color lightBackgroundColor: "#f8fafc"
+    readonly property color lightBackgroundColor: "#fafafa"
     readonly property color lightCardBackground: "#ffffff"
-    // Primary blue - the main accent color
-    readonly property color lightPrimaryColor: "#2563eb"
-    readonly property color lightPrimaryHover: "#1d4ed8"
-    readonly property color lightPrimaryPressed: "#1e40af"
-    // Accent, Success, Warning, Error all derive from primary for consistency
-    readonly property color lightAccentColor: "#2563eb"      // Same as primary for unified look
-    readonly property color lightSuccessColor: "#2563eb"     // Use primary instead of green
-    readonly property color lightWarningColor: "#2563eb"     // Use primary instead of orange
-    readonly property color lightErrorColor: "#dc2626"       // Keep red only for critical errors
-    // Text hierarchy using slate grays
-    readonly property color lightTextPrimary: "#1e293b"
-    readonly property color lightTextSecondary: "#475569"
-    readonly property color lightTextMuted: "#94a3b8"
+    // Primary - Dark charcoal for elegant contrast
+    readonly property color lightPrimaryColor: "#1a1a1a"
+    readonly property color lightPrimaryHover: "#333333"
+    readonly property color lightPrimaryPressed: "#0a0a0a"
+    // All semantic colors unified as shades of grey
+    readonly property color lightAccentColor: "#1a1a1a"
+    readonly property color lightSuccessColor: "#1a1a1a"     // Active/On state - solid dark
+    readonly property color lightWarningColor: "#525252"     // Attention - medium grey
+    readonly property color lightErrorColor: "#737373"       // Inactive/Off - lighter grey
+    // Text hierarchy using neutral grays
+    readonly property color lightTextPrimary: "#0a0a0a"
+    readonly property color lightTextSecondary: "#525252"
+    readonly property color lightTextMuted: "#a3a3a3"
     // Borders and UI elements
-    readonly property color lightBorderColor: "#e2e8f0"
-    readonly property color lightBorderFocus: "#2563eb"
-    readonly property color lightShadowColor: "#00000014"
-    readonly property color lightInputBackground: "#f8fafc"
-    readonly property color lightTrackOffColor: "#cbd5e1"
-    readonly property color lightTrackColor: "#e2e8f0"
-    readonly property color lightHoverBackground: "#f1f5f9"
-    readonly property color lightDividerColor: "#e2e8f0"
+    readonly property color lightBorderColor: "#e5e5e5"
+    readonly property color lightBorderFocus: "#1a1a1a"
+    readonly property color lightShadowColor: "#00000012"
+    readonly property color lightInputBackground: "#fafafa"
+    readonly property color lightTrackOffColor: "#d4d4d4"
+    readonly property color lightTrackColor: "#e5e5e5"
+    readonly property color lightHoverBackground: "#f5f5f5"
+    readonly property color lightDividerColor: "#e5e5e5"
     
     // ============================================
-    // DARK THEME COLORS - Classic Dark Look
+    // DARK THEME COLORS - Classic Monochrome
+    // Primary accent: Pure white/off-white
     // ============================================
-    readonly property color darkBackgroundColor: "#0f172a"
-    readonly property color darkCardBackground: "#1e293b"
-    // Primary blue - lighter for dark backgrounds
-    readonly property color darkPrimaryColor: "#3b82f6"
-    readonly property color darkPrimaryHover: "#2563eb"
-    readonly property color darkPrimaryPressed: "#1d4ed8"
-    // Accent, Success, Warning, Error all derive from primary for consistency
-    readonly property color darkAccentColor: "#3b82f6"       // Same as primary for unified look
-    readonly property color darkSuccessColor: "#3b82f6"      // Use primary instead of green
-    readonly property color darkWarningColor: "#3b82f6"      // Use primary instead of orange
-    readonly property color darkErrorColor: "#ef4444"        // Keep red only for critical errors
-    // Text hierarchy using slate grays
-    readonly property color darkTextPrimary: "#f1f5f9"
-    readonly property color darkTextSecondary: "#94a3b8"
-    readonly property color darkTextMuted: "#64748b"
+    readonly property color darkBackgroundColor: "#0a0a0a"
+    readonly property color darkCardBackground: "#171717"
+    // Primary - Clean white for dark theme
+    readonly property color darkPrimaryColor: "#fafafa"
+    readonly property color darkPrimaryHover: "#e5e5e5"
+    readonly property color darkPrimaryPressed: "#ffffff"
+    // All semantic colors unified as shades of white/grey
+    readonly property color darkAccentColor: "#fafafa"
+    readonly property color darkSuccessColor: "#fafafa"      // Active/On state - bright white
+    readonly property color darkWarningColor: "#a3a3a3"      // Attention - medium grey
+    readonly property color darkErrorColor: "#737373"        // Inactive/Off - dimmer grey
+    // Text hierarchy using light grays
+    readonly property color darkTextPrimary: "#fafafa"
+    readonly property color darkTextSecondary: "#a3a3a3"
+    readonly property color darkTextMuted: "#525252"
     // Borders and UI elements
-    readonly property color darkBorderColor: "#334155"
-    readonly property color darkBorderFocus: "#3b82f6"
-    readonly property color darkShadowColor: "#00000040"
-    readonly property color darkInputBackground: "#0f172a"
-    readonly property color darkTrackOffColor: "#475569"
-    readonly property color darkTrackColor: "#334155"
-    readonly property color darkHoverBackground: "#334155"
-    readonly property color darkDividerColor: "#334155"
+    readonly property color darkBorderColor: "#262626"
+    readonly property color darkBorderFocus: "#fafafa"
+    readonly property color darkShadowColor: "#00000060"
+    readonly property color darkInputBackground: "#0a0a0a"
+    readonly property color darkTrackOffColor: "#404040"
+    readonly property color darkTrackColor: "#262626"
+    readonly property color darkHoverBackground: "#262626"
+    readonly property color darkDividerColor: "#262626"
     
     // ============================================
     // DYNAMIC THEME PROPERTIES (auto-switch based on isDarkTheme)
@@ -104,12 +107,12 @@ QtObject {
     readonly property color hoverBackground: isDarkTheme ? darkHoverBackground : lightHoverBackground
     readonly property color dividerColor: isDarkTheme ? darkDividerColor : lightDividerColor
     
-    // Button specific colors
-    readonly property color buttonTextColor: "#ffffff"
+    // Button specific colors - inverted for contrast
+    readonly property color buttonTextColor: isDarkTheme ? "#0a0a0a" : "#ffffff"
     readonly property color outlineButtonText: primaryColor
     
-    // Switch knob color (stays white in both themes)
-    readonly property color switchKnobColor: "#ffffff"
+    // Switch knob color - contrasting with track
+    readonly property color switchKnobColor: isDarkTheme ? "#0a0a0a" : "#ffffff"
     
     // ============================================
     // TYPOGRAPHY

@@ -208,7 +208,7 @@ Popup {
                 }
             }
             
-            // Theme Toggle
+            // Theme Toggle - Elegant monochrome design
             Rectangle {
                 Layout.fillWidth: true
                 height: 72
@@ -234,19 +234,54 @@ Popup {
                     anchors.margins: 16
                     spacing: 16
                     
-                    // Theme icon
+                    // Theme icon - elegant monochrome design
                     Rectangle {
                         width: 40
                         height: 40
                         radius: 10
-                        color: ThemeManager.isDarkTheme ? "#1e293b" : "#fef3c7"
-                        border.color: ThemeManager.isDarkTheme ? "#475569" : "#fcd34d"
+                        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
+                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.2)
                         border.width: 1
                         
-                        Text {
+                        // Half-filled circle representing theme
+                        Canvas {
                             anchors.centerIn: parent
-                            text: ThemeManager.isDarkTheme ? "🌙" : "☀️"
-                            font.pixelSize: 20
+                            width: 20
+                            height: 20
+                            
+                            property color iconColor: primaryColor
+                            property bool darkMode: ThemeManager.isDarkTheme
+                            
+                            onIconColorChanged: requestPaint()
+                            onDarkModeChanged: requestPaint()
+                            Component.onCompleted: requestPaint()
+                            
+                            onPaint: {
+                                var ctx = getContext("2d");
+                                ctx.reset();
+                                var cx = width / 2;
+                                var cy = height / 2;
+                                var r = 8;
+                                
+                                // Draw circle outline
+                                ctx.strokeStyle = iconColor;
+                                ctx.lineWidth = 1.5;
+                                ctx.beginPath();
+                                ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                                ctx.stroke();
+                                
+                                // Fill half based on theme
+                                ctx.fillStyle = iconColor;
+                                ctx.beginPath();
+                                if (darkMode) {
+                                    // Fill left half for dark mode
+                                    ctx.arc(cx, cy, r - 1, Math.PI / 2, 3 * Math.PI / 2);
+                                } else {
+                                    // Fill right half for light mode  
+                                    ctx.arc(cx, cy, r - 1, -Math.PI / 2, Math.PI / 2);
+                                }
+                                ctx.fill();
+                            }
                         }
                         
                         Behavior on color {
@@ -276,7 +311,7 @@ Popup {
                         
                         Text {
                             text: ThemeManager.isDarkTheme ? "Dark mode enabled" : "Light mode enabled"
-                            font.pixelSize: 16
+                            font.pixelSize: 14
                             font.family: fontFamily
                             color: textSecondary
                             
@@ -286,12 +321,12 @@ Popup {
                         }
                     }
                     
-                    // Toggle Switch
+                    // Toggle Switch - monochrome design
                     Rectangle {
                         width: 52
                         height: 28
                         radius: 14
-                        color: ThemeManager.isDarkTheme ? primaryColor : "#cbd5e1"
+                        color: ThemeManager.isDarkTheme ? primaryColor : ThemeManager.trackOffColor
                         
                         Behavior on color {
                             ColorAnimation { duration: 200 }
@@ -303,7 +338,7 @@ Popup {
                             width: 20
                             height: 20
                             radius: 10
-                            color: "#ffffff"
+                            color: ThemeManager.switchKnobColor
                             
                             layer.enabled: true
                             layer.effect: DropShadow {
@@ -318,12 +353,16 @@ Popup {
                             Behavior on x {
                                 NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                             }
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
                         }
                     }
                 }
             }
             
-            // Theme Preview Cards
+            // Theme Preview Cards - Clean monochrome design
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12
@@ -333,8 +372,8 @@ Popup {
                     Layout.fillWidth: true
                     height: 80
                     radius: 10
-                    color: "#ffffff"
-                    border.color: !ThemeManager.isDarkTheme ? primaryColor : "#e2e8f0"
+                    color: "#fafafa"
+                    border.color: !ThemeManager.isDarkTheme ? "#1a1a1a" : "#e5e5e5"
                     border.width: !ThemeManager.isDarkTheme ? 2 : 1
                     
                     MouseArea {
@@ -345,31 +384,34 @@ Popup {
                     
                     Column {
                         anchors.centerIn: parent
-                        spacing: 8
+                        spacing: 10
                         
+                        // Elegant icon representation
                         Rectangle {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            width: 32
-                            height: 32
-                            radius: 8
-                            color: "#f8fafc"
-                            border.color: "#e2e8f0"
-                            border.width: 1
+                            width: 28
+                            height: 28
+                            radius: 14
+                            color: "#1a1a1a"
                             
-                            Text {
+                            // Inner white circle
+                            Rectangle {
                                 anchors.centerIn: parent
-                                text: "☀️"
-                                font.pixelSize: 16
+                                width: 12
+                                height: 12
+                                radius: 6
+                                color: "#fafafa"
                             }
                         }
                         
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "Light"
-                            font.pixelSize: 16
+                            font.pixelSize: 13
                             font.weight: !ThemeManager.isDarkTheme ? Font.DemiBold : Font.Normal
                             font.family: fontFamily
-                            color: "#1e293b"
+                            font.letterSpacing: 0.5
+                            color: "#1a1a1a"
                         }
                     }
                     
@@ -379,17 +421,17 @@ Popup {
                         anchors.top: parent.top
                         anchors.right: parent.right
                         anchors.margins: 6
-                        width: 20
-                        height: 20
-                        radius: 10
-                        color: primaryColor
+                        width: 18
+                        height: 18
+                        radius: 9
+                        color: "#1a1a1a"
                         
                         Text {
                             anchors.centerIn: parent
                             text: "✓"
-                            font.pixelSize: 16
+                            font.pixelSize: 11
                             font.weight: Font.Bold
-                            color: "#ffffff"
+                            color: "#fafafa"
                         }
                     }
                     
@@ -403,8 +445,8 @@ Popup {
                     Layout.fillWidth: true
                     height: 80
                     radius: 10
-                    color: "#1e293b"
-                    border.color: ThemeManager.isDarkTheme ? primaryColor : "#334155"
+                    color: "#171717"
+                    border.color: ThemeManager.isDarkTheme ? "#fafafa" : "#404040"
                     border.width: ThemeManager.isDarkTheme ? 2 : 1
                     
                     MouseArea {
@@ -415,31 +457,34 @@ Popup {
                     
                     Column {
                         anchors.centerIn: parent
-                        spacing: 8
+                        spacing: 10
                         
+                        // Elegant icon representation (inverted)
                         Rectangle {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            width: 32
-                            height: 32
-                            radius: 8
-                            color: "#0f172a"
-                            border.color: "#334155"
-                            border.width: 1
+                            width: 28
+                            height: 28
+                            radius: 14
+                            color: "#fafafa"
                             
-                            Text {
+                            // Inner dark circle
+                            Rectangle {
                                 anchors.centerIn: parent
-                                text: "🌙"
-                                font.pixelSize: 16
+                                width: 12
+                                height: 12
+                                radius: 6
+                                color: "#171717"
                             }
                         }
                         
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: "Dark"
-                            font.pixelSize: 16
+                            font.pixelSize: 13
                             font.weight: ThemeManager.isDarkTheme ? Font.DemiBold : Font.Normal
                             font.family: fontFamily
-                            color: "#f1f5f9"
+                            font.letterSpacing: 0.5
+                            color: "#fafafa"
                         }
                     }
                     
@@ -449,17 +494,17 @@ Popup {
                         anchors.top: parent.top
                         anchors.right: parent.right
                         anchors.margins: 6
-                        width: 20
-                        height: 20
-                        radius: 10
-                        color: primaryColor
+                        width: 18
+                        height: 18
+                        radius: 9
+                        color: "#fafafa"
                         
                         Text {
                             anchors.centerIn: parent
                             text: "✓"
-                            font.pixelSize: 16
+                            font.pixelSize: 11
                             font.weight: Font.Bold
-                            color: "#ffffff"
+                            color: "#171717"
                         }
                     }
                     
