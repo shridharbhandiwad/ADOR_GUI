@@ -50,7 +50,6 @@ private slots:
     void onSaveSettings();
     void onLoadFromFile();
     void onSaveToFile();
-    void onClearTracks();  // Clear all track data from PPI and table
     void refreshTrackTable();  // Auto-refresh track table (sync with current frame data)
 
     // DSP parameter slots
@@ -105,7 +104,6 @@ private:
     QPushButton* m_saveSettingsButton;
     QPushButton* m_loadFromFileButton;
     QPushButton* m_saveToFileButton;
-    QPushButton* m_clearTracksButton;  // Button to clear all track data
     QLabel* m_statusLabel;
     QLabel* m_frameCountLabel;
 
