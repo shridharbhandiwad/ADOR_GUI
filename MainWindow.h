@@ -47,9 +47,7 @@ private slots:
     void onChirpsPerFrameChanged(const QString& text);
     void onSamplesPerChirpChanged(const QString& text);
     void onApplySettings();
-    void onResetSettings();
     void onSaveSettings();
-    void onDefaultSettings();
     void onLoadFromFile();
     void onSaveToFile();
     void onClearTracks();  // Clear all track data from PPI and table
@@ -104,9 +102,7 @@ private:
     // Control widgets
     QSpinBox* m_rangeSpinBox;
     QPushButton* m_applyButton;
-    QPushButton* m_resetButton;
     QPushButton* m_saveSettingsButton;
-    QPushButton* m_defaultSettingsButton;
     QPushButton* m_loadFromFileButton;
     QPushButton* m_saveToFileButton;
     QPushButton* m_clearTracksButton;  // Button to clear all track data

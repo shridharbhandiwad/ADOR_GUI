@@ -50,7 +50,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_updateTimer(nullptr)
     , m_trackRefreshTimer(nullptr)
     , m_saveSettingsButton(nullptr)
-    , m_defaultSettingsButton(nullptr)
     , m_loadFromFileButton(nullptr)
     , m_saveToFileButton(nullptr)
     , m_clearTracksButton(nullptr)
@@ -612,32 +611,6 @@ void MainWindow::setupUI()
         }
     )");
     
-    // Reset button - Premium red gradient
-    m_resetButton = new QPushButton("Reset", this);
-    m_resetButton->setMinimumHeight(34);
-    m_resetButton->setCursor(Qt::PointingHandCursor);
-    m_resetButton->setStyleSheet(R"(
-        QPushButton {
-            font-size: 13px;
-            font-weight: 600;
-            padding: 6px 12px;
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #ef4444, stop:1 #dc2626);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            letter-spacing: 0.3px;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #dc2626, stop:1 #b91c1c);
-        }
-        QPushButton:pressed {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #b91c1c, stop:1 #991b1b);
-        }
-    )");
-    
     // Save Settings button - Premium green gradient
     m_saveSettingsButton = new QPushButton("Save", this);
     m_saveSettingsButton->setMinimumHeight(34);
@@ -661,32 +634,6 @@ void MainWindow::setupUI()
         QPushButton:pressed {
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 #047857, stop:1 #065f46);
-        }
-    )");
-    
-    // Default Settings button - Premium outlined amber style
-    m_defaultSettingsButton = new QPushButton("Defaults", this);
-    m_defaultSettingsButton->setMinimumHeight(34);
-    m_defaultSettingsButton->setCursor(Qt::PointingHandCursor);
-    m_defaultSettingsButton->setStyleSheet(R"(
-        QPushButton {
-            font-size: 13px;
-            font-weight: 600;
-            padding: 6px 12px;
-            background-color: transparent;
-            color: #d97706;
-            border: 2px solid #f59e0b;
-            border-radius: 8px;
-            letter-spacing: 0.3px;
-        }
-        QPushButton:hover {
-            background-color: rgba(245, 158, 11, 0.1);
-            border-color: #d97706;
-            color: #b45309;
-        }
-        QPushButton:pressed {
-            background-color: rgba(245, 158, 11, 0.2);
-            border-color: #b45309;
         }
     )");
     
@@ -742,13 +689,11 @@ void MainWindow::setupUI()
         }
     )");
     
-    // Arrange buttons in a 3x2 grid for compact display
+    // Arrange buttons in a 2x2 grid for compact display
     buttonLayout->addWidget(m_applyButton, 0, 0);
-    buttonLayout->addWidget(m_resetButton, 0, 1);
-    buttonLayout->addWidget(m_saveSettingsButton, 1, 0);
-    buttonLayout->addWidget(m_defaultSettingsButton, 1, 1);
-    buttonLayout->addWidget(m_loadFromFileButton, 2, 0);
-    buttonLayout->addWidget(m_saveToFileButton, 2, 1);
+    buttonLayout->addWidget(m_saveSettingsButton, 0, 1);
+    buttonLayout->addWidget(m_loadFromFileButton, 1, 0);
+    buttonLayout->addWidget(m_saveToFileButton, 1, 1);
 
     settingsMainLayout->addWidget(buttonContainer, 0);
 
@@ -766,9 +711,7 @@ void MainWindow::setupUI()
     connect(m_medianFilterEdit,    &QLineEdit::editingFinished, this, &MainWindow::onMedianFilterEdited);
     connect(m_mtiLengthEdit,       &QLineEdit::editingFinished, this, &MainWindow::onMtiLengthEdited);
     connect(m_applyButton,         &QPushButton::clicked,       this, &MainWindow::onApplySettings);
-    connect(m_resetButton,         &QPushButton::clicked,       this, &MainWindow::onResetSettings);
     connect(m_saveSettingsButton,  &QPushButton::clicked,       this, &MainWindow::onSaveSettings);
-    connect(m_defaultSettingsButton, &QPushButton::clicked,     this, &MainWindow::onDefaultSettings);
     connect(m_loadFromFileButton,  &QPushButton::clicked,       this, &MainWindow::onLoadFromFile);
     connect(m_saveToFileButton,    &QPushButton::clicked,       this, &MainWindow::onSaveToFile);
 
@@ -1400,50 +1343,6 @@ void MainWindow::onApplySettings()
     }
 }
 
-void MainWindow::onResetSettings()
-{
-    m_rangeAvgEdit->setText("1");
-    m_minRangeEdit->setText("0");
-    m_maxRangeEdit->setText("5000");
-    m_minSpeedEdit->setText("0");
-    m_maxSpeedEdit->setText("100");
-    m_minAngleEdit->setText("0");
-    m_maxAngleEdit->setText("0");
-    m_rangeThresholdEdit->setText("0");
-    m_speedThresholdEdit->setText("0");
-    m_numTracksEdit->setText("50");
-    m_medianFilterEdit->setText("1");
-    m_mtiLengthEdit->setText("2");
-    m_speedDist = std::uniform_real_distribution<float>(-50.0f, 50.0f);
-    
-    // Update ALL internal DSP settings to match UI defaults
-    m_dsp.range_mvg_avg_length = 1;
-    m_dsp.min_range_cm = 0;
-    m_dsp.max_range_cm = 5000;
-    m_dsp.min_speed_kmh = 0;
-    m_dsp.max_speed_kmh = 100;
-    m_dsp.min_angle_degree = 0;
-    m_dsp.max_angle_degree = 0;
-    m_dsp.range_threshold = 0;
-    m_dsp.speed_threshold = 0;
-    m_dsp.num_of_tracks = 50;
-    m_dsp.median_filter_length = 1;
-    m_dsp.mti_filter_length = 2;
-    
-    // Apply to both displays (convert cm to meters)
-    m_ppiWidget->setMinRange(0.0f);
-    m_ppiWidget->setMaxRange(50.0f);  // 5000cm = 50m
-    m_ppiWidget->setMinAngle(0.0f);
-    m_ppiWidget->setMaxAngle(0.0f);
-    
-    m_fftWidget->setMinRange(0.0f);
-    m_fftWidget->setMaxRange(50.0f);
-    m_fftWidget->setMinAngle(0.0f);
-    m_fftWidget->setMaxAngle(0.0f);
-    
-    QMessageBox::information(this, "Settings Reset", "All settings reset to default.");
-}
-
 void MainWindow::updateTrackTable()
 {
     // EPHEMERAL SYNCHRONIZATION: Update track table with current frame data
@@ -1683,13 +1582,6 @@ void MainWindow::createMenuBar()
     
     // File Menu
     QMenu* fileMenu = menuBar->addMenu(tr("&File"));
-    
-    QAction* newAction = fileMenu->addAction(tr("&New Configuration"));
-    newAction->setShortcut(QKeySequence::New);
-    connect(newAction, &QAction::triggered, this, [this]() {
-        onResetSettings();
-        m_statusLabel->setText("Status: New configuration created");
-    });
     
     QAction* openAction = fileMenu->addAction(tr("&Open Configuration..."));
     openAction->setShortcut(QKeySequence::Open);
@@ -2878,53 +2770,6 @@ void MainWindow::loadSettings()
     applyTheme(m_isDarkTheme);
 
     qDebug() << "Theme:" << theme;
-}
-
-void MainWindow::onDefaultSettings()
-{
-    // Set all fields to default values
-    m_rangeAvgEdit->setText("1");
-    m_minRangeEdit->setText("0");
-    m_maxRangeEdit->setText("5000");
-    m_minSpeedEdit->setText("0");
-    m_maxSpeedEdit->setText("100");
-    m_minAngleEdit->setText("0");
-    m_maxAngleEdit->setText("0");
-    m_rangeThresholdEdit->setText("0");
-    m_speedThresholdEdit->setText("0");
-    m_numTracksEdit->setText("50");
-    m_medianFilterEdit->setText("1");
-    m_mtiLengthEdit->setText("2");
-    
-    // Update internal DSP settings
-    m_dsp.range_mvg_avg_length = 1;
-    m_dsp.min_range_cm = 0;
-    m_dsp.max_range_cm = 5000;
-    m_dsp.min_speed_kmh = 0;
-    m_dsp.max_speed_kmh = 100;
-    m_dsp.min_angle_degree = 0;
-    m_dsp.max_angle_degree = 60;
-    m_dsp.range_threshold = 0;
-    m_dsp.speed_threshold = 0;
-    m_dsp.num_of_tracks = 50;
-    m_dsp.median_filter_length = 1;
-    m_dsp.mti_filter_length = 2;
-    
-    m_speedDist = std::uniform_real_distribution<float>(-50.0f, 50.0f);
-    
-    // Apply to both PPI and FFT displays (convert cm to meters)
-    m_ppiWidget->setMinRange(0.0f);
-    m_ppiWidget->setMaxRange(50.0f);  // 5000cm = 50m
-    m_ppiWidget->setMinAngle(0.0f);
-    m_ppiWidget->setMaxAngle(0.0f);
-    
-    m_fftWidget->setMinRange(0.0f);
-    m_fftWidget->setMaxRange(50.0f);
-    m_fftWidget->setMinAngle(0.0f);
-    m_fftWidget->setMaxAngle(0.0f);
-    
-    m_statusLabel->setText("Status: Default settings restored");
-    QMessageBox::information(this, "Default Settings", "All settings restored to factory defaults.");
 }
 
 void MainWindow::onLoadFromFile()

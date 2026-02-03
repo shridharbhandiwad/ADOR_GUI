@@ -274,7 +274,6 @@ signals:
 private slots:
     void onApplyClicked();
     void onSendClicked();
-    void onLoadDefaultsClicked();
     void onLoadFromFileClicked();
     void onSaveToFileClicked();
     void updateUIFromSettings();
@@ -335,7 +334,6 @@ private:
     // Buttons
     QPushButton* applyButton;
     QPushButton* sendButton;
-    QPushButton* loadDefaultsButton;
     QPushButton* loadFromFileButton;
     QPushButton* saveToFileButton;
     QPushButton* closeButton;

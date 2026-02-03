@@ -1203,7 +1203,6 @@ void DSPSettingsDialog::setupUI()
     // Button layout
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     
-    loadDefaultsButton = new QPushButton("Load Defaults");
     loadFromFileButton = new QPushButton("Load From File...");
     saveToFileButton = new QPushButton("Save to File...");
     applyButton = new QPushButton("Apply");
@@ -1212,7 +1211,6 @@ void DSPSettingsDialog::setupUI()
     
     sendButton->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }");
     
-    buttonLayout->addWidget(loadDefaultsButton);
     buttonLayout->addWidget(loadFromFileButton);
     buttonLayout->addWidget(saveToFileButton);
     buttonLayout->addStretch();
@@ -1512,7 +1510,6 @@ void DSPSettingsDialog::connectSignals()
     
     connect(applyButton, &QPushButton::clicked, this, &DSPSettingsDialog::onApplyClicked);
     connect(sendButton, &QPushButton::clicked, this, &DSPSettingsDialog::onSendClicked);
-    connect(loadDefaultsButton, &QPushButton::clicked, this, &DSPSettingsDialog::onLoadDefaultsClicked);
     connect(loadFromFileButton, &QPushButton::clicked, this, &DSPSettingsDialog::onLoadFromFileClicked);
     connect(saveToFileButton, &QPushButton::clicked, this, &DSPSettingsDialog::onSaveToFileClicked);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::accept);
@@ -1538,13 +1535,6 @@ void DSPSettingsDialog::onSendClicked()
     DSP_Settings_t settings = getSettings();
     settings.updateChecksum();
     emit sendSettingsRequested(settings);
-}
-
-void DSPSettingsDialog::onLoadDefaultsClicked()
-{
-    DSP_Settings_t defaults;
-    setSettings(defaults);
-    QMessageBox::information(this, "Defaults Loaded", "Default DSP settings have been loaded.");
 }
 
 void DSPSettingsDialog::onLoadFromFileClicked()
