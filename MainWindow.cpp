@@ -455,6 +455,9 @@ void MainWindow::setupUI()
     m_trackTable->verticalHeader()->setVisible(false);  // Hide row numbers to remove black column on left
     m_trackTable->setAlternatingRowColors(true);
     m_trackTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    // Ensure vertical header (serial number column) has adequate width
+    m_trackTable->verticalHeader()->setMinimumWidth(40);
+    m_trackTable->verticalHeader()->setDefaultSectionSize(30);
     tableLayout->addWidget(m_trackTable, 1);
 
     topHorizontalSplitter->addWidget(tableGroup);
