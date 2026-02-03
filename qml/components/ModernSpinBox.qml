@@ -58,7 +58,7 @@ Item {
                 font.family: modernSpinBox.fontFamily
                 color: textPrimary
                 selectionColor: primaryColor
-                selectedTextColor: "#ffffff"
+                selectedTextColor: ThemeManager.buttonTextColor
                 horizontalAlignment: Qt.AlignHCenter
                 verticalAlignment: Qt.AlignVCenter
                 

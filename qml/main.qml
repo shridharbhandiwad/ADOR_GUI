@@ -564,7 +564,11 @@ ApplicationWindow {
                         text: "R"
                         font.pixelSize: 20
                         font.weight: Font.Bold
-                        color: "#ffffff"
+                        color: ThemeManager.buttonTextColor
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
+                        }
                     }
                 }
 
@@ -958,7 +962,11 @@ ApplicationWindow {
                         text: "R"
                         font.pixelSize: 18
                         font.weight: Font.Bold
-                        color: "#ffffff"
+                        color: ThemeManager.buttonTextColor
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
+                        }
                     }
                 }
 
