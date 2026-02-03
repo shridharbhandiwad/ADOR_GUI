@@ -2411,8 +2411,14 @@ void MainWindow::applyTheme(bool isDark)
 
 void MainWindow::applyDspSettingsTheme(bool isDark)
 {
+    // ============================================
+    // CLASSIC MONOCHROME PALETTE
+    // Light Theme: Dark charcoal (#1a1a1a) accents on light background
+    // Dark Theme: White/light grey (#fafafa) accents on dark background
+    // ============================================
+    
     if (isDark) {
-        // Dark theme styles for DSP Settings panel
+        // Dark theme styles for DSP Settings panel - Monochrome design
         if (m_dspSettingsGroup) {
             m_dspSettingsGroup->setStyleSheet(R"(
                 QGroupBox {
@@ -2420,8 +2426,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     font-weight: 700;
                     padding: 24px 16px 16px 16px;
                     margin-top: 16px;
-                    background-color: #1e293b;
-                    border: 1px solid #334155;
+                    background-color: #171717;
+                    border: 1px solid #262626;
                     border-radius: 16px;
                 }
                 QGroupBox::title {
@@ -2430,8 +2436,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     left: 16px;
                     top: 2px;
                     padding: 6px 16px;
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3b82f6, stop:1 #6366f1);
-                    color: #ffffff;
+                    background-color: #fafafa;
+                    color: #0a0a0a;
                     font-weight: 700;
                     font-size: 15px;
                     border-radius: 8px;
@@ -2447,8 +2453,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     font-weight: 600;
                     padding: 16px 12px 12px 12px;
                     margin-top: 14px;
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0f172a, stop:1 #1e293b);
-                    border: 1px solid #334155;
+                    background-color: #0a0a0a;
+                    border: 1px solid #262626;
                     border-radius: 12px;
                 }
                 QGroupBox::title {
@@ -2457,10 +2463,10 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     left: 12px;
                     top: 2px;
                     padding: 4px 12px;
-                    background-color: #0ea5e9;
-                    color: #ffffff;
-            font-weight: 600;
-            font-size: 13px;
+                    background-color: #fafafa;
+                    color: #0a0a0a;
+                    font-weight: 600;
+                    font-size: 13px;
                     border-radius: 6px;
                     letter-spacing: 0.5px;
                 }
@@ -2474,8 +2480,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     font-weight: 600;
                     padding: 16px 12px 12px 12px;
                     margin-top: 14px;
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0f172a, stop:1 #1e293b);
-                    border: 1px solid #334155;
+                    background-color: #0a0a0a;
+                    border: 1px solid #262626;
                     border-radius: 12px;
                 }
                 QGroupBox::title {
@@ -2484,21 +2490,21 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     left: 12px;
                     top: 2px;
                     padding: 4px 12px;
-                    background-color: #8b5cf6;
-                    color: #ffffff;
-            font-weight: 600;
-            font-size: 13px;
+                    background-color: #a3a3a3;
+                    color: #0a0a0a;
+                    font-weight: 600;
+                    font-size: 13px;
                     border-radius: 6px;
                     letter-spacing: 0.5px;
                 }
             )");
         }
         
-        // Apply dark theme to labels
+        // Apply dark theme to labels - Monochrome
         const QString darkLabelStyle = R"(
             font-size: 14px;
             font-weight: 600;
-            color: #94a3b8;
+            color: #a3a3a3;
             background-color: transparent;
             letter-spacing: 0.2px;
         )";
@@ -2506,15 +2512,15 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
             if (label) label->setStyleSheet(darkLabelStyle);
         }
         
-        // Apply dark theme to line edits
+        // Apply dark theme to line edits - Monochrome
         const QString darkEditStyle = R"(
             font-size: 13px;
             padding: 8px 12px;
             font-weight: 500;
-            background-color: #0f172a;
-            border: 2px solid #334155;
+            background-color: #0a0a0a;
+            border: 2px solid #262626;
             border-radius: 8px;
-            color: #f1f5f9;
+            color: #fafafa;
         )";
         QList<QLineEdit*> lineEdits = {m_rangeAvgEdit, m_minRangeEdit, m_maxRangeEdit, 
                                        m_minSpeedEdit, m_maxSpeedEdit, m_minAngleEdit,
@@ -2524,7 +2530,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
             if (edit) edit->setStyleSheet(darkEditStyle);
         }
     } else {
-        // Light theme styles for DSP Settings panel
+        // Light theme styles for DSP Settings panel - Monochrome design
         if (m_dspSettingsGroup) {
             m_dspSettingsGroup->setStyleSheet(R"(
                 QGroupBox {
@@ -2533,7 +2539,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     padding: 24px 16px 16px 16px;
                     margin-top: 16px;
                     background-color: #ffffff;
-                    border: none;
+                    border: 1px solid #e5e5e5;
                     border-radius: 16px;
                 }
                 QGroupBox::title {
@@ -2542,7 +2548,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     left: 16px;
                     top: 2px;
                     padding: 6px 16px;
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #3b82f6, stop:1 #6366f1);
+                    background-color: #1a1a1a;
                     color: #ffffff;
                     font-weight: 700;
                     font-size: 15px;
@@ -2559,8 +2565,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     font-weight: 600;
                     padding: 16px 12px 12px 12px;
                     margin-top: 14px;
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f8fafc, stop:1 #f1f5f9);
-                    border: 1px solid #e2e8f0;
+                    background-color: #fafafa;
+                    border: 1px solid #e5e5e5;
                     border-radius: 12px;
                 }
                 QGroupBox::title {
@@ -2569,10 +2575,10 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     left: 12px;
                     top: 2px;
                     padding: 4px 12px;
-                    background-color: #0ea5e9;
+                    background-color: #1a1a1a;
                     color: #ffffff;
-            font-weight: 600;
-            font-size: 13px;
+                    font-weight: 600;
+                    font-size: 13px;
                     border-radius: 6px;
                     letter-spacing: 0.5px;
                 }
@@ -2586,8 +2592,8 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     font-weight: 600;
                     padding: 16px 12px 12px 12px;
                     margin-top: 14px;
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f8fafc, stop:1 #f1f5f9);
-                    border: 1px solid #e2e8f0;
+                    background-color: #fafafa;
+                    border: 1px solid #e5e5e5;
                     border-radius: 12px;
                 }
                 QGroupBox::title {
@@ -2596,21 +2602,21 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                     left: 12px;
                     top: 2px;
                     padding: 4px 12px;
-                    background-color: #8b5cf6;
+                    background-color: #525252;
                     color: #ffffff;
-            font-weight: 600;
-            font-size: 13px;
+                    font-weight: 600;
+                    font-size: 13px;
                     border-radius: 6px;
                     letter-spacing: 0.5px;
                 }
             )");
         }
         
-        // Apply light theme to labels
+        // Apply light theme to labels - Monochrome
         const QString lightLabelStyle = R"(
             font-size: 14px;
             font-weight: 600;
-            color: #475569;
+            color: #525252;
             background-color: transparent;
             letter-spacing: 0.2px;
         )";
@@ -2618,15 +2624,15 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
             if (label) label->setStyleSheet(lightLabelStyle);
         }
         
-        // Apply light theme to line edits
+        // Apply light theme to line edits - Monochrome
         const QString lightEditStyle = R"(
             font-size: 13px;
             padding: 8px 12px;
             font-weight: 500;
             background-color: #ffffff;
-            border: 2px solid #e2e8f0;
+            border: 2px solid #e5e5e5;
             border-radius: 8px;
-            color: #0f172a;
+            color: #0a0a0a;
         )";
         QList<QLineEdit*> lineEdits = {m_rangeAvgEdit, m_minRangeEdit, m_maxRangeEdit, 
                                        m_minSpeedEdit, m_maxSpeedEdit, m_minAngleEdit,
