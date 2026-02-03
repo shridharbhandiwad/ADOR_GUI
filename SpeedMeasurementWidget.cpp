@@ -243,7 +243,7 @@ void SpeedometerGauge::drawNeedle(QPainter& painter)
     
     float fraction = m_animatedSpeed / m_maxSpeed;
     float angle = START_ANGLE + (SWEEP_ANGLE * fraction);
-    float angleRad = qDegreesToRadians(angle);
+    Q_UNUSED(qDegreesToRadians(angle)); // Used internally by transform
     
     float needleLength = m_radius * 0.55f;
     float needleTailLength = m_radius * 0.15f;
