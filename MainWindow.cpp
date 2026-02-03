@@ -1828,7 +1828,7 @@ void MainWindow::createMenuBar()
     companyLabel->setStyleSheet(R"(
         QLabel {
             color: #475569;
-            font-size: 13px;
+            font-size: 20px;
             font-weight: 600;
             letter-spacing: 0.5px;
             background: transparent;
