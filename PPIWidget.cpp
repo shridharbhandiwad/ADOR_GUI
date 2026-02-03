@@ -277,12 +277,12 @@ QColor PPIWidget::getGridColor() const
 
 QColor PPIWidget::getFovColor() const
 {
-    return m_isDarkTheme ? QColor(59, 130, 246, 60) : QColor(59, 130, 246, 40);  // #3b82f6 with transparency
+    return m_isDarkTheme ? QColor(250, 250, 250, 40) : QColor(26, 26, 26, 30);  // Monochrome with transparency
 }
 
 QColor PPIWidget::getFovBorderColor() const
 {
-    return m_isDarkTheme ? QColor(96, 165, 250) : QColor(59, 130, 246);  // #60a5fa / #3b82f6
+    return m_isDarkTheme ? QColor(250, 250, 250) : QColor(26, 26, 26);  // #fafafa / #1a1a1a - Monochrome
 }
 
 QColor PPIWidget::getTextColor() const
@@ -302,12 +302,12 @@ QColor PPIWidget::getMutedTextColor() const
 
 QColor PPIWidget::getPrimaryBlueColor() const
 {
-    return m_isDarkTheme ? QColor(96, 165, 250) : QColor(59, 130, 246);  // #60a5fa / #3b82f6
+    return m_isDarkTheme ? QColor(250, 250, 250) : QColor(26, 26, 26);  // #fafafa / #1a1a1a - Monochrome primary
 }
 
 QColor PPIWidget::getSuccessGreenColor() const
 {
-    return m_isDarkTheme ? QColor(52, 211, 153) : QColor(16, 185, 129);  // #34d399 / #10b981
+    return m_isDarkTheme ? QColor(163, 163, 163) : QColor(82, 82, 82);  // #a3a3a3 / #525252 - Monochrome secondary
 }
 
 QColor PPIWidget::getErrorRedColor() const

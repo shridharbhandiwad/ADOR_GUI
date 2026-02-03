@@ -1207,7 +1207,7 @@ void DSPSettingsDialog::setupUI()
     sendButton = new QPushButton("Send to Radar");
     closeButton = new QPushButton("Close");
     
-    sendButton->setStyleSheet("QPushButton { background-color: #2563eb; color: white; font-weight: bold; }");
+    sendButton->setStyleSheet("QPushButton { background-color: #1a1a1a; color: white; font-weight: bold; }");
     
     buttonLayout->addWidget(loadFromFileButton);
     buttonLayout->addWidget(saveToFileButton);
