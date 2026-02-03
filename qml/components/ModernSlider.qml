@@ -71,9 +71,11 @@ Item {
                 width: 24
                 height: 24
                 radius: 12
-                color: "#ffffff"
+                color: ThemeManager.switchKnobColor
                 border.color: primaryColor
                 border.width: 3
+                
+                Behavior on color { ColorAnimation { duration: 200 } }
                 
                 Behavior on border.color { ColorAnimation { duration: 200 } }
                 
