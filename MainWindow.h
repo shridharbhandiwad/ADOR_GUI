@@ -147,6 +147,7 @@ private:
     // Track table auto-refresh timer (for periodic UI updates)
     QTimer* m_trackRefreshTimer;
     static constexpr int TRACK_REFRESH_INTERVAL_MS = 500;  // Faster refresh for ephemeral sync
+    static constexpr int TRACK_TABLE_MINIMUM_ROWS = 10;    // Minimum rows to display in track table
     
     // Frame-based track collection for ephemeral synchronization
     // Tracks are only shown when present in the current frame

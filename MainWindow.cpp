@@ -455,6 +455,16 @@ void MainWindow::setupUI()
     m_trackTable->verticalHeader()->setVisible(false);  // Hide row numbers to remove black column on left
     m_trackTable->setAlternatingRowColors(true);
     m_trackTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    
+    // Initialize track table with minimum rows (empty)
+    m_trackTable->setRowCount(TRACK_TABLE_MINIMUM_ROWS);
+    for (int i = 0; i < TRACK_TABLE_MINIMUM_ROWS; ++i) {
+        m_trackTable->setItem(i, 0, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 1, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 2, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 3, new QTableWidgetItem(""));
+    }
+    
     tableLayout->addWidget(m_trackTable, 1);
 
     topHorizontalSplitter->addWidget(tableGroup);
@@ -1178,14 +1188,25 @@ void MainWindow::refreshTrackTable()
     // Tracks are already managed frame-by-frame in parseBinaryTargetData
     // This function just ensures the UI stays in sync with current data
     
-    // Refresh the table display with current track data
-    m_trackTable->setRowCount(m_currentTargets.numTracks);
+    // Keep minimum rows in track table, extend if more tracks are available
+    int rowCount = std::max(static_cast<int>(m_currentTargets.numTracks), TRACK_TABLE_MINIMUM_ROWS);
+    m_trackTable->setRowCount(rowCount);
+    
+    // Populate rows with actual track data
     for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
         const TargetTrack& target = m_currentTargets.targets[i];
         m_trackTable->setItem(i, 0, new QTableWidgetItem(QString::number(target.target_id)));
         m_trackTable->setItem(i, 1, new QTableWidgetItem(QString::number(target.radius, 'f', 2)));
         m_trackTable->setItem(i, 2, new QTableWidgetItem(QString::number(target.azimuth, 'f', 1)));
         m_trackTable->setItem(i, 3, new QTableWidgetItem(QString::number(target.radial_speed, 'f', 1)));
+    }
+    
+    // Clear empty rows (when fewer tracks than minimum)
+    for (int i = m_currentTargets.numTracks; i < rowCount; ++i) {
+        m_trackTable->setItem(i, 0, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 1, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 2, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 3, new QTableWidgetItem(""));
     }
     m_trackTable->resizeColumnsToContents();
 
@@ -1194,7 +1215,7 @@ void MainWindow::refreshTrackTable()
     m_fftWidget->updateTargets(m_currentTargets);
 
     qDebug() << "Track table refreshed. Active tracks:" << m_currentTargets.numTracks
-             << "(ephemeral sync mode)";
+             << ", Display rows:" << rowCount << "(ephemeral sync mode)";
 }
 
 //==============================================================================
@@ -1317,14 +1338,25 @@ void MainWindow::onApplySettings()
 void MainWindow::updateTrackTable()
 {
     // EPHEMERAL SYNCHRONIZATION: Update track table with current frame data
-    // Table shows only tracks present in the current frame
-    m_trackTable->setRowCount(m_currentTargets.numTracks);
+    // Keep minimum rows in track table, extend if more tracks are available
+    int rowCount = std::max(static_cast<int>(m_currentTargets.numTracks), TRACK_TABLE_MINIMUM_ROWS);
+    m_trackTable->setRowCount(rowCount);
+    
+    // Populate rows with actual track data
     for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
         const TargetTrack& target = m_currentTargets.targets[i];
         m_trackTable->setItem(i, 0, new QTableWidgetItem(QString::number(target.target_id)));
         m_trackTable->setItem(i, 1, new QTableWidgetItem(QString::number(target.radius, 'f', 2)));
         m_trackTable->setItem(i, 2, new QTableWidgetItem(QString::number(target.azimuth, 'f', 1)));
         m_trackTable->setItem(i, 3, new QTableWidgetItem(QString::number(target.radial_speed, 'f', 1)));
+    }
+    
+    // Clear empty rows (when fewer tracks than minimum)
+    for (int i = m_currentTargets.numTracks; i < rowCount; ++i) {
+        m_trackTable->setItem(i, 0, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 1, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 2, new QTableWidgetItem(""));
+        m_trackTable->setItem(i, 3, new QTableWidgetItem(""));
     }
     m_trackTable->resizeColumnsToContents();
 }
