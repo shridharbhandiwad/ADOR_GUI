@@ -21,6 +21,7 @@
 #include "PPIWidget.h"
 #include "FFTWidget.h"
 #include "SpeedMeasurementWidget.h"
+#include "TimeSeriesPlotsWidget.h"
 #include "DataStructures.h"
 #include <QTabWidget>
 
@@ -93,6 +94,7 @@ private:
     PPIWidget* m_ppiWidget;
     FFTWidget* m_fftWidget;
     SpeedMeasurementWidget* m_speedMeasurementWidget;
+    TimeSeriesPlotsWidget* m_timeSeriesPlotsWidget;
     QTabWidget* m_mainTabWidget;
     QTableWidget* m_trackTable;
     QSplitter* m_mainSplitter;

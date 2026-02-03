@@ -21,6 +21,7 @@ SOURCES += \
     PPIWidget.cpp \
     FFTWidget.cpp \
     SpeedMeasurementWidget.cpp \
+    TimeSeriesPlotsWidget.cpp \
     dialogs.cpp \
     udphandler.cpp
 
@@ -30,6 +31,7 @@ HEADERS += \
     PPIWidget.h \
     FFTWidget.h \
     SpeedMeasurementWidget.h \
+    TimeSeriesPlotsWidget.h \
     dialogs.h \
     udphandler.h \
     structures.h

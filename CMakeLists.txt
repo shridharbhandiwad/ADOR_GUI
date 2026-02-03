@@ -25,6 +25,7 @@ set(SOURCES
     PPIWidget.cpp
     FFTWidget.cpp
     SpeedMeasurementWidget.cpp
+    TimeSeriesPlotsWidget.cpp
 )
 
 set(HEADERS
@@ -32,6 +33,7 @@ set(HEADERS
     PPIWidget.h
     FFTWidget.h
     SpeedMeasurementWidget.h
+    TimeSeriesPlotsWidget.h
     DataStructures.h
 )
 
