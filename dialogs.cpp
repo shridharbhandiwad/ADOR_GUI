@@ -1204,6 +1204,8 @@ void DSPSettingsDialog::setupUI()
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     
     loadDefaultsButton = new QPushButton("Load Defaults");
+    loadFromFileButton = new QPushButton("Load From File...");
+    saveToFileButton = new QPushButton("Save to File...");
     applyButton = new QPushButton("Apply");
     sendButton = new QPushButton("Send to Radar");
     closeButton = new QPushButton("Close");
@@ -1211,6 +1213,8 @@ void DSPSettingsDialog::setupUI()
     sendButton->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }");
     
     buttonLayout->addWidget(loadDefaultsButton);
+    buttonLayout->addWidget(loadFromFileButton);
+    buttonLayout->addWidget(saveToFileButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(applyButton);
     buttonLayout->addWidget(sendButton);
@@ -1509,6 +1513,8 @@ void DSPSettingsDialog::connectSignals()
     connect(applyButton, &QPushButton::clicked, this, &DSPSettingsDialog::onApplyClicked);
     connect(sendButton, &QPushButton::clicked, this, &DSPSettingsDialog::onSendClicked);
     connect(loadDefaultsButton, &QPushButton::clicked, this, &DSPSettingsDialog::onLoadDefaultsClicked);
+    connect(loadFromFileButton, &QPushButton::clicked, this, &DSPSettingsDialog::onLoadFromFileClicked);
+    connect(saveToFileButton, &QPushButton::clicked, this, &DSPSettingsDialog::onSaveToFileClicked);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::accept);
 }
 
@@ -1539,6 +1545,209 @@ void DSPSettingsDialog::onLoadDefaultsClicked()
     DSP_Settings_t defaults;
     setSettings(defaults);
     QMessageBox::information(this, "Defaults Loaded", "Default DSP settings have been loaded.");
+}
+
+void DSPSettingsDialog::onLoadFromFileClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        "Load DSP Settings", 
+        QString(),
+        "DSP Config Files (*.json *.dsp);;All Files (*)");
+    
+    if (fileName.isEmpty()) {
+        return;
+    }
+    
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, "Load Error", 
+            QString("Could not open file for reading:\n%1").arg(file.errorString()));
+        return;
+    }
+    
+    QByteArray data = file.readAll();
+    file.close();
+    
+    QJsonParseError parseError;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    
+    if (parseError.error != QJsonParseError::NoError) {
+        QMessageBox::warning(this, "Parse Error", 
+            QString("Failed to parse JSON:\n%1").arg(parseError.errorString()));
+        return;
+    }
+    
+    if (!doc.isObject()) {
+        QMessageBox::warning(this, "Format Error", "Invalid config file format.");
+        return;
+    }
+    
+    QJsonObject obj = doc.object();
+    DSP_Settings_t settings;
+    
+    // Detection threshold settings
+    if (obj.contains("detection_threshold"))
+        settings.detection_threshold = static_cast<int16_t>(obj["detection_threshold"].toInt());
+    if (obj.contains("cfar_threshold"))
+        settings.cfar_threshold = static_cast<int16_t>(obj["cfar_threshold"].toInt());
+    
+    // Range settings
+    if (obj.contains("range_min"))
+        settings.range_min = static_cast<float>(obj["range_min"].toDouble());
+    if (obj.contains("range_max"))
+        settings.range_max = static_cast<float>(obj["range_max"].toDouble());
+    
+    // Speed settings
+    if (obj.contains("speed_min"))
+        settings.speed_min = static_cast<float>(obj["speed_min"].toDouble());
+    if (obj.contains("speed_max"))
+        settings.speed_max = static_cast<float>(obj["speed_max"].toDouble());
+    
+    // FFT settings
+    if (obj.contains("fft_size"))
+        settings.fft_size = static_cast<uint16_t>(obj["fft_size"].toInt());
+    if (obj.contains("fft_window_type"))
+        settings.fft_window_type = static_cast<uint8_t>(obj["fft_window_type"].toInt());
+    if (obj.contains("fft_averaging"))
+        settings.fft_averaging = static_cast<uint8_t>(obj["fft_averaging"].toInt());
+    
+    // Filter settings
+    if (obj.contains("filter_enabled"))
+        settings.filter_enabled = obj["filter_enabled"].toBool() ? 1 : 0;
+    if (obj.contains("moving_avg_enabled"))
+        settings.moving_avg_enabled = obj["moving_avg_enabled"].toBool() ? 1 : 0;
+    if (obj.contains("moving_avg_window"))
+        settings.moving_avg_window = static_cast<uint8_t>(obj["moving_avg_window"].toInt());
+    
+    // Line filter settings
+    if (obj.contains("line_filter_50hz"))
+        settings.line_filter_50hz = obj["line_filter_50hz"].toBool() ? 1 : 0;
+    if (obj.contains("line_filter_100hz"))
+        settings.line_filter_100hz = obj["line_filter_100hz"].toBool() ? 1 : 0;
+    if (obj.contains("line_filter_150hz"))
+        settings.line_filter_150hz = obj["line_filter_150hz"].toBool() ? 1 : 0;
+    
+    // Amplification settings
+    if (obj.contains("amplification"))
+        settings.amplification = static_cast<int16_t>(obj["amplification"].toInt());
+    if (obj.contains("auto_amplification"))
+        settings.auto_amplification = obj["auto_amplification"].toBool() ? 1 : 0;
+    if (obj.contains("auto_amp_inner_threshold"))
+        settings.auto_amp_inner_threshold = static_cast<int16_t>(obj["auto_amp_inner_threshold"].toInt());
+    if (obj.contains("auto_amp_outer_threshold"))
+        settings.auto_amp_outer_threshold = static_cast<int16_t>(obj["auto_amp_outer_threshold"].toInt());
+    
+    // Target selection settings
+    if (obj.contains("target_selection_mode"))
+        settings.target_selection_mode = static_cast<uint8_t>(obj["target_selection_mode"].toInt());
+    if (obj.contains("max_targets"))
+        settings.max_targets = static_cast<uint8_t>(obj["max_targets"].toInt());
+    if (obj.contains("direction_filter"))
+        settings.direction_filter = static_cast<uint8_t>(obj["direction_filter"].toInt());
+    
+    // Signal processing settings
+    if (obj.contains("noise_floor_tracking"))
+        settings.noise_floor_tracking = obj["noise_floor_tracking"].toBool() ? 1 : 0;
+    if (obj.contains("clutter_removal"))
+        settings.clutter_removal = obj["clutter_removal"].toBool() ? 1 : 0;
+    if (obj.contains("doppler_compensation"))
+        settings.doppler_compensation = obj["doppler_compensation"].toBool() ? 1 : 0;
+    
+    // Azimuth settings
+    if (obj.contains("azimuth_offset"))
+        settings.azimuth_offset = static_cast<float>(obj["azimuth_offset"].toDouble());
+    if (obj.contains("azimuth_min"))
+        settings.azimuth_min = static_cast<float>(obj["azimuth_min"].toDouble());
+    if (obj.contains("azimuth_max"))
+        settings.azimuth_max = static_cast<float>(obj["azimuth_max"].toDouble());
+    
+    setSettings(settings);
+    QMessageBox::information(this, "Settings Loaded", 
+        QString("DSP settings have been loaded from:\n%1").arg(fileName));
+}
+
+void DSPSettingsDialog::onSaveToFileClicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+        "Save DSP Settings", 
+        "dsp_settings.json",
+        "DSP Config Files (*.json *.dsp);;All Files (*)");
+    
+    if (fileName.isEmpty()) {
+        return;
+    }
+    
+    // Ensure file has .json extension if no extension specified
+    if (!fileName.contains('.')) {
+        fileName += ".json";
+    }
+    
+    DSP_Settings_t settings = getSettings();
+    
+    QJsonObject obj;
+    
+    // Detection threshold settings
+    obj["detection_threshold"] = settings.detection_threshold;
+    obj["cfar_threshold"] = settings.cfar_threshold;
+    
+    // Range settings
+    obj["range_min"] = static_cast<double>(settings.range_min);
+    obj["range_max"] = static_cast<double>(settings.range_max);
+    
+    // Speed settings
+    obj["speed_min"] = static_cast<double>(settings.speed_min);
+    obj["speed_max"] = static_cast<double>(settings.speed_max);
+    
+    // FFT settings
+    obj["fft_size"] = settings.fft_size;
+    obj["fft_window_type"] = settings.fft_window_type;
+    obj["fft_averaging"] = settings.fft_averaging;
+    
+    // Filter settings
+    obj["filter_enabled"] = settings.filter_enabled != 0;
+    obj["moving_avg_enabled"] = settings.moving_avg_enabled != 0;
+    obj["moving_avg_window"] = settings.moving_avg_window;
+    
+    // Line filter settings
+    obj["line_filter_50hz"] = settings.line_filter_50hz != 0;
+    obj["line_filter_100hz"] = settings.line_filter_100hz != 0;
+    obj["line_filter_150hz"] = settings.line_filter_150hz != 0;
+    
+    // Amplification settings
+    obj["amplification"] = settings.amplification;
+    obj["auto_amplification"] = settings.auto_amplification != 0;
+    obj["auto_amp_inner_threshold"] = settings.auto_amp_inner_threshold;
+    obj["auto_amp_outer_threshold"] = settings.auto_amp_outer_threshold;
+    
+    // Target selection settings
+    obj["target_selection_mode"] = settings.target_selection_mode;
+    obj["max_targets"] = settings.max_targets;
+    obj["direction_filter"] = settings.direction_filter;
+    
+    // Signal processing settings
+    obj["noise_floor_tracking"] = settings.noise_floor_tracking != 0;
+    obj["clutter_removal"] = settings.clutter_removal != 0;
+    obj["doppler_compensation"] = settings.doppler_compensation != 0;
+    
+    // Azimuth settings
+    obj["azimuth_offset"] = static_cast<double>(settings.azimuth_offset);
+    obj["azimuth_min"] = static_cast<double>(settings.azimuth_min);
+    obj["azimuth_max"] = static_cast<double>(settings.azimuth_max);
+    
+    QJsonDocument doc(obj);
+    
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly)) {
+        QMessageBox::warning(this, "Save Error", 
+            QString("Could not open file for writing:\n%1").arg(file.errorString()));
+        return;
+    }
+    
+    file.write(doc.toJson(QJsonDocument::Indented));
+    file.close();
+    
+    QMessageBox::information(this, "Settings Saved", 
+        QString("DSP settings have been saved to:\n%1").arg(fileName));
 }
 
 DSP_Settings_t DSPSettingsDialog::getSettings() const
