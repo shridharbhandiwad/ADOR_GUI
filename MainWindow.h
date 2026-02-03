@@ -20,7 +20,9 @@
 
 #include "PPIWidget.h"
 #include "FFTWidget.h"
+#include "SpeedMeasurementWidget.h"
 #include "DataStructures.h"
+#include <QTabWidget>
 
 class MainWindow : public QMainWindow
 {
@@ -91,6 +93,8 @@ private:
     // UI Components
     PPIWidget* m_ppiWidget;
     FFTWidget* m_fftWidget;
+    SpeedMeasurementWidget* m_speedMeasurementWidget;
+    QTabWidget* m_mainTabWidget;
     QTableWidget* m_trackTable;
     QSplitter* m_mainSplitter;
     QSplitter* m_rightSplitter;

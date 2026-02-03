@@ -24,12 +24,14 @@ set(SOURCES
     MainWindow.cpp
     PPIWidget.cpp
     FFTWidget.cpp
+    SpeedMeasurementWidget.cpp
 )
 
 set(HEADERS
     MainWindow.h
     PPIWidget.h
     FFTWidget.h
+    SpeedMeasurementWidget.h
     DataStructures.h
 )
 

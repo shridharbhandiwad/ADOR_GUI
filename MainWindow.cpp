@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "SpeedMeasurementWidget.h"
 #include <QApplication>
 #include <QNetworkDatagram>
 #include <QHeaderView>
@@ -40,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_ppiWidget(nullptr)
     , m_fftWidget(nullptr)
+    , m_speedMeasurementWidget(nullptr)
+    , m_mainTabWidget(nullptr)
     , m_trackTable(nullptr)
     , m_udpSocket(nullptr)
     , m_updateTimer(nullptr)
@@ -715,8 +718,56 @@ void MainWindow::setupUI()
     m_dspSettingsGroup->setMaximumWidth(400);
     mainLayout->addWidget(m_dspSettingsGroup, 0);
     
-    // Add the right side (PPI, Track Table, FFT) with stretch
-    mainLayout->addWidget(rightVerticalSplitter, 1);
+    // ========== CREATE TAB WIDGET FOR MAIN CONTENT ==========
+    m_mainTabWidget = new QTabWidget(this);
+    m_mainTabWidget->setStyleSheet(R"(
+        QTabWidget::pane {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background-color: #ffffff;
+            padding: 4px;
+        }
+        QTabBar::tab {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #f8fafc, stop:1 #f1f5f9);
+            border: 1px solid #e2e8f0;
+            border-bottom: none;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            padding: 10px 20px;
+            margin-right: 2px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #64748b;
+        }
+        QTabBar::tab:selected {
+            background: #ffffff;
+            color: #0f172a;
+            font-weight: 600;
+            border-bottom: 2px solid #3b82f6;
+        }
+        QTabBar::tab:hover:!selected {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #ffffff, stop:1 #f8fafc);
+            color: #334155;
+        }
+    )");
+    
+    // Create a container widget for the radar visualization (existing content)
+    QWidget* radarTab = new QWidget();
+    QVBoxLayout* radarLayout = new QVBoxLayout(radarTab);
+    radarLayout->setContentsMargins(0, 0, 0, 0);
+    radarLayout->addWidget(rightVerticalSplitter);
+    
+    // Add tabs
+    m_mainTabWidget->addTab(radarTab, "Detection");
+    
+    // Create Speed Measurement tab
+    m_speedMeasurementWidget = new SpeedMeasurementWidget(this);
+    m_mainTabWidget->addTab(m_speedMeasurementWidget, "Speed Measurement");
+    
+    // Add the tab widget to the main layout with stretch
+    mainLayout->addWidget(m_mainTabWidget, 1);
 
     // Store splitters for compatibility (if needed elsewhere)
     m_mainSplitter = nullptr;
@@ -767,6 +818,12 @@ void MainWindow::updateDisplay()
     m_ppiWidget->updateTargets(m_currentTargets);
     m_fftWidget->updateData(m_currentADCFrame);
     m_fftWidget->updateTargets(m_currentTargets);
+    
+    // Update speed measurement widget with target data
+    if (m_speedMeasurementWidget) {
+        m_speedMeasurementWidget->updateFromTargets(m_currentTargets);
+    }
+    
     updateTrackTable();
 
     m_frameCount++;
@@ -2389,6 +2446,9 @@ void MainWindow::applyTheme(bool isDark)
     }
     if (m_fftWidget) {
         m_fftWidget->setDarkTheme(isDark);
+    }
+    if (m_speedMeasurementWidget) {
+        m_speedMeasurementWidget->setDarkTheme(isDark);
     }
     
     // Apply theme to DSP Settings panel
