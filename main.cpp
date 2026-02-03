@@ -36,22 +36,22 @@ int main(int argc, char *argv[])
         app.setStyle("Fusion");
     }
     
-    // Set modern light theme palette for Qt Widgets components
+    // Set modern monochrome light theme palette for Qt Widgets components
     QPalette lightPalette;
-    lightPalette.setColor(QPalette::Window, QColor(248, 250, 252));        // #f8fafc
-    lightPalette.setColor(QPalette::WindowText, QColor(30, 41, 59));       // #1e293b
-    lightPalette.setColor(QPalette::Base, QColor(255, 255, 255));          // #ffffff
-    lightPalette.setColor(QPalette::AlternateBase, QColor(241, 245, 249)); // #f1f5f9
+    lightPalette.setColor(QPalette::Window, QColor(250, 250, 250));        // #fafafa - monochrome background
+    lightPalette.setColor(QPalette::WindowText, QColor(10, 10, 10));       // #0a0a0a - monochrome text primary
+    lightPalette.setColor(QPalette::Base, QColor(255, 255, 255));          // #ffffff - card background
+    lightPalette.setColor(QPalette::AlternateBase, QColor(245, 245, 245)); // #f5f5f5 - hover background
     lightPalette.setColor(QPalette::ToolTipBase, QColor(255, 255, 255));
-    lightPalette.setColor(QPalette::ToolTipText, QColor(30, 41, 59));
-    lightPalette.setColor(QPalette::Text, QColor(30, 41, 59));             // #1e293b
+    lightPalette.setColor(QPalette::ToolTipText, QColor(10, 10, 10));      // #0a0a0a
+    lightPalette.setColor(QPalette::Text, QColor(10, 10, 10));             // #0a0a0a - monochrome text
     lightPalette.setColor(QPalette::Button, QColor(255, 255, 255));
-    lightPalette.setColor(QPalette::ButtonText, QColor(30, 41, 59));
-    lightPalette.setColor(QPalette::BrightText, QColor(59, 130, 246));     // #3b82f6
-    lightPalette.setColor(QPalette::Link, QColor(59, 130, 246));           // #3b82f6
-    lightPalette.setColor(QPalette::Highlight, QColor(59, 130, 246));      // #3b82f6
+    lightPalette.setColor(QPalette::ButtonText, QColor(10, 10, 10));       // #0a0a0a
+    lightPalette.setColor(QPalette::BrightText, QColor(26, 26, 26));       // #1a1a1a - monochrome primary
+    lightPalette.setColor(QPalette::Link, QColor(26, 26, 26));             // #1a1a1a - monochrome primary
+    lightPalette.setColor(QPalette::Highlight, QColor(26, 26, 26));        // #1a1a1a - monochrome primary
     lightPalette.setColor(QPalette::HighlightedText, Qt::white);
-    lightPalette.setColor(QPalette::PlaceholderText, QColor(148, 163, 184)); // #94a3b8
+    lightPalette.setColor(QPalette::PlaceholderText, QColor(163, 163, 163)); // #a3a3a3 - monochrome muted
     app.setPalette(lightPalette);
     
     // Set Qt Quick Controls 2 style

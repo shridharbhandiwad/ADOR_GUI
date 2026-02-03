@@ -76,17 +76,17 @@ QColor FFTWidget::getMutedTextColor() const
 
 QColor FFTWidget::getSpectrumLineColor() const
 {
-    return m_isDarkTheme ? QColor(96, 165, 250, 255) : QColor(59, 130, 246, 255);  // #60a5fa / #3b82f6
+    return m_isDarkTheme ? QColor(250, 250, 250, 255) : QColor(26, 26, 26, 255);  // #fafafa / #1a1a1a - Monochrome
 }
 
 QColor FFTWidget::getPrimaryBlueColor() const
 {
-    return m_isDarkTheme ? QColor(96, 165, 250) : QColor(59, 130, 246);  // #60a5fa / #3b82f6
+    return m_isDarkTheme ? QColor(250, 250, 250) : QColor(26, 26, 26);  // #fafafa / #1a1a1a - Monochrome primary
 }
 
 QColor FFTWidget::getSuccessGreenColor() const
 {
-    return m_isDarkTheme ? QColor(52, 211, 153) : QColor(16, 185, 129);  // #34d399 / #10b981
+    return m_isDarkTheme ? QColor(163, 163, 163) : QColor(82, 82, 82);  // #a3a3a3 / #525252 - Monochrome secondary
 }
 
 QColor FFTWidget::getErrorRedColor() const
