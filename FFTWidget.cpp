@@ -20,8 +20,8 @@ FFTWidget::FFTWidget(QWidget *parent)
     , m_centerFreq(24125000000.0f) // 24.125 GHz (matching Infineon: 24.025-24.125)
     , m_maxRange(50.0f)
     , m_minRange(0.0f)
-    , m_minAngle(-60.0f)         // Default min angle
-    , m_maxAngle(60.0f)          // Default max angle
+    , m_minAngle(0.0f)         // Default min angle
+    , m_maxAngle(0.0f)          // Default max angle
     , m_margin(55)               // Increased margin to accommodate Y-axis label and numbers
     , m_isDarkTheme(false)       // Default to light theme
 {

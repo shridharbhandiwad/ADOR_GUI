@@ -235,8 +235,8 @@ PPIWidget::PPIWidget(QWidget *parent)
     , m_minRange(0.0f)
     , m_plotRadius(0)
     , m_fovAngle(20.0f)  // ±20 degrees FoV (default)
-    , m_minAngle(-60.0f) // Default min angle
-    , m_maxAngle(60.0f)  // Default max angle
+    , m_minAngle(0.0f) // Default min angle
+    , m_maxAngle(0.0f)  // Default max angle
     , m_hoveredTrackIndex(-1)
     , m_isDarkTheme(false) // Default to light theme
 {
@@ -768,6 +768,7 @@ void PPIWidget::drawTargets(QPainter& painter)
 
         // Check if target is within configured FoV (using min/max angles)
         bool inFoV = (target.azimuth >= m_minAngle && target.azimuth <= m_maxAngle);
+        inFoV = true;
 
         // Draw target as a circle
         painter.setBrush(targetColor);
@@ -782,7 +783,7 @@ void PPIWidget::drawTargets(QPainter& painter)
             painter.setPen(QPen(dimmedColor.lighter(), 2));
         }
 
-        float targetSize = inFoV ? 6.0f : 4.0f; // Larger targets in FoV
+        float targetSize = inFoV ? 10.0f : 8.0f; // Larger targets in FoV
         painter.drawEllipse(targetPos, targetSize, targetSize);
 
         // Draw target ID (theme-aware text color)

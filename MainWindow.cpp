@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_dsp.min_speed_kmh = 0;   // Signed type now supports negative values
     m_dsp.max_speed_kmh = 100;
     m_dsp.min_angle_degree = 0; // Signed type now supports negative values
-    m_dsp.max_angle_degree = 60;
+    m_dsp.max_angle_degree = 0;
     m_dsp.range_threshold = 0;
     m_dsp.speed_threshold = 0;
     m_dsp.enable_tracking = 1;
@@ -555,8 +555,8 @@ void MainWindow::setupUI()
     addField(leftLayout, 5, "Range Thresh",     m_rangeThresholdEdit,  "0");
     
     // Filter & Tracking fields
-    addField(rightLayout, 0, "Min Angle (deg)",  m_minAngleEdit,        "-60");
-    addField(rightLayout, 1, "Max Angle (deg)",  m_maxAngleEdit,        "60");
+    addField(rightLayout, 0, "Min Angle (deg)",  m_minAngleEdit,        "0");
+    addField(rightLayout, 1, "Max Angle (deg)",  m_maxAngleEdit,        "0");
     addField(rightLayout, 2, "Speed Thresh",     m_speedThresholdEdit,  "0");
     addField(rightLayout, 3, "Num Tracks",       m_numTracksEdit,       "50");
     addField(rightLayout, 4, "Median Filter",    m_medianFilterEdit,    "1");
@@ -1348,7 +1348,7 @@ void MainWindow::onResetSettings()
     m_minSpeedEdit->setText("0");
     m_maxSpeedEdit->setText("100");
     m_minAngleEdit->setText("0");
-    m_maxAngleEdit->setText("60");
+    m_maxAngleEdit->setText("0");
     m_rangeThresholdEdit->setText("0");
     m_speedThresholdEdit->setText("0");
     m_numTracksEdit->setText("50");
@@ -1363,7 +1363,7 @@ void MainWindow::onResetSettings()
     m_dsp.min_speed_kmh = 0;
     m_dsp.max_speed_kmh = 100;
     m_dsp.min_angle_degree = 0;
-    m_dsp.max_angle_degree = 60;
+    m_dsp.max_angle_degree = 0;
     m_dsp.range_threshold = 0;
     m_dsp.speed_threshold = 0;
     m_dsp.num_of_tracks = 50;
@@ -1373,13 +1373,13 @@ void MainWindow::onResetSettings()
     // Apply to both displays (convert cm to meters)
     m_ppiWidget->setMinRange(0.0f);
     m_ppiWidget->setMaxRange(50.0f);  // 5000cm = 50m
-    m_ppiWidget->setMinAngle(-60.0f);
-    m_ppiWidget->setMaxAngle(60.0f);
+    m_ppiWidget->setMinAngle(0.0f);
+    m_ppiWidget->setMaxAngle(0.0f);
     
     m_fftWidget->setMinRange(0.0f);
     m_fftWidget->setMaxRange(50.0f);
-    m_fftWidget->setMinAngle(-60.0f);
-    m_fftWidget->setMaxAngle(60.0f);
+    m_fftWidget->setMinAngle(0.0f);
+    m_fftWidget->setMaxAngle(0.0f);
     
     QMessageBox::information(this, "Settings Reset", "All settings reset to default.");
 }
@@ -2760,9 +2760,9 @@ void MainWindow::loadSettings()
     if (settings.contains("maxSpeed"))
         m_maxSpeedEdit->setText(settings.value("maxSpeed", "100").toString());
     if (settings.contains("minAngle"))
-        m_minAngleEdit->setText(settings.value("minAngle", "-60").toString());
+        m_minAngleEdit->setText(settings.value("minAngle", "0").toString());
     if (settings.contains("maxAngle"))
-        m_maxAngleEdit->setText(settings.value("maxAngle", "60").toString());
+        m_maxAngleEdit->setText(settings.value("maxAngle", "0").toString());
     if (settings.contains("rangeThreshold"))
         m_rangeThresholdEdit->setText(settings.value("rangeThreshold", "0").toString());
     if (settings.contains("speedThreshold"))
@@ -2829,7 +2829,7 @@ void MainWindow::onDefaultSettings()
     m_minSpeedEdit->setText("0");
     m_maxSpeedEdit->setText("100");
     m_minAngleEdit->setText("0");
-    m_maxAngleEdit->setText("60");
+    m_maxAngleEdit->setText("0");
     m_rangeThresholdEdit->setText("0");
     m_speedThresholdEdit->setText("0");
     m_numTracksEdit->setText("50");
@@ -2855,13 +2855,13 @@ void MainWindow::onDefaultSettings()
     // Apply to both PPI and FFT displays (convert cm to meters)
     m_ppiWidget->setMinRange(0.0f);
     m_ppiWidget->setMaxRange(50.0f);  // 5000cm = 50m
-    m_ppiWidget->setMinAngle(-60.0f);
-    m_ppiWidget->setMaxAngle(60.0f);
+    m_ppiWidget->setMinAngle(0.0f);
+    m_ppiWidget->setMaxAngle(0.0f);
     
     m_fftWidget->setMinRange(0.0f);
     m_fftWidget->setMaxRange(50.0f);
-    m_fftWidget->setMinAngle(-60.0f);
-    m_fftWidget->setMaxAngle(60.0f);
+    m_fftWidget->setMinAngle(0.0f);
+    m_fftWidget->setMaxAngle(0.0f);
     
     m_statusLabel->setText("Status: Default settings restored");
     QMessageBox::information(this, "Default Settings", "All settings restored to factory defaults.");
