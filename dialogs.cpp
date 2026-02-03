@@ -759,10 +759,16 @@ void DSPSettingsDialog::setDarkTheme(bool isDark)
 
 void DSPSettingsDialog::applyThemeStyleSheet()
 {
+    // ============================================
+    // CLASSIC SIMPLIFIED COLOR PALETTE
+    // Primary: Blue (#2563eb light, #3b82f6 dark)
+    // Neutral: Slate grays for backgrounds and text
+    // ============================================
+    
     if (m_isDarkTheme) {
-        // Dark theme stylesheet
+        // Dark theme stylesheet - Classic look with single primary color
         setStyleSheet(R"(
-            /* ========== DIALOG - DARK THEME ========== */
+            /* ========== DIALOG - DARK THEME (CLASSIC) ========== */
             QDialog {
                 background-color: #1e293b;
                 color: #e2e8f0;
@@ -808,7 +814,7 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 subcontrol-origin: margin;
                 subcontrol-position: top left;
                 padding: 4px 8px;
-                color: #60a5fa;
+                color: #3b82f6;
                 background-color: #1e293b;
                 border-radius: 4px;
             }
@@ -911,7 +917,7 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 border-color: #3b82f6;
             }
             QCheckBox::indicator:hover {
-                border-color: #60a5fa;
+                border-color: #3b82f6;
             }
             
             /* ========== SLIDER - DARK ========== */
@@ -936,7 +942,7 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 border-radius: 4px;
             }
             
-            /* ========== BUTTONS - DARK ========== */
+            /* ========== BUTTONS - DARK (CLASSIC) ========== */
             QPushButton {
                 background-color: #334155;
                 color: #f1f5f9;
@@ -958,29 +964,16 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 color: #64748b;
                 border-color: #334155;
             }
-            
-            /* Send button special styling */
-            QPushButton#sendButton {
-                background-color: #22c55e;
-                color: white;
-                border: none;
-            }
-            QPushButton#sendButton:hover {
-                background-color: #16a34a;
-            }
-            QPushButton#sendButton:pressed {
-                background-color: #15803d;
-            }
         )");
         
-        // Update the send button color manually since object name might not work
+        // Send button uses primary blue instead of green for unified look
         if (sendButton) {
-            sendButton->setStyleSheet("QPushButton { background-color: #22c55e; color: white; font-weight: bold; } QPushButton:hover { background-color: #16a34a; }");
+            sendButton->setStyleSheet("QPushButton { background-color: #3b82f6; color: white; font-weight: bold; } QPushButton:hover { background-color: #2563eb; }");
         }
     } else {
-        // Light theme stylesheet
+        // Light theme stylesheet - Classic look with single primary color
         setStyleSheet(R"(
-            /* ========== DIALOG - LIGHT THEME ========== */
+            /* ========== DIALOG - LIGHT THEME (CLASSIC) ========== */
             QDialog {
                 background-color: #f8fafc;
                 color: #1e293b;
@@ -1005,7 +998,7 @@ void DSPSettingsDialog::applyThemeStyleSheet()
             QTabBar::tab:selected {
                 background-color: #ffffff;
                 color: #1e293b;
-                border-bottom: 2px solid #3b82f6;
+                border-bottom: 2px solid #2563eb;
             }
             QTabBar::tab:hover:!selected {
                 background-color: #e2e8f0;
@@ -1026,7 +1019,7 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 subcontrol-origin: margin;
                 subcontrol-position: top left;
                 padding: 4px 8px;
-                color: #3b82f6;
+                color: #2563eb;
                 background-color: #f8fafc;
                 border-radius: 4px;
             }
@@ -1044,10 +1037,10 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 border-radius: 4px;
                 padding: 4px 8px;
                 color: #1e293b;
-                selection-background-color: #3b82f6;
+                selection-background-color: #2563eb;
             }
             QSpinBox:focus, QDoubleSpinBox:focus {
-                border-color: #3b82f6;
+                border-color: #2563eb;
             }
             QSpinBox::up-button, QDoubleSpinBox::up-button,
             QSpinBox::down-button, QDoubleSpinBox::down-button {
@@ -1086,7 +1079,7 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 min-width: 100px;
             }
             QComboBox:focus {
-                border-color: #3b82f6;
+                border-color: #2563eb;
             }
             QComboBox::drop-down {
                 subcontrol-origin: padding;
@@ -1109,7 +1102,7 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 background-color: #ffffff;
                 border: 1px solid #e2e8f0;
                 color: #1e293b;
-                selection-background-color: #3b82f6;
+                selection-background-color: #2563eb;
             }
             
             /* ========== CHECK BOX - LIGHT ========== */
@@ -1125,11 +1118,11 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 background-color: #ffffff;
             }
             QCheckBox::indicator:checked {
-                background-color: #3b82f6;
-                border-color: #3b82f6;
+                background-color: #2563eb;
+                border-color: #2563eb;
             }
             QCheckBox::indicator:hover {
-                border-color: #3b82f6;
+                border-color: #2563eb;
             }
             
             /* ========== SLIDER - LIGHT ========== */
@@ -1140,21 +1133,21 @@ void DSPSettingsDialog::applyThemeStyleSheet()
                 border-radius: 4px;
             }
             QSlider::handle:horizontal {
-                background: #3b82f6;
+                background: #2563eb;
                 border: none;
                 width: 18px;
                 margin: -5px 0;
                 border-radius: 9px;
             }
             QSlider::handle:horizontal:hover {
-                background: #2563eb;
+                background: #1d4ed8;
             }
             QSlider::sub-page:horizontal {
-                background: #3b82f6;
+                background: #2563eb;
                 border-radius: 4px;
             }
             
-            /* ========== BUTTONS - LIGHT ========== */
+            /* ========== BUTTONS - LIGHT (CLASSIC) ========== */
             QPushButton {
                 background-color: #f1f5f9;
                 color: #1e293b;
@@ -1178,9 +1171,9 @@ void DSPSettingsDialog::applyThemeStyleSheet()
             }
         )");
         
-        // Update the send button color
+        // Send button uses primary blue instead of green for unified look
         if (sendButton) {
-            sendButton->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; } QPushButton:hover { background-color: #45a049; }");
+            sendButton->setStyleSheet("QPushButton { background-color: #2563eb; color: white; font-weight: bold; } QPushButton:hover { background-color: #1d4ed8; }");
         }
     }
 }
@@ -1209,7 +1202,7 @@ void DSPSettingsDialog::setupUI()
     sendButton = new QPushButton("Send to Radar");
     closeButton = new QPushButton("Close");
     
-    sendButton->setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }");
+    sendButton->setStyleSheet("QPushButton { background-color: #2563eb; color: white; font-weight: bold; }");
     
     buttonLayout->addWidget(loadFromFileButton);
     buttonLayout->addWidget(saveToFileButton);

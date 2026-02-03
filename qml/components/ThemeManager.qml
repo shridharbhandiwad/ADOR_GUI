@@ -18,22 +18,33 @@ QtObject {
     }
     
     // ============================================
-    // LIGHT THEME COLORS
+    // CLASSIC COLOR PALETTE - SIMPLIFIED
+    // Using only 2-3 core colors for a clean, professional UI
+    // Primary: Blue (#2563eb) - Main interactive elements
+    // Neutral: Slate grays - Backgrounds, text, borders
+    // ============================================
+    
+    // ============================================
+    // LIGHT THEME COLORS - Classic Clean Look
     // ============================================
     readonly property color lightBackgroundColor: "#f8fafc"
     readonly property color lightCardBackground: "#ffffff"
-    readonly property color lightPrimaryColor: "#3b82f6"
-    readonly property color lightPrimaryHover: "#2563eb"
-    readonly property color lightPrimaryPressed: "#1d4ed8"
-    readonly property color lightAccentColor: "#06b6d4"
-    readonly property color lightSuccessColor: "#10b981"
-    readonly property color lightWarningColor: "#f59e0b"
-    readonly property color lightErrorColor: "#ef4444"
+    // Primary blue - the main accent color
+    readonly property color lightPrimaryColor: "#2563eb"
+    readonly property color lightPrimaryHover: "#1d4ed8"
+    readonly property color lightPrimaryPressed: "#1e40af"
+    // Accent, Success, Warning, Error all derive from primary for consistency
+    readonly property color lightAccentColor: "#2563eb"      // Same as primary for unified look
+    readonly property color lightSuccessColor: "#2563eb"     // Use primary instead of green
+    readonly property color lightWarningColor: "#2563eb"     // Use primary instead of orange
+    readonly property color lightErrorColor: "#dc2626"       // Keep red only for critical errors
+    // Text hierarchy using slate grays
     readonly property color lightTextPrimary: "#1e293b"
-    readonly property color lightTextSecondary: "#64748b"
+    readonly property color lightTextSecondary: "#475569"
     readonly property color lightTextMuted: "#94a3b8"
+    // Borders and UI elements
     readonly property color lightBorderColor: "#e2e8f0"
-    readonly property color lightBorderFocus: "#3b82f6"
+    readonly property color lightBorderFocus: "#2563eb"
     readonly property color lightShadowColor: "#00000014"
     readonly property color lightInputBackground: "#f8fafc"
     readonly property color lightTrackOffColor: "#cbd5e1"
@@ -42,22 +53,26 @@ QtObject {
     readonly property color lightDividerColor: "#e2e8f0"
     
     // ============================================
-    // DARK THEME COLORS
+    // DARK THEME COLORS - Classic Dark Look
     // ============================================
     readonly property color darkBackgroundColor: "#0f172a"
     readonly property color darkCardBackground: "#1e293b"
-    readonly property color darkPrimaryColor: "#60a5fa"
-    readonly property color darkPrimaryHover: "#3b82f6"
-    readonly property color darkPrimaryPressed: "#2563eb"
-    readonly property color darkAccentColor: "#22d3ee"
-    readonly property color darkSuccessColor: "#34d399"
-    readonly property color darkWarningColor: "#fbbf24"
-    readonly property color darkErrorColor: "#f87171"
+    // Primary blue - lighter for dark backgrounds
+    readonly property color darkPrimaryColor: "#3b82f6"
+    readonly property color darkPrimaryHover: "#2563eb"
+    readonly property color darkPrimaryPressed: "#1d4ed8"
+    // Accent, Success, Warning, Error all derive from primary for consistency
+    readonly property color darkAccentColor: "#3b82f6"       // Same as primary for unified look
+    readonly property color darkSuccessColor: "#3b82f6"      // Use primary instead of green
+    readonly property color darkWarningColor: "#3b82f6"      // Use primary instead of orange
+    readonly property color darkErrorColor: "#ef4444"        // Keep red only for critical errors
+    // Text hierarchy using slate grays
     readonly property color darkTextPrimary: "#f1f5f9"
     readonly property color darkTextSecondary: "#94a3b8"
     readonly property color darkTextMuted: "#64748b"
+    // Borders and UI elements
     readonly property color darkBorderColor: "#334155"
-    readonly property color darkBorderFocus: "#60a5fa"
+    readonly property color darkBorderFocus: "#3b82f6"
     readonly property color darkShadowColor: "#00000040"
     readonly property color darkInputBackground: "#0f172a"
     readonly property color darkTrackOffColor: "#475569"

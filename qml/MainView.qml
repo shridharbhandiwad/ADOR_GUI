@@ -6,15 +6,12 @@ import "components"
 Item {
     id: mainView
 
-    // Theme properties with smooth transitions
+    // Theme properties - Simplified classic palette with smooth transitions
     property color backgroundColor: ThemeManager.backgroundColor
     property color cardBackground: ThemeManager.cardBackground
     property color primaryColor: ThemeManager.primaryColor
     property color primaryHover: ThemeManager.primaryHover
     property color primaryPressed: ThemeManager.primaryPressed
-    property color accentColor: ThemeManager.accentColor
-    property color successColor: ThemeManager.successColor
-    property color warningColor: ThemeManager.warningColor
     property color errorColor: ThemeManager.errorColor
     property color textPrimary: ThemeManager.textPrimary
     property color textSecondary: ThemeManager.textSecondary
@@ -22,6 +19,11 @@ Item {
     property color borderColor: ThemeManager.borderColor
     property color borderFocus: ThemeManager.borderFocus
     property string fontFamily: ThemeManager.fontFamily
+    
+    // Deprecated - kept for compatibility, now all use primaryColor
+    property color accentColor: primaryColor
+    property color successColor: primaryColor
+    property color warningColor: primaryColor
 
     // Expose panels for external access
     property alias udpConfigPanel: udpConfig
