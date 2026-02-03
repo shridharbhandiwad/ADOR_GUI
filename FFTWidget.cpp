@@ -366,6 +366,7 @@ void FFTWidget::paintEvent(QPaintEvent *event)
     drawBackground(painter);
     drawGrid(painter);
     drawSpectrum(painter);
+    drawTargetIndicators(painter);
     // Target indicators removed - they are shown in PPI view only
     drawLabels(painter);
 }

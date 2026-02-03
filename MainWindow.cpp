@@ -1080,7 +1080,7 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
 void MainWindow::parseTrackMessage(const QString& message)
 {
     qDebug() << "Parsing text track message";
-    QStringList tokens = message.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    QStringList tokens = message.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
     m_currentTargets.targets.clear();
     m_currentTargets.numTracks = 0;
 
@@ -1134,7 +1134,7 @@ void MainWindow::parseTrackMessage(const QString& message)
 
 void MainWindow::parseADCMessage(const QString& message)
 {
-    QStringList tokens = message.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    QStringList tokens = message.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
     qDebug() << "Parsing text ADC message";
     RawADCFrameTest frame;
     frame.complex_data.clear();
