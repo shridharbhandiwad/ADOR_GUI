@@ -37,6 +37,9 @@ HEADERS += \
 RESOURCES += \
     qml.qrc
 
+# Windows application icon
+win32:RC_FILE = RadarVisualization_resource.rc
+
 # QML files
 QML_FILES += \
     qml/main.qml \

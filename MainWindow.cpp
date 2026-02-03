@@ -1842,6 +1842,36 @@ void MainWindow::createMenuBar()
                 .arg(m_isDarkTheme ? "Dark" : "Light"));
         });
 
+    // Add Zoppler Systems branding to the right side of the menubar
+    QWidget* brandingWidget = new QWidget(menuBar);
+    QHBoxLayout* brandingLayout = new QHBoxLayout(brandingWidget);
+    brandingLayout->setContentsMargins(8, 0, 16, 0);
+    brandingLayout->setSpacing(8);
+    
+    // Logo icon
+    QLabel* logoLabel = new QLabel(brandingWidget);
+    QPixmap logoPixmap(":/resources/zoppler_logo.png");
+    logoLabel->setPixmap(logoPixmap.scaled(24, 24, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    logoLabel->setFixedSize(24, 24);
+    brandingLayout->addWidget(logoLabel);
+    
+    // Company name label
+    QLabel* companyLabel = new QLabel("Zoppler Systems", brandingWidget);
+    companyLabel->setStyleSheet(R"(
+        QLabel {
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: transparent;
+            padding: 0px;
+        }
+    )");
+    brandingLayout->addWidget(companyLabel);
+    
+    brandingWidget->setStyleSheet("background: transparent;");
+    menuBar->setCornerWidget(brandingWidget, Qt::TopRightCorner);
+
     setMenuBar(menuBar);
 }
 

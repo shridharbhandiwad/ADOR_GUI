@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/">
+        <file>resources/zoppler_logo.png</file>
+        <file>resources/zoppler_logo.ico</file>
+        <file>resources/zoppler_logo_32.png</file>
+        <file>resources/zoppler_logo_64.png</file>
         <file>qml/main.qml</file>
         <file>qml/MainView.qml</file>
         <file>qml/components/qmldir</file>
