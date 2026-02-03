@@ -2,22 +2,22 @@ pragma Singleton
 import QtQuick 2.15
 
 QtObject {
-    // Light Theme Colors
-    readonly property color backgroundColor: "#f8fafc"
+    // Monochrome Light Theme Colors (fallback/static version)
+    readonly property color backgroundColor: "#fafafa"
     readonly property color cardBackground: "#ffffff"
-    readonly property color primaryColor: "#3b82f6"
-    readonly property color primaryHover: "#2563eb"
-    readonly property color primaryPressed: "#1d4ed8"
-    readonly property color accentColor: "#06b6d4"
-    readonly property color successColor: "#10b981"
-    readonly property color warningColor: "#f59e0b"
-    readonly property color errorColor: "#ef4444"
-    readonly property color textPrimary: "#1e293b"
-    readonly property color textSecondary: "#64748b"
-    readonly property color textMuted: "#94a3b8"
-    readonly property color borderColor: "#e2e8f0"
-    readonly property color borderFocus: "#3b82f6"
-    readonly property color shadowColor: "#00000014"
+    readonly property color primaryColor: "#1a1a1a"
+    readonly property color primaryHover: "#333333"
+    readonly property color primaryPressed: "#0a0a0a"
+    readonly property color accentColor: "#1a1a1a"
+    readonly property color successColor: "#1a1a1a"
+    readonly property color warningColor: "#525252"
+    readonly property color errorColor: "#737373"
+    readonly property color textPrimary: "#0a0a0a"
+    readonly property color textSecondary: "#525252"
+    readonly property color textMuted: "#a3a3a3"
+    readonly property color borderColor: "#e5e5e5"
+    readonly property color borderFocus: "#1a1a1a"
+    readonly property color shadowColor: "#00000012"
     
     // Typography
     readonly property string fontFamily: "Segoe UI, Inter, -apple-system, BlinkMacSystemFont, sans-serif"

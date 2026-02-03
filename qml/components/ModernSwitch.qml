@@ -78,7 +78,7 @@ Item {
                     width: 20
                     height: 20
                     radius: 10
-                    color: "#ffffff"
+                    color: ThemeManager.switchKnobColor
                     
                     layer.enabled: true
                     layer.effect: DropShadow {
@@ -92,6 +92,10 @@ Item {
                     
                     Behavior on x {
                         NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                    }
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 200 }
                     }
                 }
             }

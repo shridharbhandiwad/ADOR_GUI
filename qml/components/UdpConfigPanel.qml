@@ -71,44 +71,61 @@ Rectangle {
             
             Item { Layout.fillWidth: true }
             
-            // Status badge - Classic design with primary/error colors only
+            // Status badge - Elegant monochrome design
             Rectangle {
-                width: statusRow.width + 12
-                height: 24
-                radius: 12
-                color: isConnected ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15) :
-                                    Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.15)
+                width: statusRow.width + 16
+                height: 26
+                radius: 13
+                color: isConnected ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12) :
+                                    Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.15)
+                border.color: isConnected ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.3) :
+                                           Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.25)
+                border.width: 1
                 
                 Behavior on color { ColorAnimation { duration: 200 } }
+                Behavior on border.color { ColorAnimation { duration: 200 } }
                 
                 Row {
                     id: statusRow
                     anchors.centerIn: parent
                     spacing: 6
                     
+                    // Ring indicator with inner dot when connected
                     Rectangle {
-                        width: 6
-                        height: 6
-                        radius: 3
-                        color: isConnected ? primaryColor : errorColor
+                        width: 8
+                        height: 8
+                        radius: 4
+                        color: "transparent"
+                        border.color: isConnected ? primaryColor : textMuted
+                        border.width: 1.5
                         anchors.verticalCenter: parent.verticalCenter
                         
-                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on border.color { ColorAnimation { duration: 200 } }
+                        
+                        // Inner filled dot when connected
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 4
+                            height: 4
+                            radius: 2
+                            color: primaryColor
+                            visible: isConnected
+                        }
                         
                         SequentialAnimation on opacity {
-                            running: true
+                            running: !isConnected
                             loops: Animation.Infinite
-                            NumberAnimation { to: 0.5; duration: 1000 }
-                            NumberAnimation { to: 1.0; duration: 1000 }
+                            NumberAnimation { to: 0.4; duration: 1000; easing.type: Easing.InOutSine }
+                            NumberAnimation { to: 1.0; duration: 1000; easing.type: Easing.InOutSine }
                         }
                     }
                     
                     Text {
                         text: isConnected ? "Connected" : "Disconnected"
                         font.pixelSize: 11
-                        font.weight: Font.Medium
+                        font.weight: isConnected ? Font.DemiBold : Font.Medium
                         font.family: fontFamily
-                        color: isConnected ? primaryColor : errorColor
+                        color: isConnected ? primaryColor : textMuted
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                     }
@@ -184,7 +201,7 @@ Rectangle {
                     fontFamily: udpConfigPanel.fontFamily
                 }
                 
-                // Stats cards - Classic unified design with primary color
+                // Stats cards - Elegant monochrome design
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 3
@@ -196,19 +213,20 @@ Rectangle {
                         Layout.fillWidth: true
                         height: 80
                         radius: 12
-                        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05)
-                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
+                        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.04)
+                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12)
+                        border.width: 1
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                         Behavior on border.color { ColorAnimation { duration: 200 } }
                         
                         Column {
                             anchors.centerIn: parent
-                            spacing: 4
+                            spacing: 6
                             
                             Text {
                                 text: packetsReceived.toLocaleString()
-                                font.pixelSize: 24
+                                font.pixelSize: 26
                                 font.weight: Font.Bold
                                 font.family: fontFamily
                                 color: primaryColor
@@ -220,7 +238,9 @@ Rectangle {
                             Text {
                                 text: "Received"
                                 font.pixelSize: 11
+                                font.weight: Font.Medium
                                 font.family: fontFamily
+                                font.letterSpacing: 0.3
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
@@ -229,29 +249,31 @@ Rectangle {
                         }
                     }
                     
-                    // Packets dropped - Keep error color as this is a critical indicator
+                    // Packets dropped - Monochrome with subtle distinction
                     Rectangle {
                         Layout.fillWidth: true
                         height: 80
                         radius: 12
-                        color: packetsDropped > 0 ? Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.05) : 
-                               Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.03)
-                        border.color: packetsDropped > 0 ? Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.2) :
-                                      Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
+                        color: packetsDropped > 0 ? Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.08) : 
+                               Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.02)
+                        border.color: packetsDropped > 0 ? Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.25) :
+                                      Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08)
+                        border.width: 1
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                         Behavior on border.color { ColorAnimation { duration: 200 } }
                         
                         Column {
                             anchors.centerIn: parent
-                            spacing: 4
+                            spacing: 6
                             
                             Text {
                                 text: packetsDropped.toLocaleString()
-                                font.pixelSize: 24
+                                font.pixelSize: 26
                                 font.weight: Font.Bold
                                 font.family: fontFamily
-                                color: packetsDropped > 0 ? errorColor : textMuted
+                                // Slightly dimmed when zero, emphasized when non-zero
+                                color: packetsDropped > 0 ? textPrimary : textMuted
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
                                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -260,7 +282,9 @@ Rectangle {
                             Text {
                                 text: "Dropped"
                                 font.pixelSize: 11
+                                font.weight: Font.Medium
                                 font.family: fontFamily
+                                font.letterSpacing: 0.3
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
@@ -269,24 +293,25 @@ Rectangle {
                         }
                     }
                     
-                    // Packet rate - Uses primary color for unified classic look
+                    // Packet rate
                     Rectangle {
                         Layout.fillWidth: true
                         height: 80
                         radius: 12
-                        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.05)
-                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
+                        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.04)
+                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12)
+                        border.width: 1
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                         Behavior on border.color { ColorAnimation { duration: 200 } }
                         
                         Column {
                             anchors.centerIn: parent
-                            spacing: 4
+                            spacing: 6
                             
                             Text {
                                 text: packetRate.toFixed(1)
-                                font.pixelSize: 24
+                                font.pixelSize: 26
                                 font.weight: Font.Bold
                                 font.family: fontFamily
                                 color: primaryColor
@@ -298,7 +323,9 @@ Rectangle {
                             Text {
                                 text: "pps"
                                 font.pixelSize: 11
+                                font.weight: Font.Medium
                                 font.family: fontFamily
+                                font.letterSpacing: 0.3
                                 color: textSecondary
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
