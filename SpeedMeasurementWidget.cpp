@@ -21,7 +21,7 @@ SpeedometerGauge::SpeedometerGauge(QWidget *parent)
     , m_isDarkTheme(false)
     , m_radius(0.0f)
 {
-    setMinimumSize(400, 400);
+    setMinimumSize(500, 500);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     // Setup animation timer for smooth needle movement
@@ -99,43 +99,43 @@ void SpeedometerGauge::setTheme(const SpeedWidgetTheme& theme)
 void SpeedometerGauge::updateThemeColors()
 {
     if (m_isDarkTheme) {
-        // Dark theme - sleek, modern colors
-        m_theme.backgroundColor = QColor(15, 23, 42);      // slate-900
-        m_theme.cardBackground = QColor(30, 41, 59);       // slate-800
-        m_theme.gaugeBackground = QColor(30, 41, 59);      // slate-800
-        m_theme.gaugeInnerRing = QColor(51, 65, 85);       // slate-700
-        m_theme.gaugeArcColor = QColor(51, 65, 85);        // slate-700
-        m_theme.gaugeGlowColor = QColor(96, 165, 250);     // blue-400
-        m_theme.primaryColor = QColor(96, 165, 250);       // blue-400
-        m_theme.accentColor = QColor(34, 211, 238);        // cyan-400
-        m_theme.textPrimary = QColor(241, 245, 249);       // slate-100
-        m_theme.textSecondary = QColor(148, 163, 184);     // slate-400
-        m_theme.needleColor = QColor(241, 245, 249);       // slate-100
-        m_theme.needleGlow = QColor(96, 165, 250, 150);    // blue-400 with alpha
-        m_theme.centerCapColor = QColor(71, 85, 105);      // slate-600
-        m_theme.normalZone = QColor(34, 197, 94);          // green-500
-        m_theme.warningZone = QColor(251, 191, 36);        // amber-400
-        m_theme.dangerZone = QColor(248, 113, 113);        // red-400
-        m_theme.borderColor = QColor(51, 65, 85);          // slate-700
+        // Dark theme - classic, elegant monochrome
+        m_theme.backgroundColor = QColor(18, 18, 22);      // Deep charcoal
+        m_theme.cardBackground = QColor(28, 28, 34);       // Dark gray
+        m_theme.gaugeBackground = QColor(28, 28, 34);      // Dark gray
+        m_theme.gaugeInnerRing = QColor(45, 45, 52);       // Medium gray
+        m_theme.gaugeArcColor = QColor(55, 55, 62);        // Gray track
+        m_theme.gaugeGlowColor = QColor(180, 180, 190);    // Light gray
+        m_theme.primaryColor = QColor(200, 200, 210);      // Silver
+        m_theme.accentColor = QColor(180, 180, 190);       // Light gray accent
+        m_theme.textPrimary = QColor(240, 240, 245);       // Off-white
+        m_theme.textSecondary = QColor(140, 140, 150);     // Medium gray
+        m_theme.needleColor = QColor(240, 240, 245);       // Off-white needle
+        m_theme.needleGlow = QColor(200, 200, 210, 80);    // Silver glow
+        m_theme.centerCapColor = QColor(60, 60, 68);       // Dark gray cap
+        m_theme.normalZone = QColor(140, 140, 150);        // Gray (not used)
+        m_theme.warningZone = QColor(160, 160, 170);       // Gray (not used)
+        m_theme.dangerZone = QColor(180, 180, 190);        // Gray (not used)
+        m_theme.borderColor = QColor(50, 50, 58);          // Border gray
     } else {
-        // Light theme - clean, professional
-        m_theme.backgroundColor = QColor(248, 250, 252);   // slate-50
-        m_theme.cardBackground = QColor(255, 255, 255);    // white
-        m_theme.gaugeBackground = QColor(241, 245, 249);   // slate-100
-        m_theme.gaugeInnerRing = QColor(226, 232, 240);    // slate-200
-        m_theme.gaugeArcColor = QColor(203, 213, 225);     // slate-300
-        m_theme.gaugeGlowColor = QColor(59, 130, 246);     // blue-500
-        m_theme.primaryColor = QColor(59, 130, 246);       // blue-500
-        m_theme.accentColor = QColor(6, 182, 212);         // cyan-500
-        m_theme.textPrimary = QColor(30, 41, 59);          // slate-800
-        m_theme.textSecondary = QColor(100, 116, 139);     // slate-500
-        m_theme.needleColor = QColor(30, 41, 59);          // slate-800
-        m_theme.needleGlow = QColor(59, 130, 246, 120);    // blue-500 with alpha
-        m_theme.centerCapColor = QColor(71, 85, 105);      // slate-600
-        m_theme.normalZone = QColor(16, 185, 129);         // emerald-500
-        m_theme.warningZone = QColor(245, 158, 11);        // amber-500
-        m_theme.dangerZone = QColor(239, 68, 68);          // red-500
-        m_theme.borderColor = QColor(226, 232, 240);       // slate-200
+        // Light theme - classic, clean monochrome
+        m_theme.backgroundColor = QColor(250, 250, 252);   // Off-white
+        m_theme.cardBackground = QColor(255, 255, 255);    // White
+        m_theme.gaugeBackground = QColor(245, 245, 248);   // Light gray
+        m_theme.gaugeInnerRing = QColor(225, 225, 230);    // Silver
+        m_theme.gaugeArcColor = QColor(200, 200, 210);     // Gray track
+        m_theme.gaugeGlowColor = QColor(80, 80, 90);       // Dark gray
+        m_theme.primaryColor = QColor(60, 60, 70);         // Charcoal
+        m_theme.accentColor = QColor(80, 80, 90);          // Dark gray
+        m_theme.textPrimary = QColor(35, 35, 45);          // Near black
+        m_theme.textSecondary = QColor(100, 100, 110);     // Medium gray
+        m_theme.needleColor = QColor(35, 35, 45);          // Near black needle
+        m_theme.needleGlow = QColor(60, 60, 70, 80);       // Charcoal glow
+        m_theme.centerCapColor = QColor(70, 70, 80);       // Dark gray cap
+        m_theme.normalZone = QColor(100, 100, 110);        // Gray (not used)
+        m_theme.warningZone = QColor(120, 120, 130);       // Gray (not used)
+        m_theme.dangerZone = QColor(140, 140, 150);        // Gray (not used)
+        m_theme.borderColor = QColor(220, 220, 228);       // Light border
     }
 }
 
@@ -164,8 +164,6 @@ void SpeedometerGauge::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
     
     drawBackground(painter);
-    drawOuterGlow(painter);
-    drawSpeedZones(painter);
     drawGaugeArc(painter);
     drawProgressArc(painter);
     drawTickMarks(painter);
@@ -288,7 +286,7 @@ void SpeedometerGauge::drawProgressArc(QPainter& painter)
     painter.save();
     
     float outerRadius = m_radius * 0.88f;
-    float arcWidth = m_radius * 0.12f;
+    float arcWidth = m_radius * 0.10f;
     
     QRectF arcRect(
         m_center.x() - outerRadius + arcWidth/2,
@@ -301,38 +299,10 @@ void SpeedometerGauge::drawProgressArc(QPainter& painter)
     float speedRatio = m_animatedSpeed / m_maxSpeed;
     float progressAngle = SWEEP_ANGLE * speedRatio;
     
-    // Determine color based on speed zone with gradient
-    QColor progressColor;
-    if (speedRatio >= DANGER_THRESHOLD) {
-        progressColor = m_theme.dangerZone;
-    } else if (speedRatio >= WARNING_THRESHOLD) {
-        // Interpolate between warning and danger
-        float t = (speedRatio - WARNING_THRESHOLD) / (DANGER_THRESHOLD - WARNING_THRESHOLD);
-        progressColor = QColor(
-            static_cast<int>(m_theme.warningZone.red() * (1-t) + m_theme.dangerZone.red() * t),
-            static_cast<int>(m_theme.warningZone.green() * (1-t) + m_theme.dangerZone.green() * t),
-            static_cast<int>(m_theme.warningZone.blue() * (1-t) + m_theme.dangerZone.blue() * t)
-        );
-    } else {
-        // Interpolate between accent and warning
-        float t = speedRatio / WARNING_THRESHOLD;
-        progressColor = QColor(
-            static_cast<int>(m_theme.accentColor.red() * (1-t) + m_theme.normalZone.red() * t),
-            static_cast<int>(m_theme.accentColor.green() * (1-t) + m_theme.normalZone.green() * t),
-            static_cast<int>(m_theme.accentColor.blue() * (1-t) + m_theme.normalZone.blue() * t)
-        );
-    }
+    // Classic single color for progress - use primary/accent color
+    QColor progressColor = m_theme.primaryColor;
     
-    // Draw progress arc with glow effect
-    // First, draw glow
-    QPen glowPen(QColor(progressColor.red(), progressColor.green(), progressColor.blue(), 
-                        static_cast<int>(100 * (0.5f + m_glowIntensity * 0.5f))), 
-                 arcWidth * 1.4f);
-    glowPen.setCapStyle(Qt::RoundCap);
-    painter.setPen(glowPen);
-    painter.drawArc(arcRect, static_cast<int>(START_ANGLE * 16), static_cast<int>(progressAngle * 16));
-    
-    // Draw main progress arc
+    // Draw main progress arc - clean, no glow
     QPen progressPen(progressColor, arcWidth);
     progressPen.setCapStyle(Qt::RoundCap);
     painter.setPen(progressPen);
@@ -356,21 +326,10 @@ void SpeedometerGauge::drawTickMarks(QPainter& painter)
         
         bool isMajorTick = (speed % 20 == 0);
         float tickLength = isMajorTick ? majorTickLength : minorTickLength;
-        float tickWidth = isMajorTick ? 2.5f : 1.2f;
+        float tickWidth = isMajorTick ? 2.0f : 1.0f;
         
-        // Color based on speed zone
+        // Classic single color for all tick marks
         QColor tickColor = m_theme.textSecondary;
-        if (fraction >= DANGER_THRESHOLD) {
-            tickColor = m_theme.dangerZone;
-        } else if (fraction >= WARNING_THRESHOLD) {
-            tickColor = m_theme.warningZone;
-        }
-        
-        // Highlight current speed tick
-        if (qAbs(speed - m_animatedSpeed) < 10 && m_animatedSpeed > 5) {
-            tickColor = m_theme.primaryColor;
-            tickWidth *= 1.3f;
-        }
         
         QPen tickPen(tickColor, tickWidth, Qt::SolidLine, Qt::RoundCap);
         painter.setPen(tickPen);
@@ -403,13 +362,8 @@ void SpeedometerGauge::drawSpeedLabels(QPainter& painter)
         float x = m_center.x() + textRadius * qCos(angleRad);
         float y = m_center.y() - textRadius * qSin(angleRad);
         
-        // Color based on zone
+        // Classic single color for all labels
         QColor textColor = m_theme.textPrimary;
-        if (fraction >= DANGER_THRESHOLD) {
-            textColor = m_theme.dangerZone;
-        } else if (fraction >= WARNING_THRESHOLD) {
-            textColor = m_theme.warningZone;
-        }
         
         painter.setPen(textColor);
         
@@ -434,57 +388,42 @@ void SpeedometerGauge::drawNeedle(QPainter& painter)
     float fraction = m_animatedSpeed / m_maxSpeed;
     float angle = START_ANGLE + (SWEEP_ANGLE * fraction);
     
-    float needleLength = m_radius * 0.50f;
-    float needleTailLength = m_radius * 0.12f;
-    float needleWidth = m_radius * 0.025f;
+    float needleLength = m_radius * 0.55f;
+    float needleTailLength = m_radius * 0.10f;
+    float needleWidth = m_radius * 0.018f;  // Thinner needle for classic look
     
     painter.translate(m_center);
     painter.rotate(-angle + 90);
     
-    // Create needle path
+    // Create sleek needle path - more elegant shape
     QPainterPath needlePath;
-    needlePath.moveTo(0, -needleLength);           // Tip
-    needlePath.lineTo(-needleWidth * 1.5f, -needleLength * 0.1f);  // Left shoulder
+    needlePath.moveTo(0, -needleLength);           // Sharp tip
+    needlePath.lineTo(-needleWidth * 0.8f, -needleLength * 0.15f);  // Left shoulder
     needlePath.lineTo(-needleWidth, 0);            // Left base
     needlePath.lineTo(0, needleTailLength);        // Tail
     needlePath.lineTo(needleWidth, 0);             // Right base
-    needlePath.lineTo(needleWidth * 1.5f, -needleLength * 0.1f);   // Right shoulder
+    needlePath.lineTo(needleWidth * 0.8f, -needleLength * 0.15f);   // Right shoulder
     needlePath.closeSubpath();
     
-    // Draw needle shadow
+    // Draw subtle needle shadow
     painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor(0, 0, 0, 30));
-    painter.translate(3, 3);
+    painter.setBrush(QColor(0, 0, 0, 25));
+    painter.translate(2, 2);
     painter.drawPath(needlePath);
-    painter.translate(-3, -3);
+    painter.translate(-2, -2);
     
-    // Draw needle glow for high speeds
-    if (m_animatedSpeed > 5 && m_glowIntensity > 0.1f) {
-        QColor glowColor = m_theme.needleGlow;
-        glowColor.setAlphaF(0.4f * m_glowIntensity);
-        painter.setBrush(glowColor);
-        painter.scale(1.15f, 1.15f);
-        painter.drawPath(needlePath);
-        painter.scale(1.0f/1.15f, 1.0f/1.15f);
-    }
-    
-    // Draw needle with gradient
+    // Draw needle with gradient - classic single color scheme
     QLinearGradient needleGradient(0, -needleLength, 0, needleTailLength);
     
-    // Needle color based on speed zone
+    // Classic single needle color
     QColor needleColor = m_theme.needleColor;
-    if (fraction >= DANGER_THRESHOLD) {
-        needleColor = m_theme.dangerZone;
-    } else if (fraction >= WARNING_THRESHOLD) {
-        needleColor = m_theme.warningZone;
-    }
     
     needleGradient.setColorAt(0, needleColor);
-    needleGradient.setColorAt(0.4, needleColor.darker(105));
-    needleGradient.setColorAt(1, needleColor.darker(120));
+    needleGradient.setColorAt(0.5, needleColor.darker(110));
+    needleGradient.setColorAt(1, needleColor.darker(125));
     
     painter.setBrush(needleGradient);
-    painter.setPen(QPen(needleColor.darker(130), 0.5));
+    painter.setPen(QPen(needleColor.darker(140), 0.5));
     painter.drawPath(needlePath);
     
     painter.restore();
@@ -494,30 +433,31 @@ void SpeedometerGauge::drawCenterHub(QPainter& painter)
 {
     painter.save();
     
-    float hubRadius = m_radius * 0.14f;
-    float innerHubRadius = m_radius * 0.08f;
+    // Thin center hub for classic aesthetic
+    float hubRadius = m_radius * 0.06f;
+    float innerHubRadius = m_radius * 0.035f;
     
     // Draw outer hub ring
     QRadialGradient hubGradient(m_center, hubRadius);
-    hubGradient.setColorAt(0, m_theme.centerCapColor.lighter(140));
+    hubGradient.setColorAt(0, m_theme.centerCapColor.lighter(130));
     hubGradient.setColorAt(0.5, m_theme.centerCapColor);
-    hubGradient.setColorAt(1, m_theme.centerCapColor.darker(130));
+    hubGradient.setColorAt(1, m_theme.centerCapColor.darker(140));
     
     painter.setPen(Qt::NoPen);
     
-    // Shadow
-    painter.setBrush(QColor(0, 0, 0, 40));
-    painter.drawEllipse(m_center + QPointF(2, 2), hubRadius, hubRadius);
+    // Subtle shadow
+    painter.setBrush(QColor(0, 0, 0, 30));
+    painter.drawEllipse(m_center + QPointF(1, 1), hubRadius, hubRadius);
     
     // Hub
     painter.setBrush(hubGradient);
     painter.drawEllipse(m_center, hubRadius, hubRadius);
     
-    // Inner hub highlight
-    QRadialGradient innerGradient(m_center - QPointF(hubRadius * 0.3f, hubRadius * 0.3f), innerHubRadius);
-    innerGradient.setColorAt(0, m_theme.primaryColor.lighter(150));
-    innerGradient.setColorAt(0.6, m_theme.primaryColor);
-    innerGradient.setColorAt(1, m_theme.primaryColor.darker(110));
+    // Small inner accent
+    QRadialGradient innerGradient(m_center - QPointF(hubRadius * 0.2f, hubRadius * 0.2f), innerHubRadius);
+    innerGradient.setColorAt(0, m_theme.textPrimary.lighter(120));
+    innerGradient.setColorAt(0.6, m_theme.textPrimary);
+    innerGradient.setColorAt(1, m_theme.textPrimary.darker(110));
     
     painter.setBrush(innerGradient);
     painter.drawEllipse(m_center, innerHubRadius, innerHubRadius);
@@ -541,16 +481,8 @@ void SpeedometerGauge::drawDigitalDisplay(QPainter& painter)
     QFontMetrics fm(speedFont);
     QRect speedRect = fm.boundingRect(speedText);
     
-    // Choose color based on speed
-    float fraction = m_animatedSpeed / m_maxSpeed;
+    // Classic single color for speed display
     QColor speedColor = m_theme.textPrimary;
-    if (fraction >= DANGER_THRESHOLD) {
-        speedColor = m_theme.dangerZone;
-    } else if (fraction >= WARNING_THRESHOLD) {
-        speedColor = m_theme.warningZone;
-    } else if (m_animatedSpeed > 5) {
-        speedColor = m_theme.accentColor;
-    }
     
     painter.setPen(speedColor);
     painter.drawText(
@@ -856,45 +788,45 @@ SpeedWidgetTheme SpeedMeasurementWidget::createLightTheme() const
 {
     SpeedWidgetTheme theme;
     
-    // Background
-    theme.backgroundColor = QColor(248, 250, 252);    // slate-50
-    theme.cardBackground = QColor(255, 255, 255);     // white
+    // Background - classic off-white
+    theme.backgroundColor = QColor(250, 250, 252);    // Off-white
+    theme.cardBackground = QColor(255, 255, 255);     // White
     
-    // Primary
-    theme.primaryColor = QColor(59, 130, 246);        // blue-500
-    theme.primaryHover = QColor(37, 99, 235);         // blue-600
-    theme.accentColor = QColor(6, 182, 212);          // cyan-500
+    // Primary - classic monochrome
+    theme.primaryColor = QColor(60, 60, 70);          // Charcoal
+    theme.primaryHover = QColor(45, 45, 55);          // Darker charcoal
+    theme.accentColor = QColor(80, 80, 90);           // Dark gray
     
     // Text
-    theme.textPrimary = QColor(30, 41, 59);           // slate-800
-    theme.textSecondary = QColor(100, 116, 139);      // slate-500
-    theme.textMuted = QColor(148, 163, 184);          // slate-400
+    theme.textPrimary = QColor(35, 35, 45);           // Near black
+    theme.textSecondary = QColor(100, 100, 110);      // Medium gray
+    theme.textMuted = QColor(140, 140, 150);          // Light gray
     
     // Gauge
-    theme.gaugeBackground = QColor(241, 245, 249);    // slate-100
-    theme.gaugeInnerRing = QColor(226, 232, 240);     // slate-200
-    theme.gaugeArcColor = QColor(203, 213, 225);      // slate-300
-    theme.gaugeGlowColor = QColor(59, 130, 246);      // blue-500
-    theme.needleColor = QColor(30, 41, 59);           // slate-800
-    theme.needleGlow = QColor(59, 130, 246, 100);     // blue-500 alpha
-    theme.centerCapColor = QColor(71, 85, 105);       // slate-600
+    theme.gaugeBackground = QColor(245, 245, 248);    // Light gray
+    theme.gaugeInnerRing = QColor(225, 225, 230);     // Silver
+    theme.gaugeArcColor = QColor(200, 200, 210);      // Gray track
+    theme.gaugeGlowColor = QColor(80, 80, 90);        // Dark gray
+    theme.needleColor = QColor(35, 35, 45);           // Near black
+    theme.needleGlow = QColor(60, 60, 70, 80);        // Charcoal alpha
+    theme.centerCapColor = QColor(70, 70, 80);        // Dark gray
     
-    // Zones
-    theme.normalZone = QColor(16, 185, 129);          // emerald-500
-    theme.warningZone = QColor(245, 158, 11);         // amber-500
-    theme.dangerZone = QColor(239, 68, 68);           // red-500
+    // Zones - monochrome (not used in classic mode)
+    theme.normalZone = QColor(100, 100, 110);
+    theme.warningZone = QColor(120, 120, 130);
+    theme.dangerZone = QColor(140, 140, 150);
     
     // Border
-    theme.borderColor = QColor(226, 232, 240);        // slate-200
-    theme.borderFocus = QColor(59, 130, 246);         // blue-500
+    theme.borderColor = QColor(220, 220, 228);        // Light border
+    theme.borderFocus = QColor(80, 80, 90);           // Focus gray
     
     // Shadow
-    theme.shadowColor = QColor(0, 0, 0, 20);
+    theme.shadowColor = QColor(0, 0, 0, 15);
     
-    // Button
-    theme.buttonBackground = QColor(59, 130, 246);    // blue-500
-    theme.buttonHover = QColor(37, 99, 235);          // blue-600
-    theme.buttonText = QColor(255, 255, 255);         // white
+    // Button - elegant dark
+    theme.buttonBackground = QColor(55, 55, 65);      // Charcoal button
+    theme.buttonHover = QColor(40, 40, 50);           // Darker on hover
+    theme.buttonText = QColor(255, 255, 255);         // White text
     
     return theme;
 }
@@ -903,45 +835,45 @@ SpeedWidgetTheme SpeedMeasurementWidget::createDarkTheme() const
 {
     SpeedWidgetTheme theme;
     
-    // Background
-    theme.backgroundColor = QColor(15, 23, 42);       // slate-900
-    theme.cardBackground = QColor(30, 41, 59);        // slate-800
+    // Background - classic dark
+    theme.backgroundColor = QColor(18, 18, 22);       // Deep charcoal
+    theme.cardBackground = QColor(28, 28, 34);        // Dark gray
     
-    // Primary
-    theme.primaryColor = QColor(96, 165, 250);        // blue-400
-    theme.primaryHover = QColor(59, 130, 246);        // blue-500
-    theme.accentColor = QColor(34, 211, 238);         // cyan-400
+    // Primary - elegant silver
+    theme.primaryColor = QColor(200, 200, 210);       // Silver
+    theme.primaryHover = QColor(220, 220, 230);       // Lighter silver
+    theme.accentColor = QColor(180, 180, 190);        // Light gray
     
     // Text
-    theme.textPrimary = QColor(241, 245, 249);        // slate-100
-    theme.textSecondary = QColor(148, 163, 184);      // slate-400
-    theme.textMuted = QColor(100, 116, 139);          // slate-500
+    theme.textPrimary = QColor(240, 240, 245);        // Off-white
+    theme.textSecondary = QColor(140, 140, 150);      // Medium gray
+    theme.textMuted = QColor(100, 100, 110);          // Darker gray
     
     // Gauge
-    theme.gaugeBackground = QColor(30, 41, 59);       // slate-800
-    theme.gaugeInnerRing = QColor(51, 65, 85);        // slate-700
-    theme.gaugeArcColor = QColor(51, 65, 85);         // slate-700
-    theme.gaugeGlowColor = QColor(96, 165, 250);      // blue-400
-    theme.needleColor = QColor(241, 245, 249);        // slate-100
-    theme.needleGlow = QColor(96, 165, 250, 120);     // blue-400 alpha
-    theme.centerCapColor = QColor(71, 85, 105);       // slate-600
+    theme.gaugeBackground = QColor(28, 28, 34);       // Dark gray
+    theme.gaugeInnerRing = QColor(45, 45, 52);        // Medium gray
+    theme.gaugeArcColor = QColor(55, 55, 62);         // Gray track
+    theme.gaugeGlowColor = QColor(180, 180, 190);     // Light gray
+    theme.needleColor = QColor(240, 240, 245);        // Off-white
+    theme.needleGlow = QColor(200, 200, 210, 80);     // Silver alpha
+    theme.centerCapColor = QColor(60, 60, 68);        // Dark gray
     
-    // Zones
-    theme.normalZone = QColor(34, 197, 94);           // green-500
-    theme.warningZone = QColor(251, 191, 36);         // amber-400
-    theme.dangerZone = QColor(248, 113, 113);         // red-400
+    // Zones - monochrome (not used in classic mode)
+    theme.normalZone = QColor(140, 140, 150);
+    theme.warningZone = QColor(160, 160, 170);
+    theme.dangerZone = QColor(180, 180, 190);
     
     // Border
-    theme.borderColor = QColor(51, 65, 85);           // slate-700
-    theme.borderFocus = QColor(96, 165, 250);         // blue-400
+    theme.borderColor = QColor(50, 50, 58);           // Border gray
+    theme.borderFocus = QColor(180, 180, 190);        // Light focus
     
     // Shadow
-    theme.shadowColor = QColor(0, 0, 0, 60);
+    theme.shadowColor = QColor(0, 0, 0, 50);
     
-    // Button
-    theme.buttonBackground = QColor(96, 165, 250);    // blue-400
-    theme.buttonHover = QColor(59, 130, 246);         // blue-500
-    theme.buttonText = QColor(255, 255, 255);         // white
+    // Button - elegant silver
+    theme.buttonBackground = QColor(180, 180, 190);   // Silver button
+    theme.buttonHover = QColor(200, 200, 210);        // Lighter on hover
+    theme.buttonText = QColor(25, 25, 30);            // Dark text
     
     return theme;
 }
@@ -974,9 +906,9 @@ void SpeedMeasurementWidget::setupUI()
     
     leftLayout->addLayout(titleLayout);
     
-    // Speedometer gauge
+    // Speedometer gauge - larger size for better visibility
     m_speedometer = new SpeedometerGauge(this);
-    m_speedometer->setMinimumSize(450, 450);
+    m_speedometer->setMinimumSize(550, 550);
     leftLayout->addWidget(m_speedometer, 1, Qt::AlignCenter);
     
     // Status label below speedometer
