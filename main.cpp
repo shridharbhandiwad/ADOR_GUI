@@ -6,6 +6,7 @@
 #include <QFont>
 #include <QFontDatabase>
 #include <QDebug>
+#include <QIcon>
 #include "MainWindow.h"
 
 int main(int argc, char *argv[])
@@ -19,8 +20,11 @@ int main(int argc, char *argv[])
     // Set application properties
     app.setApplicationName("ZopplerSystems RadarGUI");
     app.setApplicationVersion("2.0.0");
-    app.setOrganizationName("Radar Systems");
-    app.setOrganizationDomain("radar.systems");
+    app.setOrganizationName("Zoppler Systems");
+    app.setOrganizationDomain("zoppler.systems");
+    
+    // Set application icon
+    app.setWindowIcon(QIcon(":/resources/zoppler_logo.png"));
     
     // Set modern font
     QFont defaultFont("Segoe UI", 12);
