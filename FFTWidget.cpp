@@ -148,7 +148,7 @@ void FFTWidget::setMinRange(float minRange)
 
 void FFTWidget::setMinAngle(float minAngle)
 {
-    if (minAngle >= -90.0f) {
+    if (minAngle >= -90.0f && minAngle <= m_maxAngle) {
         m_minAngle = minAngle;
         update();
     }
@@ -156,7 +156,7 @@ void FFTWidget::setMinAngle(float minAngle)
 
 void FFTWidget::setMaxAngle(float maxAngle)
 {
-    if (maxAngle <= 90.0f) {
+    if (maxAngle <= 90.0f && maxAngle >= m_minAngle) {
         m_maxAngle = maxAngle;
         update();
     }

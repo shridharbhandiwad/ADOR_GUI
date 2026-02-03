@@ -364,7 +364,7 @@ void PPIWidget::setFoVAngle(float angle)
 
 void PPIWidget::setMinAngle(float angle)
 {
-    if (angle >= -90.0f && angle < m_maxAngle) {
+    if (angle >= -90.0f && angle <= m_maxAngle) {
         m_minAngle = angle;
         // Update fovAngle to reflect the new angle range
         m_fovAngle = std::max(std::abs(m_minAngle), std::abs(m_maxAngle));
@@ -374,7 +374,7 @@ void PPIWidget::setMinAngle(float angle)
 
 void PPIWidget::setMaxAngle(float angle)
 {
-    if (angle <= 90.0f && angle > m_minAngle) {
+    if (angle <= 90.0f && angle >= m_minAngle) {
         m_maxAngle = angle;
         // Update fovAngle to reflect the new angle range
         m_fovAngle = std::max(std::abs(m_minAngle), std::abs(m_maxAngle));
