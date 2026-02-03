@@ -18,6 +18,10 @@
 #include <QMessageBox>
 #include <QFont>
 #include <QSlider>
+#include <QFileDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
 #include <memory>
 #include "structures.h"
 #include "udphandler.h"
@@ -271,6 +275,8 @@ private slots:
     void onApplyClicked();
     void onSendClicked();
     void onLoadDefaultsClicked();
+    void onLoadFromFileClicked();
+    void onSaveToFileClicked();
     void updateUIFromSettings();
 
 private:
@@ -330,6 +336,8 @@ private:
     QPushButton* applyButton;
     QPushButton* sendButton;
     QPushButton* loadDefaultsButton;
+    QPushButton* loadFromFileButton;
+    QPushButton* saveToFileButton;
     QPushButton* closeButton;
     
     // Tab widget for organized settings
