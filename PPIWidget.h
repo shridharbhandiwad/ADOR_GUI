@@ -15,7 +15,6 @@ public:
     explicit PPIWidget(QWidget *parent = nullptr);
 
     void updateTargets(const TargetTrackData& trackData);
-    void clearTracks();  // Clear all track data from the display
     void setMaxRange(float range);
     void setMinRange(float range);
     void setFoVAngle(float angle);  // NEW: Set Field of View angle

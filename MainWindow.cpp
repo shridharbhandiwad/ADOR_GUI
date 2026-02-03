@@ -52,7 +52,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_saveSettingsButton(nullptr)
     , m_loadFromFileButton(nullptr)
     , m_saveToFileButton(nullptr)
-    , m_clearTracksButton(nullptr)
     , m_simulationEnabled(false)  // Simulation disabled by default
     , m_randomEngine(std::random_device{}())
     , m_rangeDist(100.0f, 500.0f)
@@ -457,34 +456,6 @@ void MainWindow::setupUI()
     m_trackTable->setAlternatingRowColors(true);
     m_trackTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableLayout->addWidget(m_trackTable, 1);
-    
-    // Clear Tracks button with premium styling
-    m_clearTracksButton = new QPushButton("  Clear All Tracks", this);
-    m_clearTracksButton->setMinimumHeight(38);
-    m_clearTracksButton->setCursor(Qt::PointingHandCursor);
-    m_clearTracksButton->setStyleSheet(R"(
-        QPushButton {
-            font-size: 14px;
-            font-weight: 600;
-            padding: 8px 16px;
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #f87171, stop:1 #ef4444);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            letter-spacing: 0.3px;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #ef4444, stop:1 #dc2626);
-        }
-        QPushButton:pressed {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #dc2626, stop:1 #b91c1c);
-        }
-    )");
-    connect(m_clearTracksButton, &QPushButton::clicked, this, &MainWindow::onClearTracks);
-    tableLayout->addWidget(m_clearTracksButton, 0);
 
     topHorizontalSplitter->addWidget(tableGroup);
     
@@ -1695,9 +1666,6 @@ void MainWindow::createMenuBar()
         m_fftWidget->update();
         m_statusLabel->setText("Status: Display refreshed");
     });
-    
-    QAction* clearDisplayAction = viewMenu->addAction(tr("&Clear Display"));
-    connect(clearDisplayAction, &QAction::triggered, this, &MainWindow::onClearTracks);
     
     // Connection Menu
     QMenu* connectionMenu = menuBar->addMenu(tr("&Connection"));
@@ -2948,33 +2916,4 @@ void MainWindow::onSaveToFile()
     m_statusLabel->setText("Status: Settings saved to file");
     QMessageBox::information(this, "Settings Saved", 
         QString("DSP settings have been saved to:\n%1").arg(fileName));
-}
-
-void MainWindow::onClearTracks()
-{
-    // Clear the internal target data
-    m_currentTargets.targets.clear();
-    m_currentTargets.numTracks = 0;
-    
-    // Clear the frame buffer (ephemeral sync)
-    m_frameTargets.clear();
-    m_expectedNumTargets = 0;
-    m_receivedTargetCount = 0;
-    
-    // Clear the PPI widget display
-    m_ppiWidget->clearTracks();
-    
-    // Clear FFT widget targets
-    m_fftWidget->updateTargets(m_currentTargets);
-    
-    // Clear the track table
-    m_trackTable->setRowCount(0);
-    
-    // Reset target count statistics
-    m_targetCount = 0;
-    
-    // Update status
-    m_statusLabel->setText("Status: Track data cleared");
-    
-    qDebug() << "Track data cleared from PPI, FFT, and table (ephemeral sync)";
 }
