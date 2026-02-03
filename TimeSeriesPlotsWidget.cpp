@@ -304,8 +304,10 @@ RangeVelocityPlotWidget::RangeVelocityPlotWidget(QWidget *parent)
     setAutoFillBackground(true);
     
     // Initialize histogram bins
-    m_velocityHistogram.resize(HISTOGRAM_BINS, 0);
-    m_rangeHistogram.resize(HISTOGRAM_BINS, 0);
+    m_velocityHistogram.resize(HISTOGRAM_BINS);
+    m_velocityHistogram.fill(0);
+    m_rangeHistogram.resize(HISTOGRAM_BINS);
+    m_rangeHistogram.fill(0);
 }
 
 void RangeVelocityPlotWidget::setDarkTheme(bool isDark)
