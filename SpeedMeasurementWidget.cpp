@@ -1,14 +1,14 @@
 #include "SpeedMeasurementWidget.h"
-#include &lt;QPainterPath&gt;
-#include &lt;QConicalGradient&gt;
-#include &lt;QRadialGradient&gt;
-#include &lt;QLinearGradient&gt;
-#include &lt;QtMath&gt;
-#include &lt;QFont&gt;
-#include &lt;QFontMetrics&gt;
-#include &lt;QGraphicsDropShadowEffect&gt;
-#include &lt;QPropertyAnimation&gt;
-#include &lt;QEasingCurve&gt;
+#include <QPainterPath>
+#include <QConicalGradient>
+#include <QRadialGradient>
+#include <QLinearGradient>
+#include <QtMath>
+#include <QFont>
+#include <QFontMetrics>
+#include <QGraphicsDropShadowEffect>
+#include <QPropertyAnimation>
+#include <QEasingCurve>
 
 // ==================== SpeedometerGauge Implementation ====================
 
@@ -26,25 +26,25 @@ SpeedometerGauge::SpeedometerGauge(QWidget *parent)
     
     // Setup animation timer for smooth needle movement
     m_animationTimer = new QTimer(this);
-    connect(m_animationTimer, &amp;QTimer::timeout, this, [this]() {
+    connect(m_animationTimer, &QTimer::timeout, this, [this]() {
         float diff = m_currentSpeed - m_animatedSpeed;
-        if (qAbs(diff) &lt; 0.3f) {
+        if (qAbs(diff) < 0.3f) {
             m_animatedSpeed = m_currentSpeed;
-            m_animationTimer-&gt;stop();
+            m_animationTimer->stop();
         } else {
             m_animatedSpeed += diff * 0.12f;  // Smooth interpolation
         }
         update();
     });
-    m_animationTimer-&gt;setInterval(16);  // ~60 FPS
+    m_animationTimer->setInterval(16);  // ~60 FPS
     
     // Setup glow animation for active speed indication
     m_glowAnimation = new QPropertyAnimation(this, "glowIntensity", this);
-    m_glowAnimation-&gt;setDuration(1500);
-    m_glowAnimation-&gt;setStartValue(0.3f);
-    m_glowAnimation-&gt;setEndValue(1.0f);
-    m_glowAnimation-&gt;setEasingCurve(QEasingCurve::InOutSine);
-    m_glowAnimation-&gt;setLoopCount(-1);  // Infinite loop
+    m_glowAnimation->setDuration(1500);
+    m_glowAnimation->setStartValue(0.3f);
+    m_glowAnimation->setEndValue(1.0f);
+    m_glowAnimation->setEasingCurve(QEasingCurve::InOutSine);
+    m_glowAnimation->setLoopCount(-1);  // Infinite loop
     
     updateThemeColors();
 }
@@ -52,15 +52,15 @@ SpeedometerGauge::SpeedometerGauge(QWidget *parent)
 void SpeedometerGauge::setSpeed(float speed)
 {
     m_currentSpeed = qBound(0.0f, speed, m_maxSpeed);
-    if (!m_animationTimer-&gt;isActive()) {
-        m_animationTimer-&gt;start();
+    if (!m_animationTimer->isActive()) {
+        m_animationTimer->start();
     }
     
     // Start glow animation when speed is significant
-    if (m_currentSpeed &gt; 5.0f &amp;&amp; m_glowAnimation-&gt;state() != QAbstractAnimation::Running) {
-        m_glowAnimation-&gt;start();
-    } else if (m_currentSpeed &lt;= 5.0f &amp;&amp; m_glowAnimation-&gt;state() == QAbstractAnimation::Running) {
-        m_glowAnimation-&gt;stop();
+    if (m_currentSpeed > 5.0f && m_glowAnimation->state() != QAbstractAnimation::Running) {
+        m_glowAnimation->start();
+    } else if (m_currentSpeed <= 5.0f && m_glowAnimation->state() == QAbstractAnimation::Running) {
+        m_glowAnimation->stop();
         m_glowIntensity = 0.0f;
     }
 }
@@ -90,7 +90,7 @@ void SpeedometerGauge::setDarkTheme(bool isDark)
     update();
 }
 
-void SpeedometerGauge::setTheme(const SpeedWidgetTheme&amp; theme)
+void SpeedometerGauge::setTheme(const SpeedWidgetTheme& theme)
 {
     m_theme = theme;
     update();
@@ -147,10 +147,10 @@ void SpeedometerGauge::resizeEvent(QResizeEvent *event)
     m_radius = side * 0.42f;
     m_center = QPointF(width() / 2.0f, height() / 2.0f);
     m_gaugeRect = QRect(
-        static_cast&lt;int&gt;(m_center.x() - m_radius),
-        static_cast&lt;int&gt;(m_center.y() - m_radius),
-        static_cast&lt;int&gt;(m_radius * 2),
-        static_cast&lt;int&gt;(m_radius * 2)
+        static_cast<int>(m_center.x() - m_radius),
+        static_cast<int>(m_center.y() - m_radius),
+        static_cast<int>(m_radius * 2),
+        static_cast<int>(m_radius * 2)
     );
 }
 
@@ -175,7 +175,7 @@ void SpeedometerGauge::paintEvent(QPaintEvent *event)
     drawDigitalDisplay(painter);
 }
 
-void SpeedometerGauge::drawBackground(QPainter&amp; painter)
+void SpeedometerGauge::drawBackground(QPainter& painter)
 {
     // Draw gradient background
     QRadialGradient bgGradient(m_center, m_radius * 1.2f);
@@ -184,9 +184,9 @@ void SpeedometerGauge::drawBackground(QPainter&amp; painter)
     painter.fillRect(rect(), bgGradient);
 }
 
-void SpeedometerGauge::drawOuterGlow(QPainter&amp; painter)
+void SpeedometerGauge::drawOuterGlow(QPainter& painter)
 {
-    if (m_animatedSpeed &lt; 5.0f) return;
+    if (m_animatedSpeed < 5.0f) return;
     
     painter.save();
     
@@ -194,9 +194,9 @@ void SpeedometerGauge::drawOuterGlow(QPainter&amp; painter)
     float speedRatio = m_animatedSpeed / m_maxSpeed;
     QColor glowColor;
     
-    if (speedRatio &gt;= DANGER_THRESHOLD) {
+    if (speedRatio >= DANGER_THRESHOLD) {
         glowColor = m_theme.dangerZone;
-    } else if (speedRatio &gt;= WARNING_THRESHOLD) {
+    } else if (speedRatio >= WARNING_THRESHOLD) {
         glowColor = m_theme.warningZone;
     } else {
         glowColor = m_theme.accentColor;
@@ -208,7 +208,7 @@ void SpeedometerGauge::drawOuterGlow(QPainter&amp; painter)
     
     QRadialGradient glowGradient(m_center, glowRadius);
     glowGradient.setColorAt(0.85f, QColor(glowColor.red(), glowColor.green(), glowColor.blue(), 
-                                          static_cast&lt;int&gt;(80 * m_glowIntensity)));
+                                          static_cast<int>(80 * m_glowIntensity)));
     glowGradient.setColorAt(1.0f, QColor(glowColor.red(), glowColor.green(), glowColor.blue(), 0));
     
     painter.setPen(Qt::NoPen);
@@ -218,7 +218,7 @@ void SpeedometerGauge::drawOuterGlow(QPainter&amp; painter)
     painter.restore();
 }
 
-void SpeedometerGauge::drawSpeedZones(QPainter&amp; painter)
+void SpeedometerGauge::drawSpeedZones(QPainter& painter)
 {
     painter.save();
     
@@ -237,7 +237,7 @@ void SpeedometerGauge::drawSpeedZones(QPainter&amp; painter)
     QPen normalPen(m_theme.normalZone, zoneWidth);
     normalPen.setCapStyle(Qt::FlatCap);
     painter.setPen(normalPen);
-    painter.drawArc(arcRect, static_cast&lt;int&gt;(START_ANGLE * 16), static_cast&lt;int&gt;(normalAngle * 16));
+    painter.drawArc(arcRect, static_cast<int>(START_ANGLE * 16), static_cast<int>(normalAngle * 16));
     
     // Warning zone (70% to 85%)
     float warningStartAngle = START_ANGLE + normalAngle;
@@ -245,7 +245,7 @@ void SpeedometerGauge::drawSpeedZones(QPainter&amp; painter)
     QPen warningPen(m_theme.warningZone, zoneWidth);
     warningPen.setCapStyle(Qt::FlatCap);
     painter.setPen(warningPen);
-    painter.drawArc(arcRect, static_cast&lt;int&gt;(warningStartAngle * 16), static_cast&lt;int&gt;(warningAngle * 16));
+    painter.drawArc(arcRect, static_cast<int>(warningStartAngle * 16), static_cast<int>(warningAngle * 16));
     
     // Danger zone (85% to 100%)
     float dangerStartAngle = warningStartAngle + warningAngle;
@@ -253,12 +253,12 @@ void SpeedometerGauge::drawSpeedZones(QPainter&amp; painter)
     QPen dangerPen(m_theme.dangerZone, zoneWidth);
     dangerPen.setCapStyle(Qt::FlatCap);
     painter.setPen(dangerPen);
-    painter.drawArc(arcRect, static_cast&lt;int&gt;(dangerStartAngle * 16), static_cast&lt;int&gt;(dangerAngle * 16));
+    painter.drawArc(arcRect, static_cast<int>(dangerStartAngle * 16), static_cast<int>(dangerAngle * 16));
     
     painter.restore();
 }
 
-void SpeedometerGauge::drawGaugeArc(QPainter&amp; painter)
+void SpeedometerGauge::drawGaugeArc(QPainter& painter)
 {
     painter.save();
     
@@ -276,14 +276,14 @@ void SpeedometerGauge::drawGaugeArc(QPainter&amp; painter)
     QPen trackPen(m_theme.gaugeArcColor, arcWidth);
     trackPen.setCapStyle(Qt::RoundCap);
     painter.setPen(trackPen);
-    painter.drawArc(arcRect, static_cast&lt;int&gt;(START_ANGLE * 16), static_cast&lt;int&gt;(SWEEP_ANGLE * 16));
+    painter.drawArc(arcRect, static_cast<int>(START_ANGLE * 16), static_cast<int>(SWEEP_ANGLE * 16));
     
     painter.restore();
 }
 
-void SpeedometerGauge::drawProgressArc(QPainter&amp; painter)
+void SpeedometerGauge::drawProgressArc(QPainter& painter)
 {
-    if (m_animatedSpeed &lt; 0.5f) return;
+    if (m_animatedSpeed < 0.5f) return;
     
     painter.save();
     
@@ -303,45 +303,45 @@ void SpeedometerGauge::drawProgressArc(QPainter&amp; painter)
     
     // Determine color based on speed zone with gradient
     QColor progressColor;
-    if (speedRatio &gt;= DANGER_THRESHOLD) {
+    if (speedRatio >= DANGER_THRESHOLD) {
         progressColor = m_theme.dangerZone;
-    } else if (speedRatio &gt;= WARNING_THRESHOLD) {
+    } else if (speedRatio >= WARNING_THRESHOLD) {
         // Interpolate between warning and danger
         float t = (speedRatio - WARNING_THRESHOLD) / (DANGER_THRESHOLD - WARNING_THRESHOLD);
         progressColor = QColor(
-            static_cast&lt;int&gt;(m_theme.warningZone.red() * (1-t) + m_theme.dangerZone.red() * t),
-            static_cast&lt;int&gt;(m_theme.warningZone.green() * (1-t) + m_theme.dangerZone.green() * t),
-            static_cast&lt;int&gt;(m_theme.warningZone.blue() * (1-t) + m_theme.dangerZone.blue() * t)
+            static_cast<int>(m_theme.warningZone.red() * (1-t) + m_theme.dangerZone.red() * t),
+            static_cast<int>(m_theme.warningZone.green() * (1-t) + m_theme.dangerZone.green() * t),
+            static_cast<int>(m_theme.warningZone.blue() * (1-t) + m_theme.dangerZone.blue() * t)
         );
     } else {
         // Interpolate between accent and warning
         float t = speedRatio / WARNING_THRESHOLD;
         progressColor = QColor(
-            static_cast&lt;int&gt;(m_theme.accentColor.red() * (1-t) + m_theme.normalZone.red() * t),
-            static_cast&lt;int&gt;(m_theme.accentColor.green() * (1-t) + m_theme.normalZone.green() * t),
-            static_cast&lt;int&gt;(m_theme.accentColor.blue() * (1-t) + m_theme.normalZone.blue() * t)
+            static_cast<int>(m_theme.accentColor.red() * (1-t) + m_theme.normalZone.red() * t),
+            static_cast<int>(m_theme.accentColor.green() * (1-t) + m_theme.normalZone.green() * t),
+            static_cast<int>(m_theme.accentColor.blue() * (1-t) + m_theme.normalZone.blue() * t)
         );
     }
     
     // Draw progress arc with glow effect
     // First, draw glow
     QPen glowPen(QColor(progressColor.red(), progressColor.green(), progressColor.blue(), 
-                        static_cast&lt;int&gt;(100 * (0.5f + m_glowIntensity * 0.5f))), 
+                        static_cast<int>(100 * (0.5f + m_glowIntensity * 0.5f))), 
                  arcWidth * 1.4f);
     glowPen.setCapStyle(Qt::RoundCap);
     painter.setPen(glowPen);
-    painter.drawArc(arcRect, static_cast&lt;int&gt;(START_ANGLE * 16), static_cast&lt;int&gt;(progressAngle * 16));
+    painter.drawArc(arcRect, static_cast<int>(START_ANGLE * 16), static_cast<int>(progressAngle * 16));
     
     // Draw main progress arc
     QPen progressPen(progressColor, arcWidth);
     progressPen.setCapStyle(Qt::RoundCap);
     painter.setPen(progressPen);
-    painter.drawArc(arcRect, static_cast&lt;int&gt;(START_ANGLE * 16), static_cast&lt;int&gt;(progressAngle * 16));
+    painter.drawArc(arcRect, static_cast<int>(START_ANGLE * 16), static_cast<int>(progressAngle * 16));
     
     painter.restore();
 }
 
-void SpeedometerGauge::drawTickMarks(QPainter&amp; painter)
+void SpeedometerGauge::drawTickMarks(QPainter& painter)
 {
     painter.save();
     
@@ -349,8 +349,8 @@ void SpeedometerGauge::drawTickMarks(QPainter&amp; painter)
     float majorTickLength = m_radius * 0.10f;
     float minorTickLength = m_radius * 0.05f;
     
-    for (int speed = 0; speed &lt;= static_cast&lt;int&gt;(m_maxSpeed); speed += 10) {
-        float fraction = static_cast&lt;float&gt;(speed) / m_maxSpeed;
+    for (int speed = 0; speed <= static_cast<int>(m_maxSpeed); speed += 10) {
+        float fraction = static_cast<float>(speed) / m_maxSpeed;
         float angle = START_ANGLE + (SWEEP_ANGLE * fraction);
         float angleRad = qDegreesToRadians(angle);
         
@@ -360,14 +360,14 @@ void SpeedometerGauge::drawTickMarks(QPainter&amp; painter)
         
         // Color based on speed zone
         QColor tickColor = m_theme.textSecondary;
-        if (fraction &gt;= DANGER_THRESHOLD) {
+        if (fraction >= DANGER_THRESHOLD) {
             tickColor = m_theme.dangerZone;
-        } else if (fraction &gt;= WARNING_THRESHOLD) {
+        } else if (fraction >= WARNING_THRESHOLD) {
             tickColor = m_theme.warningZone;
         }
         
         // Highlight current speed tick
-        if (qAbs(speed - m_animatedSpeed) &lt; 10 &amp;&amp; m_animatedSpeed &gt; 5) {
+        if (qAbs(speed - m_animatedSpeed) < 10 && m_animatedSpeed > 5) {
             tickColor = m_theme.primaryColor;
             tickWidth *= 1.3f;
         }
@@ -386,16 +386,16 @@ void SpeedometerGauge::drawTickMarks(QPainter&amp; painter)
     painter.restore();
 }
 
-void SpeedometerGauge::drawSpeedLabels(QPainter&amp; painter)
+void SpeedometerGauge::drawSpeedLabels(QPainter& painter)
 {
     painter.save();
     
-    int fontSize = static_cast&lt;int&gt;(m_radius * 0.085f);
+    int fontSize = static_cast<int>(m_radius * 0.085f);
     QFont labelFont("Segoe UI", fontSize, QFont::DemiBold);
     painter.setFont(labelFont);
     
-    for (int speed = 0; speed &lt;= static_cast&lt;int&gt;(m_maxSpeed); speed += 40) {
-        float fraction = static_cast&lt;float&gt;(speed) / m_maxSpeed;
+    for (int speed = 0; speed <= static_cast<int>(m_maxSpeed); speed += 40) {
+        float fraction = static_cast<float>(speed) / m_maxSpeed;
         float angle = START_ANGLE + (SWEEP_ANGLE * fraction);
         float angleRad = qDegreesToRadians(angle);
         
@@ -405,9 +405,9 @@ void SpeedometerGauge::drawSpeedLabels(QPainter&amp; painter)
         
         // Color based on zone
         QColor textColor = m_theme.textPrimary;
-        if (fraction &gt;= DANGER_THRESHOLD) {
+        if (fraction >= DANGER_THRESHOLD) {
             textColor = m_theme.dangerZone;
-        } else if (fraction &gt;= WARNING_THRESHOLD) {
+        } else if (fraction >= WARNING_THRESHOLD) {
             textColor = m_theme.warningZone;
         }
         
@@ -418,8 +418,8 @@ void SpeedometerGauge::drawSpeedLabels(QPainter&amp; painter)
         QRect textRect = fm.boundingRect(text);
         
         painter.drawText(
-            static_cast&lt;int&gt;(x - textRect.width() / 2),
-            static_cast&lt;int&gt;(y + textRect.height() / 4),
+            static_cast<int>(x - textRect.width() / 2),
+            static_cast<int>(y + textRect.height() / 4),
             text
         );
     }
@@ -427,7 +427,7 @@ void SpeedometerGauge::drawSpeedLabels(QPainter&amp; painter)
     painter.restore();
 }
 
-void SpeedometerGauge::drawNeedle(QPainter&amp; painter)
+void SpeedometerGauge::drawNeedle(QPainter& painter)
 {
     painter.save();
     
@@ -459,7 +459,7 @@ void SpeedometerGauge::drawNeedle(QPainter&amp; painter)
     painter.translate(-3, -3);
     
     // Draw needle glow for high speeds
-    if (m_animatedSpeed &gt; 5 &amp;&amp; m_glowIntensity &gt; 0.1f) {
+    if (m_animatedSpeed > 5 && m_glowIntensity > 0.1f) {
         QColor glowColor = m_theme.needleGlow;
         glowColor.setAlphaF(0.4f * m_glowIntensity);
         painter.setBrush(glowColor);
@@ -473,9 +473,9 @@ void SpeedometerGauge::drawNeedle(QPainter&amp; painter)
     
     // Needle color based on speed zone
     QColor needleColor = m_theme.needleColor;
-    if (fraction &gt;= DANGER_THRESHOLD) {
+    if (fraction >= DANGER_THRESHOLD) {
         needleColor = m_theme.dangerZone;
-    } else if (fraction &gt;= WARNING_THRESHOLD) {
+    } else if (fraction >= WARNING_THRESHOLD) {
         needleColor = m_theme.warningZone;
     }
     
@@ -490,7 +490,7 @@ void SpeedometerGauge::drawNeedle(QPainter&amp; painter)
     painter.restore();
 }
 
-void SpeedometerGauge::drawCenterHub(QPainter&amp; painter)
+void SpeedometerGauge::drawCenterHub(QPainter& painter)
 {
     painter.save();
     
@@ -525,7 +525,7 @@ void SpeedometerGauge::drawCenterHub(QPainter&amp; painter)
     painter.restore();
 }
 
-void SpeedometerGauge::drawDigitalDisplay(QPainter&amp; painter)
+void SpeedometerGauge::drawDigitalDisplay(QPainter& painter)
 {
     painter.save();
     
@@ -533,34 +533,34 @@ void SpeedometerGauge::drawDigitalDisplay(QPainter&amp; painter)
     float displayY = m_center.y() + m_radius * 0.25f;
     
     // Speed value
-    int fontSize = static_cast&lt;int&gt;(m_radius * 0.22f);
+    int fontSize = static_cast<int>(m_radius * 0.22f);
     QFont speedFont("Segoe UI", fontSize, QFont::Bold);
     painter.setFont(speedFont);
     
-    QString speedText = QString::number(static_cast&lt;int&gt;(m_animatedSpeed));
+    QString speedText = QString::number(static_cast<int>(m_animatedSpeed));
     QFontMetrics fm(speedFont);
     QRect speedRect = fm.boundingRect(speedText);
     
     // Choose color based on speed
     float fraction = m_animatedSpeed / m_maxSpeed;
     QColor speedColor = m_theme.textPrimary;
-    if (fraction &gt;= DANGER_THRESHOLD) {
+    if (fraction >= DANGER_THRESHOLD) {
         speedColor = m_theme.dangerZone;
-    } else if (fraction &gt;= WARNING_THRESHOLD) {
+    } else if (fraction >= WARNING_THRESHOLD) {
         speedColor = m_theme.warningZone;
-    } else if (m_animatedSpeed &gt; 5) {
+    } else if (m_animatedSpeed > 5) {
         speedColor = m_theme.accentColor;
     }
     
     painter.setPen(speedColor);
     painter.drawText(
-        static_cast&lt;int&gt;(m_center.x() - speedRect.width() / 2),
-        static_cast&lt;int&gt;(displayY + speedRect.height() / 3),
+        static_cast<int>(m_center.x() - speedRect.width() / 2),
+        static_cast<int>(displayY + speedRect.height() / 3),
         speedText
     );
     
     // Unit label
-    int unitFontSize = static_cast&lt;int&gt;(m_radius * 0.08f);
+    int unitFontSize = static_cast<int>(m_radius * 0.08f);
     QFont unitFont("Segoe UI", unitFontSize, QFont::Medium);
     painter.setFont(unitFont);
     painter.setPen(m_theme.textSecondary);
@@ -570,8 +570,8 @@ void SpeedometerGauge::drawDigitalDisplay(QPainter&amp; painter)
     QRect unitRect = unitFm.boundingRect(unitText);
     
     painter.drawText(
-        static_cast&lt;int&gt;(m_center.x() - unitRect.width() / 2),
-        static_cast&lt;int&gt;(displayY + speedRect.height() / 3 + unitRect.height() + 5),
+        static_cast<int>(m_center.x() - unitRect.width() / 2),
+        static_cast<int>(displayY + speedRect.height() / 3 + unitRect.height() + 5),
         unitText
     );
     
@@ -595,7 +595,7 @@ void SpeedCard::setDarkTheme(bool isDark)
     update();
 }
 
-void SpeedCard::setTheme(const SpeedWidgetTheme&amp; theme)
+void SpeedCard::setTheme(const SpeedWidgetTheme& theme)
 {
     m_theme = theme;
     update();
@@ -635,17 +635,17 @@ DigitalSpeedDisplay::DigitalSpeedDisplay(QWidget *parent)
     setMinimumSize(180, 100);
     
     m_valueAnimation = new QPropertyAnimation(this, "displayValue", this);
-    m_valueAnimation-&gt;setDuration(300);
-    m_valueAnimation-&gt;setEasingCurve(QEasingCurve::OutCubic);
+    m_valueAnimation->setDuration(300);
+    m_valueAnimation->setEasingCurve(QEasingCurve::OutCubic);
 }
 
 void DigitalSpeedDisplay::setValue(float value)
 {
     m_targetValue = value;
-    m_valueAnimation-&gt;stop();
-    m_valueAnimation-&gt;setStartValue(m_displayValue);
-    m_valueAnimation-&gt;setEndValue(value);
-    m_valueAnimation-&gt;start();
+    m_valueAnimation->stop();
+    m_valueAnimation->setStartValue(m_displayValue);
+    m_valueAnimation->setEndValue(value);
+    m_valueAnimation->start();
 }
 
 void DigitalSpeedDisplay::setDisplayValue(float value)
@@ -654,7 +654,7 @@ void DigitalSpeedDisplay::setDisplayValue(float value)
     update();
 }
 
-void DigitalSpeedDisplay::setUnit(const QString&amp; unit)
+void DigitalSpeedDisplay::setUnit(const QString& unit)
 {
     m_unit = unit;
     update();
@@ -666,7 +666,7 @@ void DigitalSpeedDisplay::setDarkTheme(bool isDark)
     update();
 }
 
-void DigitalSpeedDisplay::setTheme(const SpeedWidgetTheme&amp; theme)
+void DigitalSpeedDisplay::setTheme(const SpeedWidgetTheme& theme)
 {
     m_theme = theme;
     update();
@@ -701,7 +701,7 @@ void DigitalSpeedDisplay::paintEvent(QPaintEvent *event)
     painter.setFont(valueFont);
     painter.setPen(textColor);
     
-    QString valueText = QString::number(static_cast&lt;int&gt;(m_displayValue));
+    QString valueText = QString::number(static_cast<int>(m_displayValue));
     QFontMetrics fm(valueFont);
     QRect valueRect = fm.boundingRect(valueText);
     
@@ -733,7 +733,7 @@ void DigitalSpeedDisplay::paintEvent(QPaintEvent *event)
 
 // ==================== ModernSpeedButton Implementation ====================
 
-ModernSpeedButton::ModernSpeedButton(const QString&amp; text, QWidget *parent)
+ModernSpeedButton::ModernSpeedButton(const QString& text, QWidget *parent)
     : QPushButton(text, parent)
     , m_isDarkTheme(false)
     , m_hovered(false)
@@ -750,7 +750,7 @@ void ModernSpeedButton::setDarkTheme(bool isDark)
     update();
 }
 
-void ModernSpeedButton::setTheme(const SpeedWidgetTheme&amp; theme)
+void ModernSpeedButton::setTheme(const SpeedWidgetTheme& theme)
 {
     m_theme = theme;
     update();
@@ -801,7 +801,7 @@ void ModernSpeedButton::paintEvent(QPaintEvent *event)
     painter.drawText(btnRect, Qt::AlignCenter, text());
 }
 
-void ModernSpeedButton::enterEvent(QEnterEvent *event)
+void ModernSpeedButton::enterEvent(QEvent *event)
 {
     Q_UNUSED(event)
     m_hovered = true;
@@ -949,131 +949,131 @@ SpeedWidgetTheme SpeedMeasurementWidget::createDarkTheme() const
 void SpeedMeasurementWidget::setupUI()
 {
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
-    mainLayout-&gt;setSpacing(32);
-    mainLayout-&gt;setContentsMargins(24, 24, 24, 24);
+    mainLayout->setSpacing(32);
+    mainLayout->setContentsMargins(24, 24, 24, 24);
     
     // ========== Left side: Speedometer with title ==========
     QVBoxLayout* leftLayout = new QVBoxLayout();
-    leftLayout-&gt;setSpacing(16);
-    leftLayout-&gt;setAlignment(Qt::AlignTop);
+    leftLayout->setSpacing(16);
+    leftLayout->setAlignment(Qt::AlignTop);
     
     // Title section with icon-like element
     QHBoxLayout* titleLayout = new QHBoxLayout();
-    titleLayout-&gt;setAlignment(Qt::AlignCenter);
-    titleLayout-&gt;setSpacing(12);
+    titleLayout->setAlignment(Qt::AlignCenter);
+    titleLayout->setSpacing(12);
     
     // Speed icon indicator
     QLabel* iconLabel = new QLabel("\xE2\x9A\xA1");  // Lightning bolt emoji as icon
-    iconLabel-&gt;setStyleSheet("font-size: 24px;");
-    titleLayout-&gt;addWidget(iconLabel);
+    iconLabel->setStyleSheet("font-size: 24px;");
+    titleLayout->addWidget(iconLabel);
     
     m_actualSpeedLabel = new QLabel("Live Speed");
     QFont titleFont("Segoe UI", 22, QFont::Bold);
-    m_actualSpeedLabel-&gt;setFont(titleFont);
-    titleLayout-&gt;addWidget(m_actualSpeedLabel);
+    m_actualSpeedLabel->setFont(titleFont);
+    titleLayout->addWidget(m_actualSpeedLabel);
     
-    leftLayout-&gt;addLayout(titleLayout);
+    leftLayout->addLayout(titleLayout);
     
     // Speedometer gauge
     m_speedometer = new SpeedometerGauge(this);
-    m_speedometer-&gt;setMinimumSize(380, 380);
-    leftLayout-&gt;addWidget(m_speedometer, 1, Qt::AlignCenter);
+    m_speedometer->setMinimumSize(380, 380);
+    leftLayout->addWidget(m_speedometer, 1, Qt::AlignCenter);
     
     // Status label below speedometer
     m_statusLabel = new QLabel("Waiting for data...");
-    m_statusLabel-&gt;setAlignment(Qt::AlignCenter);
+    m_statusLabel->setAlignment(Qt::AlignCenter);
     QFont statusFont("Segoe UI", 13, QFont::Normal);
-    m_statusLabel-&gt;setFont(statusFont);
-    leftLayout-&gt;addWidget(m_statusLabel);
+    m_statusLabel->setFont(statusFont);
+    leftLayout->addWidget(m_statusLabel);
     
-    mainLayout-&gt;addLayout(leftLayout, 3);
+    mainLayout->addLayout(leftLayout, 3);
     
     // ========== Right side: Top Speed and Controls ==========
     QVBoxLayout* rightLayout = new QVBoxLayout();
-    rightLayout-&gt;setSpacing(24);
-    rightLayout-&gt;setAlignment(Qt::AlignTop);
+    rightLayout->setSpacing(24);
+    rightLayout->setAlignment(Qt::AlignTop);
     
     // Top Speed Card
     m_topSpeedCard = new SpeedCard(this);
-    m_topSpeedCard-&gt;setMinimumSize(280, 200);
+    m_topSpeedCard->setMinimumSize(280, 200);
     
     QVBoxLayout* topSpeedCardLayout = new QVBoxLayout(m_topSpeedCard);
-    topSpeedCardLayout-&gt;setSpacing(16);
-    topSpeedCardLayout-&gt;setContentsMargins(24, 24, 24, 24);
+    topSpeedCardLayout->setSpacing(16);
+    topSpeedCardLayout->setContentsMargins(24, 24, 24, 24);
     
     // Card header with icon
     QHBoxLayout* topSpeedHeaderLayout = new QHBoxLayout();
-    topSpeedHeaderLayout-&gt;setSpacing(12);
+    topSpeedHeaderLayout->setSpacing(12);
     
     QLabel* trophyIcon = new QLabel("\xF0\x9F\x8F\x86");  // Trophy emoji
-    trophyIcon-&gt;setStyleSheet("font-size: 28px;");
-    topSpeedHeaderLayout-&gt;addWidget(trophyIcon);
+    trophyIcon->setStyleSheet("font-size: 28px;");
+    topSpeedHeaderLayout->addWidget(trophyIcon);
     
     m_topSpeedLabel = new QLabel("Top Speed");
     QFont topSpeedTitleFont("Segoe UI", 18, QFont::DemiBold);
-    m_topSpeedLabel-&gt;setFont(topSpeedTitleFont);
-    topSpeedHeaderLayout-&gt;addWidget(m_topSpeedLabel);
-    topSpeedHeaderLayout-&gt;addStretch();
+    m_topSpeedLabel->setFont(topSpeedTitleFont);
+    topSpeedHeaderLayout->addWidget(m_topSpeedLabel);
+    topSpeedHeaderLayout->addStretch();
     
-    topSpeedCardLayout-&gt;addLayout(topSpeedHeaderLayout);
+    topSpeedCardLayout->addLayout(topSpeedHeaderLayout);
     
     // Separator line
     QFrame* separator = new QFrame();
-    separator-&gt;setFrameShape(QFrame::HLine);
-    separator-&gt;setFixedHeight(1);
-    topSpeedCardLayout-&gt;addWidget(separator);
+    separator->setFrameShape(QFrame::HLine);
+    separator->setFixedHeight(1);
+    topSpeedCardLayout->addWidget(separator);
     
     // Digital display for top speed
     m_topSpeedDisplay = new DigitalSpeedDisplay(this);
-    m_topSpeedDisplay-&gt;setMinimumSize(220, 90);
-    m_topSpeedDisplay-&gt;setValue(0);
-    topSpeedCardLayout-&gt;addWidget(m_topSpeedDisplay, 0, Qt::AlignCenter);
+    m_topSpeedDisplay->setMinimumSize(220, 90);
+    m_topSpeedDisplay->setValue(0);
+    topSpeedCardLayout->addWidget(m_topSpeedDisplay, 0, Qt::AlignCenter);
     
-    topSpeedCardLayout-&gt;addStretch();
+    topSpeedCardLayout->addStretch();
     
-    rightLayout-&gt;addWidget(m_topSpeedCard);
+    rightLayout->addWidget(m_topSpeedCard);
     
     // Output/Controls Card
     m_outputCard = new SpeedCard(this);
-    m_outputCard-&gt;setMinimumSize(280, 140);
+    m_outputCard->setMinimumSize(280, 140);
     
     QVBoxLayout* outputCardLayout = new QVBoxLayout(m_outputCard);
-    outputCardLayout-&gt;setSpacing(20);
-    outputCardLayout-&gt;setContentsMargins(24, 24, 24, 24);
+    outputCardLayout->setSpacing(20);
+    outputCardLayout->setContentsMargins(24, 24, 24, 24);
     
     // Card header
     QHBoxLayout* outputHeaderLayout = new QHBoxLayout();
-    outputHeaderLayout-&gt;setSpacing(12);
+    outputHeaderLayout->setSpacing(12);
     
     QLabel* controlIcon = new QLabel("\xE2\x9A\x99\xEF\xB8\x8F");  // Gear emoji
-    controlIcon-&gt;setStyleSheet("font-size: 24px;");
-    outputHeaderLayout-&gt;addWidget(controlIcon);
+    controlIcon->setStyleSheet("font-size: 24px;");
+    outputHeaderLayout->addWidget(controlIcon);
     
     QLabel* outputLabel = new QLabel("Controls");
     QFont outputTitleFont("Segoe UI", 18, QFont::DemiBold);
-    outputLabel-&gt;setFont(outputTitleFont);
-    outputHeaderLayout-&gt;addWidget(outputLabel);
-    outputHeaderLayout-&gt;addStretch();
+    outputLabel->setFont(outputTitleFont);
+    outputHeaderLayout->addWidget(outputLabel);
+    outputHeaderLayout->addStretch();
     
-    outputCardLayout-&gt;addLayout(outputHeaderLayout);
+    outputCardLayout->addLayout(outputHeaderLayout);
     
     // Separator
     QFrame* separator2 = new QFrame();
-    separator2-&gt;setFrameShape(QFrame::HLine);
-    separator2-&gt;setFixedHeight(1);
-    outputCardLayout-&gt;addWidget(separator2);
+    separator2->setFrameShape(QFrame::HLine);
+    separator2->setFixedHeight(1);
+    outputCardLayout->addWidget(separator2);
     
     // Reset button
     m_resetButton = new ModernSpeedButton("Reset Top Speed", this);
-    connect(m_resetButton, &amp;QPushButton::clicked, this, &amp;SpeedMeasurementWidget::onResetTopSpeed);
-    outputCardLayout-&gt;addWidget(m_resetButton, 0, Qt::AlignCenter);
+    connect(m_resetButton, &QPushButton::clicked, this, &SpeedMeasurementWidget::onResetTopSpeed);
+    outputCardLayout->addWidget(m_resetButton, 0, Qt::AlignCenter);
     
-    outputCardLayout-&gt;addStretch();
+    outputCardLayout->addStretch();
     
-    rightLayout-&gt;addWidget(m_outputCard);
-    rightLayout-&gt;addStretch(1);
+    rightLayout->addWidget(m_outputCard);
+    rightLayout->addStretch(1);
     
-    mainLayout-&gt;addLayout(rightLayout, 2);
+    mainLayout->addLayout(rightLayout, 2);
     
     applyTheme();
 }
@@ -1081,29 +1081,29 @@ void SpeedMeasurementWidget::setupUI()
 void SpeedMeasurementWidget::updateSpeed(float speed)
 {
     if (m_speedometer) {
-        m_speedometer-&gt;setSpeed(speed);
+        m_speedometer->setSpeed(speed);
     }
     
     // Update status label
     if (m_statusLabel) {
-        if (speed &gt; 0.5f) {
-            m_statusLabel-&gt;setText(QString("Tracking active - %1 km/h").arg(QString::number(speed, 'f', 1)));
+        if (speed > 0.5f) {
+            m_statusLabel->setText(QString("Tracking active - %1 km/h").arg(QString::number(speed, 'f', 1)));
         } else {
-            m_statusLabel-&gt;setText("No movement detected");
+            m_statusLabel->setText("No movement detected");
         }
     }
     
     updateTopSpeed(speed);
 }
 
-void SpeedMeasurementWidget::updateFromTargets(const TargetTrackData&amp; targets)
+void SpeedMeasurementWidget::updateFromTargets(const TargetTrackData& targets)
 {
     float maxSpeed = 0.0f;
     
-    for (size_t i = 0; i &lt; targets.numTracks &amp;&amp; i &lt; targets.targets.size(); ++i) {
-        const auto&amp; target = targets.targets[i];
+    for (size_t i = 0; i < targets.numTracks && i < targets.targets.size(); ++i) {
+        const auto& target = targets.targets[i];
         float speedKmh = qAbs(target.radial_speed) * 3.6f;
-        if (speedKmh &gt; maxSpeed) {
+        if (speedKmh > maxSpeed) {
             maxSpeed = speedKmh;
         }
     }
@@ -1113,10 +1113,10 @@ void SpeedMeasurementWidget::updateFromTargets(const TargetTrackData&amp; target
 
 void SpeedMeasurementWidget::updateTopSpeed(float speed)
 {
-    if (speed &gt; m_topSpeed) {
+    if (speed > m_topSpeed) {
         m_topSpeed = speed;
         if (m_topSpeedDisplay) {
-            m_topSpeedDisplay-&gt;setValue(m_topSpeed);
+            m_topSpeedDisplay->setValue(m_topSpeed);
         }
     }
 }
@@ -1125,13 +1125,13 @@ void SpeedMeasurementWidget::onResetTopSpeed()
 {
     m_topSpeed = 0.0f;
     if (m_topSpeedDisplay) {
-        m_topSpeedDisplay-&gt;setValue(0);
+        m_topSpeedDisplay->setValue(0);
     }
     if (m_speedometer) {
-        m_speedometer-&gt;setSpeed(0.0f);
+        m_speedometer->setSpeed(0.0f);
     }
     if (m_statusLabel) {
-        m_statusLabel-&gt;setText("Top speed reset");
+        m_statusLabel->setText("Top speed reset");
     }
 }
 
@@ -1141,24 +1141,24 @@ void SpeedMeasurementWidget::setDarkTheme(bool isDark)
     m_currentTheme = isDark ? createDarkTheme() : createLightTheme();
     
     if (m_speedometer) {
-        m_speedometer-&gt;setDarkTheme(isDark);
-        m_speedometer-&gt;setTheme(m_currentTheme);
+        m_speedometer->setDarkTheme(isDark);
+        m_speedometer->setTheme(m_currentTheme);
     }
     if (m_topSpeedCard) {
-        m_topSpeedCard-&gt;setDarkTheme(isDark);
-        m_topSpeedCard-&gt;setTheme(m_currentTheme);
+        m_topSpeedCard->setDarkTheme(isDark);
+        m_topSpeedCard->setTheme(m_currentTheme);
     }
     if (m_outputCard) {
-        m_outputCard-&gt;setDarkTheme(isDark);
-        m_outputCard-&gt;setTheme(m_currentTheme);
+        m_outputCard->setDarkTheme(isDark);
+        m_outputCard->setTheme(m_currentTheme);
     }
     if (m_topSpeedDisplay) {
-        m_topSpeedDisplay-&gt;setDarkTheme(isDark);
-        m_topSpeedDisplay-&gt;setTheme(m_currentTheme);
+        m_topSpeedDisplay->setDarkTheme(isDark);
+        m_topSpeedDisplay->setTheme(m_currentTheme);
     }
     if (m_resetButton) {
-        m_resetButton-&gt;setDarkTheme(isDark);
-        m_resetButton-&gt;setTheme(m_currentTheme);
+        m_resetButton->setDarkTheme(isDark);
+        m_resetButton->setTheme(m_currentTheme);
     }
     
     applyTheme();
@@ -1173,43 +1173,43 @@ void SpeedMeasurementWidget::applyTheme()
     QString separatorColor = m_isDarkTheme ? "#334155" : "#e2e8f0";
     
     if (m_actualSpeedLabel) {
-        m_actualSpeedLabel-&gt;setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
+        m_actualSpeedLabel->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
     }
     
     if (m_topSpeedLabel) {
-        m_topSpeedLabel-&gt;setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
+        m_topSpeedLabel->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
     }
     
     if (m_statusLabel) {
-        m_statusLabel-&gt;setStyleSheet(QString("QLabel { color: %1; background: transparent; font-style: italic; }").arg(mutedColor));
+        m_statusLabel->setStyleSheet(QString("QLabel { color: %1; background: transparent; font-style: italic; }").arg(mutedColor));
     }
     
     // Style separators
     QString separatorStyle = QString("QFrame { background-color: %1; border: none; }").arg(separatorColor);
     
     // Find and style all separators
-    QList&lt;QFrame*&gt; frames = findChildren&lt;QFrame*&gt;();
+    QList<QFrame*> frames = findChildren<QFrame*>();
     for (QFrame* frame : frames) {
-        if (frame-&gt;frameShape() == QFrame::HLine) {
-            frame-&gt;setStyleSheet(separatorStyle);
+        if (frame->frameShape() == QFrame::HLine) {
+            frame->setStyleSheet(separatorStyle);
         }
     }
     
     // Style labels in cards
-    QList&lt;QLabel*&gt; labels = findChildren&lt;QLabel*&gt;();
+    QList<QLabel*> labels = findChildren<QLabel*>();
     for (QLabel* label : labels) {
-        if (label != m_actualSpeedLabel &amp;&amp; label != m_topSpeedLabel &amp;&amp; label != m_statusLabel) {
+        if (label != m_actualSpeedLabel && label != m_topSpeedLabel && label != m_statusLabel) {
             // Check if it's an icon label (contains emoji)
-            QString text = label-&gt;text();
+            QString text = label->text();
             if (text.contains("\xE2") || text.contains("\xF0")) {
                 // Emoji icon - keep default
-                label-&gt;setStyleSheet("QLabel { background: transparent; }");
-            } else if (label-&gt;font().weight() &gt;= QFont::DemiBold) {
+                label->setStyleSheet("QLabel { background: transparent; }");
+            } else if (label->font().weight() >= QFont::DemiBold) {
                 // Title labels
-                label-&gt;setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
+                label->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
             } else {
                 // Regular labels
-                label-&gt;setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(secondaryColor));
+                label->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(secondaryColor));
             }
         }
     }

@@ -1,17 +1,17 @@
 #ifndef SPEEDMEASUREMENTWIDGET_H
 #define SPEEDMEASUREMENTWIDGET_H
 
-#include &lt;QWidget&gt;
-#include &lt;QPainter&gt;
-#include &lt;QTimer&gt;
-#include &lt;QPushButton&gt;
-#include &lt;QLabel&gt;
-#include &lt;QVBoxLayout&gt;
-#include &lt;QHBoxLayout&gt;
-#include &lt;QGroupBox&gt;
-#include &lt;QFrame&gt;
-#include &lt;QPropertyAnimation&gt;
-#include &lt;QGraphicsDropShadowEffect&gt;
+#include <QWidget>
+#include <QPainter>
+#include <QTimer>
+#include <QPushButton>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QFrame>
+#include <QPropertyAnimation>
+#include <QGraphicsDropShadowEffect>
 #include "DataStructures.h"
 
 // Theme definition structure for consistent theming
@@ -76,23 +76,23 @@ public:
     float getMaxSpeed() const { return m_maxSpeed; }
     void setDarkTheme(bool isDark);
     bool isDarkTheme() const { return m_isDarkTheme; }
-    void setTheme(const SpeedWidgetTheme&amp; theme);
+    void setTheme(const SpeedWidgetTheme& theme);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-    void drawBackground(QPainter&amp; painter);
-    void drawOuterGlow(QPainter&amp; painter);
-    void drawGaugeArc(QPainter&amp; painter);
-    void drawProgressArc(QPainter&amp; painter);
-    void drawTickMarks(QPainter&amp; painter);
-    void drawSpeedLabels(QPainter&amp; painter);
-    void drawNeedle(QPainter&amp; painter);
-    void drawCenterHub(QPainter&amp; painter);
-    void drawDigitalDisplay(QPainter&amp; painter);
-    void drawSpeedZones(QPainter&amp; painter);
+    void drawBackground(QPainter& painter);
+    void drawOuterGlow(QPainter& painter);
+    void drawGaugeArc(QPainter& painter);
+    void drawProgressArc(QPainter& painter);
+    void drawTickMarks(QPainter& painter);
+    void drawSpeedLabels(QPainter& painter);
+    void drawNeedle(QPainter& painter);
+    void drawCenterHub(QPainter& painter);
+    void drawDigitalDisplay(QPainter& painter);
+    void drawSpeedZones(QPainter& painter);
     
     void updateThemeColors();
     
@@ -126,7 +126,7 @@ class SpeedCard : public QFrame
 public:
     explicit SpeedCard(QWidget *parent = nullptr);
     void setDarkTheme(bool isDark);
-    void setTheme(const SpeedWidgetTheme&amp; theme);
+    void setTheme(const SpeedWidgetTheme& theme);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -148,9 +148,9 @@ public:
     void setValue(float value);
     float getDisplayValue() const { return m_displayValue; }
     void setDisplayValue(float value);
-    void setUnit(const QString&amp; unit);
+    void setUnit(const QString& unit);
     void setDarkTheme(bool isDark);
-    void setTheme(const SpeedWidgetTheme&amp; theme);
+    void setTheme(const SpeedWidgetTheme& theme);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -170,13 +170,13 @@ class ModernSpeedButton : public QPushButton
     Q_OBJECT
 
 public:
-    explicit ModernSpeedButton(const QString&amp; text, QWidget *parent = nullptr);
+    explicit ModernSpeedButton(const QString& text, QWidget *parent = nullptr);
     void setDarkTheme(bool isDark);
-    void setTheme(const SpeedWidgetTheme&amp; theme);
+    void setTheme(const SpeedWidgetTheme& theme);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
-    void enterEvent(QEnterEvent *event) override;
+    void enterEvent(QEvent *event) override;
     void leaveEvent(QEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -197,7 +197,7 @@ public:
     ~SpeedMeasurementWidget();
     
     void updateSpeed(float speed);
-    void updateFromTargets(const TargetTrackData&amp; targets);
+    void updateFromTargets(const TargetTrackData& targets);
     void setDarkTheme(bool isDark);
     bool isDarkTheme() const { return m_isDarkTheme; }
 
