@@ -11,9 +11,14 @@
 
 int main(int argc, char *argv[])
 {
-    // Enable high DPI scaling
+    // Enable high DPI scaling for better cross-platform support
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    
+    // Use scaling based on physical DPI (better for different screens)
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+    #endif
     
     QApplication app(argc, argv);
     

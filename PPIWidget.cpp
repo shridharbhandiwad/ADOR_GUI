@@ -240,10 +240,12 @@ PPIWidget::PPIWidget(QWidget *parent)
     , m_hoveredTrackIndex(-1)
     , m_isDarkTheme(false) // Default to light theme
 {
-    setMinimumSize(400, 200);
+    // Minimum size is now set by parent widget based on screen DPI
+    // No hard-coded minimum size to allow responsive layout
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
     setMouseTracking(true);  // Enable mouse tracking for hover detection
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void PPIWidget::setDarkTheme(bool isDark)

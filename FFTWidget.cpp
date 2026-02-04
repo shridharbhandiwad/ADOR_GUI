@@ -25,9 +25,11 @@ FFTWidget::FFTWidget(QWidget *parent)
     , m_margin(55)               // Increased margin to accommodate Y-axis label and numbers
     , m_isDarkTheme(false)       // Default to light theme
 {
-    setMinimumSize(400, 200);    // Reduced minimum height (was 300)
+    // Minimum size is now set by parent widget based on screen DPI
+    // No hard-coded minimum size to allow responsive layout
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void FFTWidget::setDarkTheme(bool isDark)

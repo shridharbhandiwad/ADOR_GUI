@@ -1,6 +1,8 @@
 #include "dialogs.h"
 #include <QSlider>
 #include <QSettings>
+#include <QScreen>
+#include <QGuiApplication>
 
 // UDP Configuration Dialog Implementation
 UdpConfigDialog::UdpConfigDialog(QWidget* parent)
@@ -9,7 +11,15 @@ UdpConfigDialog::UdpConfigDialog(QWidget* parent)
 {
     setWindowTitle("UDP Configuration");
     setModal(true);
-    setMinimumSize(400, 300);
+    // Responsive minimum size based on screen
+    if (QScreen* screen = QGuiApplication::primaryScreen()) {
+        qreal dpiScale = screen->logicalDotsPerInch() / 96.0;
+        int minWidth = qMax(350, static_cast<int>(350 * dpiScale));
+        int minHeight = qMax(250, static_cast<int>(250 * dpiScale));
+        setMinimumSize(minWidth, minHeight);
+    } else {
+        setMinimumSize(400, 300);
+    }
     
     setupUI();
     
@@ -152,7 +162,15 @@ OutputConfigDialog::OutputConfigDialog(QWidget* parent)
 {
     setWindowTitle("Output Configuration");
     setModal(true);
-    setMinimumSize(500, 400);
+    // Responsive minimum size based on screen
+    if (QScreen* screen = QGuiApplication::primaryScreen()) {
+        qreal dpiScale = screen->logicalDotsPerInch() / 96.0;
+        int minWidth = qMax(450, static_cast<int>(450 * dpiScale));
+        int minHeight = qMax(350, static_cast<int>(350 * dpiScale));
+        setMinimumSize(minWidth, minHeight);
+    } else {
+        setMinimumSize(500, 400);
+    }
     
     setupUI();
     loadSettings();
@@ -736,7 +754,15 @@ DSPSettingsDialog::DSPSettingsDialog(QWidget* parent)
 {
     setWindowTitle("DSP Settings");
     setModal(true);
-    setMinimumSize(600, 500);
+    // Responsive minimum size based on screen
+    if (QScreen* screen = QGuiApplication::primaryScreen()) {
+        qreal dpiScale = screen->logicalDotsPerInch() / 96.0;
+        int minWidth = qMax(550, static_cast<int>(550 * dpiScale));
+        int minHeight = qMax(450, static_cast<int>(450 * dpiScale));
+        setMinimumSize(minWidth, minHeight);
+    } else {
+        setMinimumSize(600, 500);
+    }
     
     setupUI();
     connectSignals();
