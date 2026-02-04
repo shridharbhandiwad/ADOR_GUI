@@ -478,7 +478,7 @@ ApplicationWindow {
             }
 
             MenuItem {
-                text: qsTr("Monochrome")
+                text: qsTr("MonoChrome Theme")
                 checkable: true
                 checked: !ThemeManager.isColorMode
                 onTriggered: ThemeManager.setDesignMode(false)
@@ -507,7 +507,7 @@ ApplicationWindow {
                     }
                     
                     Text {
-                        text: "Monochrome"
+                        text: "MonoChrome Theme"
                         font.pixelSize: 13
                         font.family: root.fontFamily
                         font.weight: !ThemeManager.isColorMode ? Font.Medium : Font.Normal
@@ -530,7 +530,7 @@ ApplicationWindow {
             }
 
             MenuItem {
-                text: qsTr("Color")
+                text: qsTr("Colored Theme")
                 checkable: true
                 checked: ThemeManager.isColorMode
                 onTriggered: ThemeManager.setDesignMode(true)
@@ -559,7 +559,7 @@ ApplicationWindow {
                     }
                     
                     Text {
-                        text: "Color"
+                        text: "Colored Theme"
                         font.pixelSize: 13
                         font.family: root.fontFamily
                         font.weight: ThemeManager.isColorMode ? Font.Medium : Font.Normal

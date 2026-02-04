@@ -819,7 +819,7 @@ Popup {
                         
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "Monochrome"
+                            text: "MonoChrome Theme"
                             font.pixelSize: 13
                             font.weight: !ThemeManager.isColorMode ? Font.DemiBold : Font.Normal
                             font.family: fontFamily
@@ -921,7 +921,7 @@ Popup {
                         
                         Text {
                             anchors.horizontalCenter: parent.horizontalCenter
-                            text: "Color"
+                            text: "Colored Theme"
                             font.pixelSize: 13
                             font.weight: ThemeManager.isColorMode ? Font.DemiBold : Font.Normal
                             font.family: fontFamily

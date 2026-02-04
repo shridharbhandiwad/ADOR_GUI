@@ -31,7 +31,7 @@ QtObject {
     }
     
     // Design mode name for display
-    readonly property string designModeName: isColorMode ? "Color" : "Monochrome"
+    readonly property string designModeName: isColorMode ? "Colored" : "MonoChrome"
     
     // ============================================
     // CLASSIC MONOCHROME PALETTE
