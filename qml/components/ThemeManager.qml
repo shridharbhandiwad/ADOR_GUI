@@ -8,7 +8,7 @@ QtObject {
     property bool isDarkTheme: false
     
     // Design mode state: false = Monochrome, true = Color
-    property bool isColorMode: true
+    property bool isColorMode: false
     
     // Function to toggle theme
     function toggleTheme() {
