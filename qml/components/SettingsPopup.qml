@@ -6,8 +6,9 @@ import QtGraphicalEffects 1.15
 Popup {
     id: settingsPopup
     
-    width: 380
-    height: contentColumn.implicitHeight + 48
+    width: 400
+    // Use a maximum height to ensure popup fits in the window with scrolling
+    height: Math.min(contentColumn.implicitHeight + 48, parent ? parent.height - 80 : 700)
     padding: 24
     
     modal: true
@@ -62,144 +63,176 @@ Popup {
         }
     }
     
-    contentItem: ColumnLayout {
-        id: contentColumn
-        spacing: 20
+    contentItem: Flickable {
+        id: flickableContent
+        contentWidth: width
+        contentHeight: contentColumn.implicitHeight
+        clip: true
+        boundsBehavior: Flickable.StopAtBounds
         
-        // Header
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 12
+        // Enable smooth scrolling
+        ScrollBar.vertical: ScrollBar {
+            id: verticalScrollBar
+            policy: flickableContent.contentHeight > flickableContent.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
             
-            // Settings icon
-            Rectangle {
-                width: 40
-                height: 40
-                radius: 10
-                color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
+            contentItem: Rectangle {
+                implicitWidth: 6
+                implicitHeight: 100
+                radius: 3
+                color: verticalScrollBar.pressed ? primaryColor : (verticalScrollBar.hovered ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.7) : borderColor)
+                opacity: verticalScrollBar.policy === ScrollBar.AlwaysOff ? 0 : 1
                 
-                // Gear icon using Canvas for reliable rendering
-                Canvas {
-                    anchors.centerIn: parent
-                    width: 20
-                    height: 20
+                Behavior on color {
+                    ColorAnimation { duration: 150 }
+                }
+            }
+            
+            background: Rectangle {
+                implicitWidth: 6
+                radius: 3
+                color: "transparent"
+            }
+        }
+        
+        ColumnLayout {
+            id: contentColumn
+            width: flickableContent.width - (verticalScrollBar.policy === ScrollBar.AsNeeded ? 12 : 0)
+            spacing: 20
+            
+            // Header
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                
+                // Settings icon
+                Rectangle {
+                    width: 40
+                    height: 40
+                    radius: 10
+                    color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
                     
-                    property color iconColor: primaryColor
-                    
-                    onIconColorChanged: requestPaint()
-                    Component.onCompleted: requestPaint()
-                    
-                    onPaint: {
-                        var ctx = getContext("2d");
-                        ctx.reset();
-                        ctx.fillStyle = iconColor;
+                    // Gear icon using Canvas for reliable rendering
+                    Canvas {
+                        anchors.centerIn: parent
+                        width: 20
+                        height: 20
                         
-                        var cx = width / 2;
-                        var cy = height / 2;
-                        var outerRadius = 9;
-                        var innerRadius = 3.5;
-                        var teethCount = 8;
-                        var toothDepth = 2.5;
+                        property color iconColor: primaryColor
                         
-                        ctx.beginPath();
-                        for (var i = 0; i < teethCount * 2; i++) {
-                            var angle = (i * Math.PI) / teethCount;
-                            var radius = (i % 2 === 0) ? outerRadius : outerRadius - toothDepth;
-                            var x = cx + radius * Math.cos(angle - Math.PI / 2);
-                            var y = cy + radius * Math.sin(angle - Math.PI / 2);
-                            if (i === 0) {
-                                ctx.moveTo(x, y);
-                            } else {
-                                ctx.lineTo(x, y);
+                        onIconColorChanged: requestPaint()
+                        Component.onCompleted: requestPaint()
+                        
+                        onPaint: {
+                            var ctx = getContext("2d");
+                            ctx.reset();
+                            ctx.fillStyle = iconColor;
+                            
+                            var cx = width / 2;
+                            var cy = height / 2;
+                            var outerRadius = 9;
+                            var innerRadius = 3.5;
+                            var teethCount = 8;
+                            var toothDepth = 2.5;
+                            
+                            ctx.beginPath();
+                            for (var i = 0; i < teethCount * 2; i++) {
+                                var angle = (i * Math.PI) / teethCount;
+                                var radius = (i % 2 === 0) ? outerRadius : outerRadius - toothDepth;
+                                var x = cx + radius * Math.cos(angle - Math.PI / 2);
+                                var y = cy + radius * Math.sin(angle - Math.PI / 2);
+                                if (i === 0) {
+                                    ctx.moveTo(x, y);
+                                } else {
+                                    ctx.lineTo(x, y);
+                                }
                             }
+                            ctx.closePath();
+                            ctx.fill();
+                            
+                            // Center hole
+                            ctx.globalCompositeOperation = "destination-out";
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, innerRadius, 0, 2 * Math.PI);
+                            ctx.fill();
                         }
-                        ctx.closePath();
-                        ctx.fill();
-                        
-                        // Center hole
-                        ctx.globalCompositeOperation = "destination-out";
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, innerRadius, 0, 2 * Math.PI);
-                        ctx.fill();
+                    }
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 200 }
                     }
                 }
+                
+                Column {
+                    Layout.fillWidth: true
+                    spacing: 2
+                    
+                    Text {
+                        text: "Settings"
+                        font.pixelSize: 20
+                        font.weight: Font.DemiBold
+                        font.family: fontFamily
+                        color: textPrimary
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
+                        }
+                    }
+                    
+                    Text {
+                        text: "Customize your experience"
+                        font.pixelSize: 16
+                        font.family: fontFamily
+                        color: textSecondary
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
+                        }
+                    }
+                }
+                
+                // Close button
+                Rectangle {
+                    width: 32
+                    height: 32
+                    radius: 8
+                    color: closeMouseArea.containsMouse ? hoverBackground : "transparent"
+                    
+                    Text {
+                        anchors.centerIn: parent
+                        text: "✕"
+                        font.pixelSize: 16
+                        color: textSecondary
+                    }
+                    
+                    MouseArea {
+                        id: closeMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: settingsPopup.close()
+                    }
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+            
+            // Divider
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: dividerColor
                 
                 Behavior on color {
                     ColorAnimation { duration: 200 }
                 }
             }
             
-            Column {
+            // Theme Section
+            ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 2
-                
-                Text {
-                    text: "Settings"
-                    font.pixelSize: 20
-                    font.weight: Font.DemiBold
-                    font.family: fontFamily
-                    color: textPrimary
-                    
-                    Behavior on color {
-                        ColorAnimation { duration: 200 }
-                    }
-                }
-                
-                Text {
-                    text: "Customize your experience"
-                    font.pixelSize: 16
-                    font.family: fontFamily
-                    color: textSecondary
-                    
-                    Behavior on color {
-                        ColorAnimation { duration: 200 }
-                    }
-                }
-            }
-            
-            // Close button
-            Rectangle {
-                width: 32
-                height: 32
-                radius: 8
-                color: closeMouseArea.containsMouse ? hoverBackground : "transparent"
-                
-                Text {
-                    anchors.centerIn: parent
-                    text: "✕"
-                    font.pixelSize: 16
-                    color: textSecondary
-                }
-                
-                MouseArea {
-                    id: closeMouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: settingsPopup.close()
-                }
-                
-                Behavior on color {
-                    ColorAnimation { duration: 150 }
-                }
-            }
-        }
-        
-        // Divider
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: dividerColor
-            
-            Behavior on color {
-                ColorAnimation { duration: 200 }
-            }
-        }
-        
-        // Theme Section
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 16
+                spacing: 16
             
             // Section Title
             Text {
@@ -1031,5 +1064,6 @@ Popup {
                 }
             }
         }
-    }
+        }  // Close ColumnLayout (contentColumn)
+    }  // Close Flickable
 }
