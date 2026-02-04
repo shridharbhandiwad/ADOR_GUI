@@ -6,12 +6,16 @@ import QtGraphicalEffects 1.15
 Rectangle {
     id: udpConfigPanel
     
-    // Theme properties - Simplified classic palette
+    // Theme properties - Adaptive palette (monochrome/color)
     property color cardBackground: ThemeManager.cardBackground
     property color primaryColor: ThemeManager.primaryColor
     property color primaryHover: ThemeManager.primaryHover
     property color primaryPressed: ThemeManager.primaryPressed
     property color errorColor: ThemeManager.errorColor
+    property color successColor: ThemeManager.successColor
+    property color warningColor: ThemeManager.warningColor
+    property color infoColor: ThemeManager.infoColor
+    property color accentColor: ThemeManager.accentColor
     property color textPrimary: ThemeManager.textPrimary
     property color textSecondary: ThemeManager.textSecondary
     property color textMuted: ThemeManager.textMuted
@@ -20,8 +24,10 @@ Rectangle {
     property color inputBackground: ThemeManager.inputBackground
     property string fontFamily: ThemeManager.fontFamily
     
-    // Deprecated - kept for compatibility, now uses primaryColor
-    property color successColor: primaryColor
+    // Semantic status colors - adapts to color/mono mode
+    property color statusConnected: ThemeManager.statusConnected
+    property color statusDisconnected: ThemeManager.statusDisconnected
+    property bool isColorMode: ThemeManager.isColorMode
     
     // State
     property bool isConnected: false
@@ -71,15 +77,15 @@ Rectangle {
             
             Item { Layout.fillWidth: true }
             
-            // Status badge - Elegant monochrome design
+            // Status badge - Adaptive design (monochrome/color)
             Rectangle {
                 width: statusRow.width + 16
                 height: 26
                 radius: 13
-                color: isConnected ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12) :
-                                    Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.15)
-                border.color: isConnected ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.3) :
-                                           Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.25)
+                color: isConnected ? Qt.rgba(statusConnected.r, statusConnected.g, statusConnected.b, 0.12) :
+                                    Qt.rgba(statusDisconnected.r, statusDisconnected.g, statusDisconnected.b, 0.15)
+                border.color: isConnected ? Qt.rgba(statusConnected.r, statusConnected.g, statusConnected.b, 0.3) :
+                                           Qt.rgba(statusDisconnected.r, statusDisconnected.g, statusDisconnected.b, 0.25)
                 border.width: 1
                 
                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -96,7 +102,7 @@ Rectangle {
                         height: 8
                         radius: 4
                         color: "transparent"
-                        border.color: isConnected ? primaryColor : textMuted
+                        border.color: isConnected ? statusConnected : statusDisconnected
                         border.width: 1.5
                         anchors.verticalCenter: parent.verticalCenter
                         
@@ -108,8 +114,10 @@ Rectangle {
                             width: 4
                             height: 4
                             radius: 2
-                            color: primaryColor
+                            color: statusConnected
                             visible: isConnected
+                            
+                            Behavior on color { ColorAnimation { duration: 200 } }
                         }
                         
                         SequentialAnimation on opacity {
@@ -125,7 +133,7 @@ Rectangle {
                         font.pixelSize: 11
                         font.weight: isConnected ? Font.DemiBold : Font.Medium
                         font.family: fontFamily
-                        color: isConnected ? primaryColor : textMuted
+                        color: isConnected ? statusConnected : statusDisconnected
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                     }
@@ -201,20 +209,25 @@ Rectangle {
                     fontFamily: udpConfigPanel.fontFamily
                 }
                 
-                // Stats cards - Elegant monochrome design
+                // Stats cards - Adaptive design (monochrome/color)
                 GridLayout {
                     Layout.fillWidth: true
                     columns: 3
                     rowSpacing: 12
                     columnSpacing: 12
                     
+                    // Helper properties for stat colors
+                    property color receivedColor: isColorMode ? successColor : primaryColor
+                    property color droppedColor: isColorMode ? (packetsDropped > 0 ? errorColor : textMuted) : (packetsDropped > 0 ? textPrimary : textMuted)
+                    property color rateColor: isColorMode ? infoColor : primaryColor
+                    
                     // Packets received
                     Rectangle {
                         Layout.fillWidth: true
                         height: 80
                         radius: 12
-                        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.04)
-                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12)
+                        color: Qt.rgba(parent.receivedColor.r, parent.receivedColor.g, parent.receivedColor.b, 0.06)
+                        border.color: Qt.rgba(parent.receivedColor.r, parent.receivedColor.g, parent.receivedColor.b, 0.15)
                         border.width: 1
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
@@ -229,7 +242,7 @@ Rectangle {
                                 font.pixelSize: 26
                                 font.weight: Font.Bold
                                 font.family: fontFamily
-                                color: primaryColor
+                                color: isColorMode ? successColor : primaryColor
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
                                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -249,15 +262,27 @@ Rectangle {
                         }
                     }
                     
-                    // Packets dropped - Monochrome with subtle distinction
+                    // Packets dropped - Semantic color when dropped
                     Rectangle {
                         Layout.fillWidth: true
                         height: 80
                         radius: 12
-                        color: packetsDropped > 0 ? Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.08) : 
-                               Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.02)
-                        border.color: packetsDropped > 0 ? Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.25) :
-                                      Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08)
+                        color: {
+                            if (isColorMode && packetsDropped > 0) {
+                                return Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.08)
+                            } else if (packetsDropped > 0) {
+                                return Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.08)
+                            }
+                            return Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.02)
+                        }
+                        border.color: {
+                            if (isColorMode && packetsDropped > 0) {
+                                return Qt.rgba(errorColor.r, errorColor.g, errorColor.b, 0.25)
+                            } else if (packetsDropped > 0) {
+                                return Qt.rgba(textMuted.r, textMuted.g, textMuted.b, 0.25)
+                            }
+                            return Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08)
+                        }
                         border.width: 1
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
@@ -272,8 +297,11 @@ Rectangle {
                                 font.pixelSize: 26
                                 font.weight: Font.Bold
                                 font.family: fontFamily
-                                // Slightly dimmed when zero, emphasized when non-zero
-                                color: packetsDropped > 0 ? textPrimary : textMuted
+                                color: {
+                                    if (isColorMode && packetsDropped > 0) return errorColor
+                                    if (packetsDropped > 0) return textPrimary
+                                    return textMuted
+                                }
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
                                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -298,8 +326,8 @@ Rectangle {
                         Layout.fillWidth: true
                         height: 80
                         radius: 12
-                        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.04)
-                        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12)
+                        color: Qt.rgba(parent.rateColor.r, parent.rateColor.g, parent.rateColor.b, 0.06)
+                        border.color: Qt.rgba(parent.rateColor.r, parent.rateColor.g, parent.rateColor.b, 0.15)
                         border.width: 1
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
@@ -314,7 +342,7 @@ Rectangle {
                                 font.pixelSize: 26
                                 font.weight: Font.Bold
                                 font.family: fontFamily
-                                color: primaryColor
+                                color: isColorMode ? infoColor : primaryColor
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 
                                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -337,16 +365,17 @@ Rectangle {
             }
         }
         
-        // Connect button - Uses primary color for both states (classic unified look)
+        // Connect button - Semantic colors in color mode
         ModernButton {
             text: isConnected ? "Disconnect" : "Connect"
             Layout.fillWidth: true
             Layout.preferredHeight: 36
             outline: isConnected  // Outline style when connected for visual distinction
             
-            primaryColor: udpConfigPanel.primaryColor
-            primaryHover: udpConfigPanel.primaryHover
-            primaryPressed: udpConfigPanel.primaryPressed
+            // Use semantic colors in color mode
+            primaryColor: isColorMode ? (isConnected ? errorColor : successColor) : udpConfigPanel.primaryColor
+            primaryHover: isColorMode ? (isConnected ? Qt.darker(errorColor, 1.1) : Qt.darker(successColor, 1.1)) : udpConfigPanel.primaryHover
+            primaryPressed: isColorMode ? (isConnected ? Qt.darker(errorColor, 1.2) : Qt.darker(successColor, 1.2)) : udpConfigPanel.primaryPressed
             textColor: udpConfigPanel.textPrimary
             fontFamily: udpConfigPanel.fontFamily
             

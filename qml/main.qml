@@ -454,6 +454,181 @@ ApplicationWindow {
             }
         }
 
+        // Design Menu - Monochrome/Color mode selection
+        Menu {
+            id: designMenu
+            title: qsTr("&Design")
+
+            background: Rectangle {
+                implicitWidth: 200
+                color: cardBackground
+                border.color: borderColor
+                border.width: 1
+                radius: 8
+
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 4
+                    radius: 12
+                    samples: 17
+                    color: shadowColor
+                }
+            }
+
+            MenuItem {
+                text: qsTr("Monochrome")
+                checkable: true
+                checked: !ThemeManager.isColorMode
+                onTriggered: ThemeManager.setDesignMode(false)
+
+                contentItem: Row {
+                    spacing: 10
+                    leftPadding: 12
+                    
+                    // Monochrome indicator - grayscale swatches
+                    Row {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+                        
+                        Rectangle {
+                            width: 8
+                            height: 14
+                            radius: 2
+                            color: "#1a1a1a"
+                        }
+                        Rectangle {
+                            width: 8
+                            height: 14
+                            radius: 2
+                            color: "#737373"
+                        }
+                    }
+                    
+                    Text {
+                        text: "Monochrome"
+                        font.pixelSize: 13
+                        font.family: root.fontFamily
+                        font.weight: !ThemeManager.isColorMode ? Font.Medium : Font.Normal
+                        color: parent.parent.highlighted ? primaryColor : textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                background: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 36
+                    color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    radius: 6
+
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+
+            MenuItem {
+                text: qsTr("Color")
+                checkable: true
+                checked: ThemeManager.isColorMode
+                onTriggered: ThemeManager.setDesignMode(true)
+
+                contentItem: Row {
+                    spacing: 10
+                    leftPadding: 12
+                    
+                    // Color indicator - colorful swatches
+                    Row {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+                        
+                        Rectangle {
+                            width: 8
+                            height: 14
+                            radius: 2
+                            color: "#4f46e5"
+                        }
+                        Rectangle {
+                            width: 8
+                            height: 14
+                            radius: 2
+                            color: "#10b981"
+                        }
+                    }
+                    
+                    Text {
+                        text: "Color"
+                        font.pixelSize: 13
+                        font.family: root.fontFamily
+                        font.weight: ThemeManager.isColorMode ? Font.Medium : Font.Normal
+                        color: parent.parent.highlighted ? primaryColor : textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                background: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 36
+                    color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    radius: 6
+
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+
+            MenuItem {
+                text: qsTr("Toggle Design")
+                onTriggered: ThemeManager.toggleDesignMode()
+
+                contentItem: Row {
+                    spacing: 8
+                    leftPadding: 12
+
+                    Text {
+                        text: parent.parent.text
+                        font.pixelSize: 13
+                        font.family: root.fontFamily
+                        color: parent.parent.highlighted ? primaryColor : textPrimary
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        text: "Ctrl+D"
+                        font.pixelSize: 11
+                        font.family: root.fontFamily
+                        color: textMuted
+                        verticalAlignment: Text.AlignVCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                background: Rectangle {
+                    implicitWidth: 180
+                    implicitHeight: 36
+                    color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    radius: 6
+
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+            }
+        }
+
         // Custom styling for menu items
         delegate: MenuBarItem {
             id: menuBarItem
@@ -607,18 +782,18 @@ ApplicationWindow {
             Row {
                 spacing: 24
 
-                // Connection status - Monochrome design
+                // Connection status - Adaptive design (monochrome/color)
                 Row {
                     spacing: 8
 
-                    // Status indicator with ring design for elegance
+                    // Status indicator with ring design
                     Rectangle {
                         width: 12
                         height: 12
                         radius: 6
                         anchors.verticalCenter: parent.verticalCenter
                         color: "transparent"
-                        border.color: udpPanel.isConnected ? primaryColor : textMuted
+                        border.color: udpPanel.isConnected ? ThemeManager.statusConnected : ThemeManager.statusDisconnected
                         border.width: 2
 
                         Behavior on border.color {
@@ -631,7 +806,7 @@ ApplicationWindow {
                             width: 6
                             height: 6
                             radius: 3
-                            color: primaryColor
+                            color: ThemeManager.statusConnected
                             visible: udpPanel.isConnected
                             
                             Behavior on color {
@@ -653,7 +828,7 @@ ApplicationWindow {
                         font.pixelSize: 13
                         font.weight: udpPanel.isConnected ? Font.Medium : Font.Normal
                         font.family: root.fontFamily
-                        color: udpPanel.isConnected ? textPrimary : textMuted
+                        color: udpPanel.isConnected ? (ThemeManager.isColorMode ? ThemeManager.statusConnected : textPrimary) : ThemeManager.statusDisconnected
                         anchors.verticalCenter: parent.verticalCenter
 
                         Behavior on color {
@@ -704,43 +879,58 @@ ApplicationWindow {
                     }
                 }
 
-                // Theme indicator - Elegant monochrome design
+                // Style indicator - Theme + Design mode
                 Row {
                     spacing: 8
 
-                    // Theme icon - minimalist circle design
-                    Rectangle {
+                    // Design mode icon - color palette indicator
+                    Canvas {
                         width: 16
                         height: 16
-                        radius: 8
                         anchors.verticalCenter: parent.verticalCenter
-                        color: "transparent"
-                        border.color: primaryColor
-                        border.width: 1.5
                         
-                        // Half fill based on theme
-                        Rectangle {
-                            anchors.left: ThemeManager.isDarkTheme ? parent.left : undefined
-                            anchors.right: ThemeManager.isDarkTheme ? undefined : parent.right
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.margins: 2
-                            width: 5
-                            height: 10
-                            radius: ThemeManager.isDarkTheme ? Qt.size(2.5, 0).width : Qt.size(0, 2.5).width
-                            color: primaryColor
+                        property bool colorMode: ThemeManager.isColorMode
+                        property color pColor: primaryColor
+                        
+                        onColorModeChanged: requestPaint()
+                        onPColorChanged: requestPaint()
+                        Component.onCompleted: requestPaint()
+                        
+                        onPaint: {
+                            var ctx = getContext("2d");
+                            ctx.reset();
+                            var cx = width / 2;
+                            var cy = height / 2;
+                            var r = 7;
                             
-                            Behavior on color {
-                                ColorAnimation { duration: 200 }
+                            if (colorMode) {
+                                // Draw colorful quadrants
+                                var colors = ["#4f46e5", "#10b981", "#f59e0b", "#ef4444"];
+                                for (var i = 0; i < 4; i++) {
+                                    ctx.fillStyle = colors[i];
+                                    ctx.beginPath();
+                                    ctx.arc(cx, cy, r, (i * Math.PI / 2) - Math.PI / 4, ((i + 1) * Math.PI / 2) - Math.PI / 4);
+                                    ctx.lineTo(cx, cy);
+                                    ctx.closePath();
+                                    ctx.fill();
+                                }
+                            } else {
+                                // Draw monochrome quadrants
+                                var grays = ["#1a1a1a", "#525252", "#a3a3a3", "#d4d4d4"];
+                                for (var j = 0; j < 4; j++) {
+                                    ctx.fillStyle = grays[j];
+                                    ctx.beginPath();
+                                    ctx.arc(cx, cy, r, (j * Math.PI / 2) - Math.PI / 4, ((j + 1) * Math.PI / 2) - Math.PI / 4);
+                                    ctx.lineTo(cx, cy);
+                                    ctx.closePath();
+                                    ctx.fill();
+                                }
                             }
-                        }
-                        
-                        Behavior on border.color {
-                            ColorAnimation { duration: 200 }
                         }
                     }
 
                     Text {
-                        text: ThemeManager.themeName
+                        text: ThemeManager.fullStyleName
                         font.pixelSize: 13
                         font.weight: Font.Medium
                         font.family: root.fontFamily
@@ -1047,5 +1237,10 @@ ApplicationWindow {
     Shortcut {
         sequence: "Ctrl+T"
         onActivated: ThemeManager.toggleTheme()
+    }
+    
+    Shortcut {
+        sequence: "Ctrl+D"
+        onActivated: ThemeManager.toggleDesignMode()
     }
 }

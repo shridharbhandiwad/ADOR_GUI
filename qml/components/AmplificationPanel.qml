@@ -6,11 +6,17 @@ import QtGraphicalEffects 1.15
 Rectangle {
     id: amplificationPanel
     
-    // Theme properties - Simplified classic palette
+    // Theme properties - Adaptive palette (monochrome/color)
     property color cardBackground: ThemeManager.cardBackground
     property color primaryColor: ThemeManager.primaryColor
     property color primaryHover: ThemeManager.primaryHover
     property color primaryPressed: ThemeManager.primaryPressed
+    property color accentColor: ThemeManager.accentColor
+    property color successColor: ThemeManager.successColor
+    property color warningColor: ThemeManager.warningColor
+    property color infoColor: ThemeManager.infoColor
+    property color gradientStart: ThemeManager.gradientStart
+    property color gradientEnd: ThemeManager.gradientEnd
     property color textPrimary: ThemeManager.textPrimary
     property color textSecondary: ThemeManager.textSecondary
     property color textMuted: ThemeManager.textMuted
@@ -20,10 +26,8 @@ Rectangle {
     property color trackColor: ThemeManager.trackColor
     property string fontFamily: ThemeManager.fontFamily
     
-    // Deprecated - kept for compatibility, now all use primaryColor
-    property color accentColor: primaryColor
-    property color successColor: primaryColor
-    property color warningColor: primaryColor
+    // Color mode flag
+    property bool isColorMode: ThemeManager.isColorMode
     
     // State
     property bool autoEnabled: false
@@ -284,20 +288,47 @@ Rectangle {
                     }
                 }
                 
-                // Visual indicator - Classic unified gradient with primary color only
+                // Visual indicator - Adaptive gradient (monochrome/color)
                 Rectangle {
                     Layout.fillWidth: true
                     height: 12
                     radius: 6
                     
+                    // Use LinearGradient for richer color mode experience
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
-                        GradientStop { position: 0.0; color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15) }
-                        GradientStop { position: innerThreshold.value / 100.0; color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.4) }
-                        GradientStop { position: innerThreshold.value / 100.0 + 0.01; color: primaryColor }
-                        GradientStop { position: outerThreshold.value / 100.0; color: primaryColor }
-                        GradientStop { position: outerThreshold.value / 100.0 + 0.01; color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.6) }
-                        GradientStop { position: 1.0; color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.25) }
+                        GradientStop { 
+                            position: 0.0
+                            color: isColorMode ? Qt.rgba(successColor.r, successColor.g, successColor.b, 0.3) : 
+                                                Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15) 
+                        }
+                        GradientStop { 
+                            position: innerThreshold.value / 100.0
+                            color: isColorMode ? Qt.rgba(successColor.r, successColor.g, successColor.b, 0.6) :
+                                                Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.4) 
+                        }
+                        GradientStop { 
+                            position: innerThreshold.value / 100.0 + 0.01
+                            color: isColorMode ? gradientStart : primaryColor 
+                        }
+                        GradientStop { 
+                            position: (innerThreshold.value + outerThreshold.value) / 200.0
+                            color: isColorMode ? gradientEnd : primaryColor 
+                        }
+                        GradientStop { 
+                            position: outerThreshold.value / 100.0
+                            color: isColorMode ? warningColor : primaryColor 
+                        }
+                        GradientStop { 
+                            position: outerThreshold.value / 100.0 + 0.01
+                            color: isColorMode ? Qt.rgba(ThemeManager.errorColor.r, ThemeManager.errorColor.g, ThemeManager.errorColor.b, 0.7) :
+                                                Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.6) 
+                        }
+                        GradientStop { 
+                            position: 1.0
+                            color: isColorMode ? Qt.rgba(ThemeManager.errorColor.r, ThemeManager.errorColor.g, ThemeManager.errorColor.b, 0.4) :
+                                                Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.25) 
+                        }
                     }
                     
                     // Inner threshold marker
@@ -307,7 +338,7 @@ Rectangle {
                         height: parent.height + 8
                         y: -4
                         radius: 2
-                        color: primaryColor
+                        color: isColorMode ? successColor : primaryColor
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                     }
@@ -319,7 +350,7 @@ Rectangle {
                         height: parent.height + 8
                         y: -4
                         radius: 2
-                        color: primaryColor
+                        color: isColorMode ? warningColor : primaryColor
                         
                         Behavior on color { ColorAnimation { duration: 200 } }
                     }
