@@ -24,9 +24,10 @@ TimeSeriesPlotWidget::TimeSeriesPlotWidget(QWidget *parent)
     , m_marginBottom(50)
     , m_isDarkTheme(false)
 {
-    setMinimumSize(300, 150);
+    // No hard-coded minimum size to allow responsive layout
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void TimeSeriesPlotWidget::setDarkTheme(bool isDark)
@@ -299,9 +300,10 @@ RangeVelocityPlotWidget::RangeVelocityPlotWidget(QWidget *parent)
     , m_marginBottom(50)
     , m_isDarkTheme(false)
 {
-    setMinimumSize(300, 300);
+    // No hard-coded minimum size to allow responsive layout
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     // Initialize histogram bins
     m_velocityHistogram.resize(HISTOGRAM_BINS);

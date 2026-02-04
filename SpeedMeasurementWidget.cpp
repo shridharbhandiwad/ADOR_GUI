@@ -21,7 +21,7 @@ SpeedometerGauge::SpeedometerGauge(QWidget *parent)
     , m_isDarkTheme(false)
     , m_radius(0.0f)
 {
-    setMinimumSize(500, 500);
+    // No hard-coded minimum size to allow responsive layout
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     // Setup animation timer for smooth needle movement
@@ -564,7 +564,8 @@ DigitalSpeedDisplay::DigitalSpeedDisplay(QWidget *parent)
     , m_unit("km/h")
     , m_isDarkTheme(false)
 {
-    setMinimumSize(180, 100);
+    // No hard-coded minimum size to allow responsive layout
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     m_valueAnimation = new QPropertyAnimation(this, "displayValue", this);
     m_valueAnimation->setDuration(300);
@@ -671,7 +672,9 @@ ModernSpeedButton::ModernSpeedButton(const QString& text, QWidget *parent)
     , m_hovered(false)
     , m_pressed(false)
 {
-    setMinimumSize(140, 48);
+    // Use responsive minimum size
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    setMinimumHeight(40);  // Keep minimum height for usability
     setCursor(Qt::PointingHandCursor);
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -906,9 +909,9 @@ void SpeedMeasurementWidget::setupUI()
     
     leftLayout->addLayout(titleLayout);
     
-    // Speedometer gauge - larger size for better visibility
+    // Speedometer gauge - larger size for better visibility (responsive)
     m_speedometer = new SpeedometerGauge(this);
-    m_speedometer->setMinimumSize(550, 550);
+    // Size will be determined by layout based on available space
     leftLayout->addWidget(m_speedometer, 1, Qt::AlignCenter);
     
     // Status label below speedometer
@@ -925,9 +928,9 @@ void SpeedMeasurementWidget::setupUI()
     rightLayout->setSpacing(24);
     rightLayout->setAlignment(Qt::AlignTop);
     
-    // Top Speed Card
+    // Top Speed Card (responsive size)
     m_topSpeedCard = new SpeedCard(this);
-    m_topSpeedCard->setMinimumSize(280, 200);
+    // Size will be determined by layout based on available space
     
     QVBoxLayout* topSpeedCardLayout = new QVBoxLayout(m_topSpeedCard);
     topSpeedCardLayout->setSpacing(16);
@@ -955,9 +958,9 @@ void SpeedMeasurementWidget::setupUI()
     separator->setFixedHeight(1);
     topSpeedCardLayout->addWidget(separator);
     
-    // Digital display for top speed
+    // Digital display for top speed (responsive size)
     m_topSpeedDisplay = new DigitalSpeedDisplay(this);
-    m_topSpeedDisplay->setMinimumSize(220, 90);
+    // Size will be determined by layout based on available space
     m_topSpeedDisplay->setValue(0);
     topSpeedCardLayout->addWidget(m_topSpeedDisplay, 0, Qt::AlignCenter);
     
@@ -965,9 +968,9 @@ void SpeedMeasurementWidget::setupUI()
     
     rightLayout->addWidget(m_topSpeedCard);
     
-    // Output/Controls Card
+    // Output/Controls Card (responsive size)
     m_outputCard = new SpeedCard(this);
-    m_outputCard->setMinimumSize(280, 140);
+    // Size will be determined by layout based on available space
     
     QVBoxLayout* outputCardLayout = new QVBoxLayout(m_outputCard);
     outputCardLayout->setSpacing(20);

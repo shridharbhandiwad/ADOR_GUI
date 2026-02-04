@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include "SpeedMeasurementWidget.h"
 #include <QApplication>
+#include <QGuiApplication>
 #include <QNetworkDatagram>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -102,13 +103,29 @@ MainWindow::~MainWindow()
 void MainWindow::setupUI()
 {
     setWindowTitle("ZopplerSystems RadarGUI");
-    setMinimumSize(1200, 800);
+    
+    // Get screen geometry and DPI for responsive sizing
+    QScreen* screen = QGuiApplication::primaryScreen();
+    QRect screenGeometry;
+    qreal dpiScale = 1.0;
+    
+    if (screen) {
+        screenGeometry = screen->availableGeometry();
+        // Calculate DPI scale factor (baseline: 96 DPI)
+        dpiScale = screen->logicalDotsPerInch() / 96.0;
+        qDebug() << "Screen DPI:" << screen->logicalDotsPerInch() << "Scale factor:" << dpiScale;
+    } else {
+        // Fallback if no screen detected
+        screenGeometry = QRect(0, 0, 1920, 1080);
+    }
+    
+    // Set responsive minimum size based on screen size (60% of available width, 70% of height)
+    int minWidth = qMax(1000, static_cast<int>(screenGeometry.width() * 0.6));
+    int minHeight = qMax(700, static_cast<int>(screenGeometry.height() * 0.7));
+    setMinimumSize(minWidth, minHeight);
     
     // Maximize window to screen size on startup
-    if (QScreen* screen = QGuiApplication::primaryScreen()) {
-        QRect screenGeometry = screen->availableGeometry();
-        setGeometry(screenGeometry);
-    }
+    setGeometry(screenGeometry);
     showMaximized();
 
     // Apply premium engineering dashboard theme
@@ -438,7 +455,10 @@ void MainWindow::setupUI()
     ppiLayout->setContentsMargins(4, 12, 4, 4);  // Reduced margins
 
     m_ppiWidget = new PPIWidget();
-    m_ppiWidget->setMinimumSize(300, 250);  // Slightly reduced minimum
+    // Use responsive minimum size based on screen DPI and size
+    int ppiMinWidth = static_cast<int>(250 * dpiScale);
+    int ppiMinHeight = static_cast<int>(200 * dpiScale);
+    m_ppiWidget->setMinimumSize(ppiMinWidth, ppiMinHeight);
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
 
     topHorizontalSplitter->addWidget(ppiGroup);
@@ -470,8 +490,11 @@ void MainWindow::setupUI()
 
     topHorizontalSplitter->addWidget(tableGroup);
     
-    // Set initial sizes for PPI (larger) and Track Table (smaller)
-    topHorizontalSplitter->setSizes({600, 300});
+    // Set initial sizes for PPI (larger) and Track Table (smaller) - proportional to screen width
+    int totalTopWidth = screenGeometry.width() - 400;  // Subtract DSP panel width
+    int ppiWidth = static_cast<int>(totalTopWidth * 0.67);  // 67% for PPI
+    int tableWidth = static_cast<int>(totalTopWidth * 0.33);  // 33% for Track Table
+    topHorizontalSplitter->setSizes({ppiWidth, tableWidth});
 
     rightVerticalSplitter->addWidget(topHorizontalSplitter);
 
@@ -482,13 +505,19 @@ void MainWindow::setupUI()
     m_fftWidget = new FFTWidget();
     m_fftWidget->setRadarParameters(100000.0f, 0.001f, 50000000.0f, 24000000000.0f);
     m_fftWidget->setMaxRange(50.0f);
-    m_fftWidget->setMinimumSize(300, 150);  // Reduced minimum height
+    // Use responsive minimum size based on screen DPI and size
+    int fftMinWidth = static_cast<int>(250 * dpiScale);
+    int fftMinHeight = static_cast<int>(120 * dpiScale);
+    m_fftWidget->setMinimumSize(fftMinWidth, fftMinHeight);
     fftLayout->addWidget(m_fftWidget);
     
     rightVerticalSplitter->addWidget(fftGroup);
     
-    // Set initial sizes for top row (larger) and FFT - balanced for less empty space
-    rightVerticalSplitter->setSizes({500, 350});
+    // Set initial sizes for top row (larger) and FFT - proportional to screen height
+    int totalHeight = screenGeometry.height() - 100;  // Subtract menu and margins
+    int topRowHeight = static_cast<int>(totalHeight * 0.60);  // 60% for top row (PPI + Track Table)
+    int fftHeight = static_cast<int>(totalHeight * 0.40);     // 40% for FFT
+    rightVerticalSplitter->setSizes({topRowHeight, fftHeight});
 
     // ========== LEFT: DSP Settings Panel (Vertical Layout) ==========
     m_dspSettingsGroup = new QGroupBox("DSP Settings", this);
@@ -519,14 +548,18 @@ void MainWindow::setupUI()
     // Clear labels vector before adding new ones
     m_dspLabels.clear();
     
-    // Compact field helper for narrower panel
+    // Compact field helper for narrower panel - responsive sizing
     auto addField = [&](QGridLayout* layout, int row, const QString& label, QLineEdit*& edit, const QString& def) {
         QLabel* l = new QLabel(label, this);
         m_dspLabels.append(l);  // Store label for theme updates
         edit = new QLineEdit(def, this);
-        edit->setMinimumWidth(70);
-        edit->setMaximumWidth(100);
-        edit->setMinimumHeight(28);
+        // Use responsive sizes based on DPI
+        int editMinWidth = static_cast<int>(60 * dpiScale);
+        int editMaxWidth = static_cast<int>(90 * dpiScale);
+        int editMinHeight = static_cast<int>(26 * dpiScale);
+        edit->setMinimumWidth(editMinWidth);
+        edit->setMaximumWidth(editMaxWidth);
+        edit->setMinimumHeight(editMinHeight);
         layout->addWidget(l, row, 0);
         layout->addWidget(edit, row, 1);
     };
@@ -547,11 +580,13 @@ void MainWindow::setupUI()
     addField(rightLayout, 4, "Median Filter",    m_medianFilterEdit,    "1");
     addField(rightLayout, 5, "MTI Length",       m_mtiLengthEdit,       "2");
 
-    // Set column widths for narrower panel
-    leftLayout->setColumnMinimumWidth(0, 100);
-    leftLayout->setColumnMinimumWidth(1, 70);
-    rightLayout->setColumnMinimumWidth(0, 100);
-    rightLayout->setColumnMinimumWidth(1, 70);
+    // Set column widths for narrower panel - responsive based on DPI
+    int labelColWidth = static_cast<int>(90 * dpiScale);
+    int editColWidth = static_cast<int>(60 * dpiScale);
+    leftLayout->setColumnMinimumWidth(0, labelColWidth);
+    leftLayout->setColumnMinimumWidth(1, editColWidth);
+    rightLayout->setColumnMinimumWidth(0, labelColWidth);
+    rightLayout->setColumnMinimumWidth(1, editColWidth);
     
     // Stack the two sections vertically
     settingsVLayout->addWidget(m_dspLeftGroup);
@@ -698,9 +733,11 @@ void MainWindow::setupUI()
     connect(m_saveToFileButton,    &QPushButton::clicked,       this, &MainWindow::onSaveToFile);
 
     // ========== ASSEMBLE MAIN LAYOUT ==========
-    // Add DSP Settings on the left (fixed width)
-    m_dspSettingsGroup->setMinimumWidth(320);
-    m_dspSettingsGroup->setMaximumWidth(400);
+    // Add DSP Settings on the left (responsive width based on screen size)
+    int dspMinWidth = qMax(280, static_cast<int>(280 * dpiScale));
+    int dspMaxWidth = qMax(350, static_cast<int>(screenGeometry.width() * 0.20));  // Max 20% of screen width
+    m_dspSettingsGroup->setMinimumWidth(dspMinWidth);
+    m_dspSettingsGroup->setMaximumWidth(dspMaxWidth);
     mainLayout->addWidget(m_dspSettingsGroup, 0);
     
     // ========== CREATE TAB WIDGET FOR MAIN CONTENT ==========
