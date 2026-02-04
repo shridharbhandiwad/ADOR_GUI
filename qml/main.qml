@@ -281,13 +281,13 @@ ApplicationWindow {
             }
         }
 
-        // Theme Menu - FIXED: Now properly visible as standalone menu
+        // Design Mode Menu - Contains themes and design mode options
         Menu {
-            id: themeMenu
-            title: qsTr("&Theme")
+            id: designMenu
+            title: qsTr("Design &Mode")
 
             background: Rectangle {
-                implicitWidth: 180
+                implicitWidth: 220
                 color: cardBackground
                 border.color: borderColor
                 border.width: 1
@@ -304,181 +304,189 @@ ApplicationWindow {
                 }
             }
 
-            MenuItem {
-                text: qsTr("Light Theme")
-                checkable: true
-                checked: !ThemeManager.isDarkTheme
-                onTriggered: ThemeManager.setTheme(false)
-
-                contentItem: Row {
-                    spacing: 10
-                    leftPadding: 12
-                    
-                    // Light theme indicator
-                    Rectangle {
-                        width: 14
-                        height: 14
-                        radius: 7
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: "#1a1a1a"
-                        
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: 6
-                            height: 6
-                            radius: 3
-                            color: "#fafafa"
-                        }
-                    }
-                    
-                    Text {
-                        text: "Light Theme"
-                        font.pixelSize: 13
-                        font.family: root.fontFamily
-                        font.weight: !ThemeManager.isDarkTheme ? Font.Medium : Font.Normal
-                        color: parent.parent.highlighted ? primaryColor : textPrimary
-                        verticalAlignment: Text.AlignVCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
+            // Theme submenu
+            Menu {
+                id: themeSubmenu
+                title: qsTr("Theme")
 
                 background: Rectangle {
-                    implicitWidth: 160
-                    implicitHeight: 36
-                    color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
-                    radius: 6
+                    implicitWidth: 180
+                    color: cardBackground
+                    border.color: borderColor
+                    border.width: 1
+                    radius: 8
 
-                    Behavior on color {
-                        ColorAnimation { duration: 150 }
+                    layer.enabled: true
+                    layer.effect: DropShadow {
+                        transparentBorder: true
+                        horizontalOffset: 0
+                        verticalOffset: 4
+                        radius: 12
+                        samples: 17
+                        color: shadowColor
                     }
                 }
-            }
 
-            MenuItem {
-                text: qsTr("Dark Theme")
-                checkable: true
-                checked: ThemeManager.isDarkTheme
-                onTriggered: ThemeManager.setTheme(true)
+                MenuItem {
+                    text: qsTr("Light Theme")
+                    checkable: true
+                    checked: !ThemeManager.isDarkTheme
+                    onTriggered: ThemeManager.setTheme(false)
 
-                contentItem: Row {
-                    spacing: 10
-                    leftPadding: 12
-                    
-                    // Dark theme indicator
-                    Rectangle {
-                        width: 14
-                        height: 14
-                        radius: 7
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: "#fafafa"
-                        border.color: "#d4d4d4"
-                        border.width: 1
+                    contentItem: Row {
+                        spacing: 10
+                        leftPadding: 12
                         
+                        // Light theme indicator
                         Rectangle {
-                            anchors.centerIn: parent
-                            width: 6
-                            height: 6
-                            radius: 3
+                            width: 14
+                            height: 14
+                            radius: 7
+                            anchors.verticalCenter: parent.verticalCenter
                             color: "#1a1a1a"
+                            
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 6
+                                height: 6
+                                radius: 3
+                                color: "#fafafa"
+                            }
+                        }
+                        
+                        Text {
+                            text: "Light Theme"
+                            font.pixelSize: 13
+                            font.family: root.fontFamily
+                            font.weight: !ThemeManager.isDarkTheme ? Font.Medium : Font.Normal
+                            color: parent.parent.highlighted ? primaryColor : textPrimary
+                            verticalAlignment: Text.AlignVCenter
+                            anchors.verticalCenter: parent.verticalCenter
                         }
                     }
-                    
-                    Text {
-                        text: "Dark Theme"
-                        font.pixelSize: 13
-                        font.family: root.fontFamily
-                        font.weight: ThemeManager.isDarkTheme ? Font.Medium : Font.Normal
-                        color: parent.parent.highlighted ? primaryColor : textPrimary
-                        verticalAlignment: Text.AlignVCenter
-                        anchors.verticalCenter: parent.verticalCenter
+
+                    background: Rectangle {
+                        implicitWidth: 160
+                        implicitHeight: 36
+                        color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                        radius: 6
+
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
                     }
                 }
 
-                background: Rectangle {
-                    implicitWidth: 160
-                    implicitHeight: 36
-                    color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
-                    radius: 6
+                MenuItem {
+                    text: qsTr("Dark Theme")
+                    checkable: true
+                    checked: ThemeManager.isDarkTheme
+                    onTriggered: ThemeManager.setTheme(true)
 
-                    Behavior on color {
-                        ColorAnimation { duration: 150 }
+                    contentItem: Row {
+                        spacing: 10
+                        leftPadding: 12
+                        
+                        // Dark theme indicator
+                        Rectangle {
+                            width: 14
+                            height: 14
+                            radius: 7
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: "#fafafa"
+                            border.color: "#d4d4d4"
+                            border.width: 1
+                            
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 6
+                                height: 6
+                                radius: 3
+                                color: "#1a1a1a"
+                            }
+                        }
+                        
+                        Text {
+                            text: "Dark Theme"
+                            font.pixelSize: 13
+                            font.family: root.fontFamily
+                            font.weight: ThemeManager.isDarkTheme ? Font.Medium : Font.Normal
+                            color: parent.parent.highlighted ? primaryColor : textPrimary
+                            verticalAlignment: Text.AlignVCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
+                    background: Rectangle {
+                        implicitWidth: 160
+                        implicitHeight: 36
+                        color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                        radius: 6
+
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                }
+
+                MenuSeparator {
+                    contentItem: Rectangle {
+                        implicitWidth: 160
+                        implicitHeight: 1
+                        color: borderColor
+                    }
+                }
+
+                MenuItem {
+                    text: qsTr("Toggle Theme")
+                    onTriggered: ThemeManager.toggleTheme()
+
+                    contentItem: Row {
+                        spacing: 8
+                        leftPadding: 12
+
+                        Text {
+                            text: parent.parent.text
+                            font.pixelSize: 13
+                            font.family: root.fontFamily
+                            color: parent.parent.highlighted ? primaryColor : textPrimary
+                            verticalAlignment: Text.AlignVCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Text {
+                            text: "Ctrl+T"
+                            font.pixelSize: 11
+                            font.family: root.fontFamily
+                            color: textMuted
+                            verticalAlignment: Text.AlignVCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
+                    background: Rectangle {
+                        implicitWidth: 160
+                        implicitHeight: 36
+                        color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                        radius: 6
+
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
                     }
                 }
             }
 
             MenuSeparator {
                 contentItem: Rectangle {
-                    implicitWidth: 160
+                    implicitWidth: 200
                     implicitHeight: 1
                     color: borderColor
                 }
             }
 
             MenuItem {
-                text: qsTr("Toggle Theme")
-                onTriggered: ThemeManager.toggleTheme()
-
-                contentItem: Row {
-                    spacing: 8
-                    leftPadding: 12
-
-                    Text {
-                        text: parent.parent.text
-                        font.pixelSize: 13
-                        font.family: root.fontFamily
-                        color: parent.parent.highlighted ? primaryColor : textPrimary
-                        verticalAlignment: Text.AlignVCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    Text {
-                        text: "Ctrl+T"
-                        font.pixelSize: 11
-                        font.family: root.fontFamily
-                        color: textMuted
-                        verticalAlignment: Text.AlignVCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
-
-                background: Rectangle {
-                    implicitWidth: 160
-                    implicitHeight: 36
-                    color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
-                    radius: 6
-
-                    Behavior on color {
-                        ColorAnimation { duration: 150 }
-                    }
-                }
-            }
-        }
-
-        // Design Menu - Monochrome/Color mode selection
-        Menu {
-            id: designMenu
-            title: qsTr("&Design")
-
-            background: Rectangle {
-                implicitWidth: 200
-                color: cardBackground
-                border.color: borderColor
-                border.width: 1
-                radius: 8
-
-                layer.enabled: true
-                layer.effect: DropShadow {
-                    transparentBorder: true
-                    horizontalOffset: 0
-                    verticalOffset: 4
-                    radius: 12
-                    samples: 17
-                    color: shadowColor
-                }
-            }
-
-            MenuItem {
-                text: qsTr("MonoChrome Theme")
+                text: qsTr("MonoChrome Mode")
                 checkable: true
                 checked: !ThemeManager.isColorMode
                 onTriggered: ThemeManager.setDesignMode(false)
@@ -507,7 +515,7 @@ ApplicationWindow {
                     }
                     
                     Text {
-                        text: "MonoChrome Theme"
+                        text: "MonoChrome Mode"
                         font.pixelSize: 13
                         font.family: root.fontFamily
                         font.weight: !ThemeManager.isColorMode ? Font.Medium : Font.Normal
@@ -518,7 +526,7 @@ ApplicationWindow {
                 }
 
                 background: Rectangle {
-                    implicitWidth: 180
+                    implicitWidth: 200
                     implicitHeight: 36
                     color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
                     radius: 6
@@ -530,7 +538,7 @@ ApplicationWindow {
             }
 
             MenuItem {
-                text: qsTr("Colored Theme")
+                text: qsTr("Colored Mode")
                 checkable: true
                 checked: ThemeManager.isColorMode
                 onTriggered: ThemeManager.setDesignMode(true)
@@ -559,7 +567,7 @@ ApplicationWindow {
                     }
                     
                     Text {
-                        text: "Colored Theme"
+                        text: "Colored Mode"
                         font.pixelSize: 13
                         font.family: root.fontFamily
                         font.weight: ThemeManager.isColorMode ? Font.Medium : Font.Normal
@@ -570,7 +578,7 @@ ApplicationWindow {
                 }
 
                 background: Rectangle {
-                    implicitWidth: 180
+                    implicitWidth: 200
                     implicitHeight: 36
                     color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
                     radius: 6
@@ -583,14 +591,14 @@ ApplicationWindow {
 
             MenuSeparator {
                 contentItem: Rectangle {
-                    implicitWidth: 180
+                    implicitWidth: 200
                     implicitHeight: 1
                     color: borderColor
                 }
             }
 
             MenuItem {
-                text: qsTr("Toggle Design")
+                text: qsTr("Toggle Design Mode")
                 onTriggered: ThemeManager.toggleDesignMode()
 
                 contentItem: Row {
@@ -617,7 +625,7 @@ ApplicationWindow {
                 }
 
                 background: Rectangle {
-                    implicitWidth: 180
+                    implicitWidth: 200
                     implicitHeight: 36
                     color: parent.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
                     radius: 6
