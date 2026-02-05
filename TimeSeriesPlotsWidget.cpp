@@ -1020,14 +1020,9 @@ void RangeVelocityPlotWidget::leaveEvent(QEvent *event)
 
 TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     : QWidget(parent)
-    , m_showHistogramCheckbox(nullptr)
     , m_rangeVelocityPlot(nullptr)
     , m_velocityTimePlot(nullptr)
     , m_rangeTimePlot(nullptr)
-    , m_resetVelocityBtn(nullptr)
-    , m_resetRangeBtn(nullptr)
-    , m_resetRangeVelocityBtn(nullptr)
-    , m_settingsBtn(nullptr)
     , m_settingsPanel(nullptr)
     , m_pointSizeSpinBox(nullptr)
     , m_velocityMinSpinBox(nullptr)
@@ -1054,35 +1049,11 @@ void TimeSeriesPlotsWidget::setupUI()
     mainLayout->setSpacing(10);
     mainLayout->setContentsMargins(10, 10, 10, 10);
     
-    // Top row with controls
-    QHBoxLayout* topLayout = new QHBoxLayout();
-    
-    // Settings button
-    m_settingsBtn = new QPushButton("⚙ Settings", this);
-    m_settingsBtn->setCheckable(true);
-    m_settingsBtn->setFixedHeight(30);
-    connect(m_settingsBtn, &QPushButton::clicked, 
-            this, &TimeSeriesPlotsWidget::onSettingsToggled);
-    topLayout->addWidget(m_settingsBtn);
-    
-    topLayout->addStretch();
-    
-    m_showHistogramCheckbox = new QCheckBox("Show Histogram", this);
-    m_showHistogramCheckbox->setChecked(true);
-    connect(m_showHistogramCheckbox, &QCheckBox::toggled, 
-            this, &TimeSeriesPlotsWidget::onShowHistogramToggled);
-    topLayout->addWidget(m_showHistogramCheckbox);
-    mainLayout->addLayout(topLayout);
-    
-    // Settings panel
-    setupSettingsPanel();
-    mainLayout->addWidget(m_settingsPanel);
-    
     // Main content area with horizontal split
     QHBoxLayout* contentLayout = new QHBoxLayout();
     contentLayout->setSpacing(15);
     
-    // Left side - Range vs Velocity plot with reset button
+    // Left side - Range vs Velocity plot
     QVBoxLayout* leftColumn = new QVBoxLayout();
     
     QGroupBox* leftGroup = new QGroupBox(this);
@@ -1096,20 +1067,13 @@ void TimeSeriesPlotsWidget::setupUI()
     
     leftColumn->addWidget(leftGroup);
     
-    // Reset button for range-velocity plot
-    m_resetRangeVelocityBtn = new QPushButton("Reset Zoom", this);
-    m_resetRangeVelocityBtn->setFixedHeight(30);
-    connect(m_resetRangeVelocityBtn, &QPushButton::clicked, 
-            this, &TimeSeriesPlotsWidget::onResetRangeVelocityPlot);
-    leftColumn->addWidget(m_resetRangeVelocityBtn);
-    
     contentLayout->addLayout(leftColumn, 1);
     
     // Right side - Time series plots (stacked)
     QVBoxLayout* rightLayout = new QVBoxLayout();
     rightLayout->setSpacing(10);
     
-    // Velocity vs Time plot with reset button
+    // Velocity vs Time plot
     QGroupBox* velocityGroup = new QGroupBox(this);
     QVBoxLayout* velocityGroupLayout = new QVBoxLayout(velocityGroup);
     velocityGroupLayout->setContentsMargins(5, 5, 5, 5);
@@ -1121,17 +1085,9 @@ void TimeSeriesPlotsWidget::setupUI()
     m_velocityTimePlot->setTimeWindowSeconds(30);
     velocityGroupLayout->addWidget(m_velocityTimePlot);
     
-    // Reset button for velocity plot
-    m_resetVelocityBtn = new QPushButton("Reset Zoom", this);
-    m_resetVelocityBtn->setFixedHeight(25);
-    m_resetVelocityBtn->setToolTip("Reset Velocity Plot Zoom");
-    connect(m_resetVelocityBtn, &QPushButton::clicked, 
-            this, &TimeSeriesPlotsWidget::onResetVelocityPlot);
-    velocityGroupLayout->addWidget(m_resetVelocityBtn);
-    
     rightLayout->addWidget(velocityGroup, 1);
     
-    // Range vs Time plot with reset button
+    // Range vs Time plot
     QGroupBox* rangeGroup = new QGroupBox(this);
     QVBoxLayout* rangeGroupLayout = new QVBoxLayout(rangeGroup);
     rangeGroupLayout->setContentsMargins(5, 5, 5, 5);
@@ -1143,19 +1099,15 @@ void TimeSeriesPlotsWidget::setupUI()
     m_rangeTimePlot->setTimeWindowSeconds(30);
     rangeGroupLayout->addWidget(m_rangeTimePlot);
     
-    // Reset button for range plot
-    m_resetRangeBtn = new QPushButton("Reset Zoom", this);
-    m_resetRangeBtn->setFixedHeight(25);
-    m_resetRangeBtn->setToolTip("Reset Range Plot Zoom");
-    connect(m_resetRangeBtn, &QPushButton::clicked, 
-            this, &TimeSeriesPlotsWidget::onResetRangePlot);
-    rangeGroupLayout->addWidget(m_resetRangeBtn);
-    
     rightLayout->addWidget(rangeGroup, 1);
     
     contentLayout->addLayout(rightLayout, 1);
     
     mainLayout->addLayout(contentLayout, 1);
+    
+    // Settings panel at the bottom
+    setupSettingsPanel();
+    mainLayout->addWidget(m_settingsPanel);
     
     applyTheme();
 }
@@ -1163,169 +1115,114 @@ void TimeSeriesPlotsWidget::setupUI()
 void TimeSeriesPlotsWidget::setupSettingsPanel()
 {
     m_settingsPanel = new QWidget(this);
-    m_settingsPanel->setVisible(false);  // Hidden by default
+    m_settingsPanel->setVisible(true);  // Always visible
     
     QVBoxLayout* settingsLayout = new QVBoxLayout(m_settingsPanel);
-    settingsLayout->setContentsMargins(10, 10, 10, 10);
-    settingsLayout->setSpacing(10);
+    settingsLayout->setContentsMargins(0, 5, 0, 0);
+    settingsLayout->setSpacing(5);
     
-    // Create a frame for better visual grouping
-    QFrame* settingsFrame = new QFrame(this);
-    settingsFrame->setFrameShape(QFrame::StyledPanel);
-    QGridLayout* gridLayout = new QGridLayout(settingsFrame);
-    gridLayout->setSpacing(10);
+    // Create a grid layout for the controls (2 rows x 3 columns)
+    QGridLayout* gridLayout = new QGridLayout();
+    gridLayout->setSpacing(15);
+    gridLayout->setContentsMargins(0, 0, 0, 0);
     
-    int row = 0;
-    
-    // Point size setting (applies to all three plots)
-    QLabel* pointSizeLabel = new QLabel("Point Size:", this);
-    m_pointSizeSpinBox = new QSpinBox(this);
-    m_pointSizeSpinBox->setRange(1, 10);
-    m_pointSizeSpinBox->setValue(4);
-    m_pointSizeSpinBox->setSuffix(" px");
-    m_pointSizeSpinBox->setToolTip("Size of data points in all plots");
-    connect(m_pointSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
-            this, &TimeSeriesPlotsWidget::onPointSizeChanged);
-    gridLayout->addWidget(pointSizeLabel, row, 0);
-    gridLayout->addWidget(m_pointSizeSpinBox, row, 1);
-    row++;
-    
-    // Separator
-    QFrame* line1 = new QFrame(this);
-    line1->setFrameShape(QFrame::HLine);
-    line1->setFrameShadow(QFrame::Sunken);
-    gridLayout->addWidget(line1, row, 0, 1, 4);
-    row++;
-    
-    // Velocity time plot settings
-    QLabel* velocityPlotLabel = new QLabel("<b>Velocity vs Time Plot</b>", this);
-    gridLayout->addWidget(velocityPlotLabel, row, 0, 1, 2);
-    row++;
-    
-    QLabel* velocityMinLabel = new QLabel("Min Velocity:", this);
-    m_velocityMinSpinBox = new QDoubleSpinBox(this);
-    m_velocityMinSpinBox->setRange(-500, 500);
-    m_velocityMinSpinBox->setValue(-40);
-    m_velocityMinSpinBox->setSuffix(" km/h");
-    m_velocityMinSpinBox->setDecimals(1);
-    connect(m_velocityMinSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TimeSeriesPlotsWidget::onVelocityMinChanged);
-    gridLayout->addWidget(velocityMinLabel, row, 0);
-    gridLayout->addWidget(m_velocityMinSpinBox, row, 1);
-    
-    QLabel* velocityMaxLabel = new QLabel("Max Velocity:", this);
-    m_velocityMaxSpinBox = new QDoubleSpinBox(this);
-    m_velocityMaxSpinBox->setRange(-500, 500);
-    m_velocityMaxSpinBox->setValue(40);
-    m_velocityMaxSpinBox->setSuffix(" km/h");
-    m_velocityMaxSpinBox->setDecimals(1);
-    connect(m_velocityMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, &TimeSeriesPlotsWidget::onVelocityMaxChanged);
-    gridLayout->addWidget(velocityMaxLabel, row, 2);
-    gridLayout->addWidget(m_velocityMaxSpinBox, row, 3);
-    row++;
-    
-    // Separator
-    QFrame* line2 = new QFrame(this);
-    line2->setFrameShape(QFrame::HLine);
-    line2->setFrameShadow(QFrame::Sunken);
-    gridLayout->addWidget(line2, row, 0, 1, 4);
-    row++;
-    
-    // Range time plot settings
-    QLabel* rangePlotLabel = new QLabel("<b>Range vs Time Plot</b>", this);
-    gridLayout->addWidget(rangePlotLabel, row, 0, 1, 2);
-    row++;
-    
-    QLabel* rangeMinLabel = new QLabel("Min Range:", this);
+    // Row 1: Min Range, Min Velocity, Point Size
+    // Min Range
+    QLabel* minRangeLabel = new QLabel("Min Range", this);
     m_rangeMinSpinBox = new QDoubleSpinBox(this);
     m_rangeMinSpinBox->setRange(0, 1000);
     m_rangeMinSpinBox->setValue(0);
     m_rangeMinSpinBox->setSuffix(" m");
     m_rangeMinSpinBox->setDecimals(1);
+    m_rangeMinSpinBox->setMinimumWidth(120);
     connect(m_rangeMinSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRangeMinChanged);
-    gridLayout->addWidget(rangeMinLabel, row, 0);
-    gridLayout->addWidget(m_rangeMinSpinBox, row, 1);
+    gridLayout->addWidget(minRangeLabel, 0, 0);
+    gridLayout->addWidget(m_rangeMinSpinBox, 1, 0);
     
-    QLabel* rangeMaxLabel = new QLabel("Max Range:", this);
+    // Min Velocity
+    QLabel* minVelocityLabel = new QLabel("Min Velocity", this);
+    m_velocityMinSpinBox = new QDoubleSpinBox(this);
+    m_velocityMinSpinBox->setRange(-500, 500);
+    m_velocityMinSpinBox->setValue(-40);
+    m_velocityMinSpinBox->setSuffix(" km/h");
+    m_velocityMinSpinBox->setDecimals(1);
+    m_velocityMinSpinBox->setMinimumWidth(120);
+    connect(m_velocityMinSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onVelocityMinChanged);
+    gridLayout->addWidget(minVelocityLabel, 0, 1);
+    gridLayout->addWidget(m_velocityMinSpinBox, 1, 1);
+    
+    // Point Size
+    QLabel* pointSizeLabel = new QLabel("Point Size", this);
+    m_pointSizeSpinBox = new QSpinBox(this);
+    m_pointSizeSpinBox->setRange(1, 10);
+    m_pointSizeSpinBox->setValue(4);
+    m_pointSizeSpinBox->setSuffix(" px");
+    m_pointSizeSpinBox->setMinimumWidth(120);
+    connect(m_pointSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onPointSizeChanged);
+    gridLayout->addWidget(pointSizeLabel, 0, 2);
+    gridLayout->addWidget(m_pointSizeSpinBox, 1, 2);
+    
+    // Row 2: Max Range, Max Velocity, Time Window
+    // Max Range
+    QLabel* maxRangeLabel = new QLabel("Max Range", this);
     m_rangeMaxSpinBox = new QDoubleSpinBox(this);
     m_rangeMaxSpinBox->setRange(0, 1000);
     m_rangeMaxSpinBox->setValue(70);
     m_rangeMaxSpinBox->setSuffix(" m");
     m_rangeMaxSpinBox->setDecimals(1);
+    m_rangeMaxSpinBox->setMinimumWidth(120);
     connect(m_rangeMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRangeMaxChanged);
-    gridLayout->addWidget(rangeMaxLabel, row, 2);
-    gridLayout->addWidget(m_rangeMaxSpinBox, row, 3);
-    row++;
+    gridLayout->addWidget(maxRangeLabel, 2, 0);
+    gridLayout->addWidget(m_rangeMaxSpinBox, 3, 0);
     
-    // Separator
-    QFrame* line3 = new QFrame(this);
-    line3->setFrameShape(QFrame::HLine);
-    line3->setFrameShadow(QFrame::Sunken);
-    gridLayout->addWidget(line3, row, 0, 1, 4);
-    row++;
+    // Max Velocity
+    QLabel* maxVelocityLabel = new QLabel("Max Velocity", this);
+    m_velocityMaxSpinBox = new QDoubleSpinBox(this);
+    m_velocityMaxSpinBox->setRange(-500, 500);
+    m_velocityMaxSpinBox->setValue(40);
+    m_velocityMaxSpinBox->setSuffix(" km/h");
+    m_velocityMaxSpinBox->setDecimals(1);
+    m_velocityMaxSpinBox->setMinimumWidth(120);
+    connect(m_velocityMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onVelocityMaxChanged);
+    gridLayout->addWidget(maxVelocityLabel, 2, 1);
+    gridLayout->addWidget(m_velocityMaxSpinBox, 3, 1);
     
-    // Time window setting (applies to both time series plots)
-    QLabel* timeWindowLabel = new QLabel("<b>Time Window (Both Plots)</b>", this);
-    gridLayout->addWidget(timeWindowLabel, row, 0, 1, 2);
-    row++;
-    
-    QLabel* timeWindowValueLabel = new QLabel("Duration:", this);
+    // Time Window
+    QLabel* timeWindowLabel = new QLabel("Time Window", this);
     m_timeWindowSpinBox = new QSpinBox(this);
     m_timeWindowSpinBox->setRange(5, 300);
     m_timeWindowSpinBox->setValue(30);
-    m_timeWindowSpinBox->setSuffix(" seconds");
-    m_timeWindowSpinBox->setToolTip("Time period displayed in time series plots");
+    m_timeWindowSpinBox->setSuffix(" s");
+    m_timeWindowSpinBox->setMinimumWidth(120);
     connect(m_timeWindowSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onTimeWindowChanged);
-    gridLayout->addWidget(timeWindowValueLabel, row, 0);
-    gridLayout->addWidget(m_timeWindowSpinBox, row, 1);
-    row++;
+    gridLayout->addWidget(timeWindowLabel, 2, 2);
+    gridLayout->addWidget(m_timeWindowSpinBox, 3, 2);
     
-    // Separator
-    QFrame* line4 = new QFrame(this);
-    line4->setFrameShape(QFrame::HLine);
-    line4->setFrameShadow(QFrame::Sunken);
-    gridLayout->addWidget(line4, row, 0, 1, 4);
-    row++;
-    
-    // Range-Velocity scatter plot settings
-    QLabel* rvPlotLabel = new QLabel("<b>Range-Velocity Scatter Plot</b>", this);
-    gridLayout->addWidget(rvPlotLabel, row, 0, 1, 2);
-    row++;
-    
-    QLabel* rvRangeMaxLabel = new QLabel("Max Range:", this);
+    // Initialize RV plot spinboxes (not visible in the new layout, but keep for compatibility)
     m_rvRangeMaxSpinBox = new QDoubleSpinBox(this);
     m_rvRangeMaxSpinBox->setRange(10, 1000);
     m_rvRangeMaxSpinBox->setValue(150);
-    m_rvRangeMaxSpinBox->setSuffix(" m");
-    m_rvRangeMaxSpinBox->setDecimals(1);
+    m_rvRangeMaxSpinBox->setVisible(false);
     connect(m_rvRangeMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRVRangeMaxChanged);
-    gridLayout->addWidget(rvRangeMaxLabel, row, 0);
-    gridLayout->addWidget(m_rvRangeMaxSpinBox, row, 1);
     
-    QLabel* rvVelocityMaxLabel = new QLabel("Max Velocity:", this);
     m_rvVelocityMaxSpinBox = new QDoubleSpinBox(this);
     m_rvVelocityMaxSpinBox->setRange(10, 1000);
     m_rvVelocityMaxSpinBox->setValue(240);
-    m_rvVelocityMaxSpinBox->setSuffix(" km/h");
-    m_rvVelocityMaxSpinBox->setDecimals(1);
+    m_rvVelocityMaxSpinBox->setVisible(false);
     connect(m_rvVelocityMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRVVelocityMaxChanged);
-    gridLayout->addWidget(rvVelocityMaxLabel, row, 2);
-    gridLayout->addWidget(m_rvVelocityMaxSpinBox, row, 3);
-    row++;
     
-    settingsLayout->addWidget(settingsFrame);
+    // Add stretches to center the controls
+    gridLayout->setColumnStretch(3, 1);
     
-    // Add info label
-    QLabel* infoLabel = new QLabel(
-        "<i>Tip: Use mouse wheel to zoom, click and drag to pan, hover over points for details</i>", this);
-    infoLabel->setWordWrap(true);
-    settingsLayout->addWidget(infoLabel);
+    settingsLayout->addLayout(gridLayout);
 }
 
 void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
@@ -1397,6 +1294,7 @@ void TimeSeriesPlotsWidget::setMaxVelocity(float maxVelocity)
 
 void TimeSeriesPlotsWidget::onShowHistogramToggled(bool checked)
 {
+    // No longer used - kept for compatibility
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->setShowHistogram(checked);
     }
@@ -1404,6 +1302,7 @@ void TimeSeriesPlotsWidget::onShowHistogramToggled(bool checked)
 
 void TimeSeriesPlotsWidget::onResetVelocityPlot()
 {
+    // No longer used - kept for compatibility
     if (m_velocityTimePlot) {
         m_velocityTimePlot->onResetZoom();
     }
@@ -1411,6 +1310,7 @@ void TimeSeriesPlotsWidget::onResetVelocityPlot()
 
 void TimeSeriesPlotsWidget::onResetRangePlot()
 {
+    // No longer used - kept for compatibility
     if (m_rangeTimePlot) {
         m_rangeTimePlot->onResetZoom();
     }
@@ -1418,6 +1318,7 @@ void TimeSeriesPlotsWidget::onResetRangePlot()
 
 void TimeSeriesPlotsWidget::onResetRangeVelocityPlot()
 {
+    // No longer used - kept for compatibility
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->onResetZoom();
     }
@@ -1425,9 +1326,7 @@ void TimeSeriesPlotsWidget::onResetRangeVelocityPlot()
 
 void TimeSeriesPlotsWidget::onSettingsToggled()
 {
-    if (m_settingsPanel) {
-        m_settingsPanel->setVisible(!m_settingsPanel->isVisible());
-    }
+    // No longer used - settings panel is always visible in new layout
 }
 
 void TimeSeriesPlotsWidget::onPointSizeChanged(int size)
@@ -1514,70 +1413,8 @@ void TimeSeriesPlotsWidget::applyTheme()
     QString bgColor = m_isDarkTheme ? "#1e293b" : "#f8fafc";
     QString borderColor = m_isDarkTheme ? "#334155" : "#e2e8f0";
     QString groupBgColor = m_isDarkTheme ? "#0f172a" : "#ffffff";
-    QString buttonBgColor = m_isDarkTheme ? "#334155" : "#f1f5f9";
-    QString buttonHoverColor = m_isDarkTheme ? "#475569" : "#e2e8f0";
+    QString inputBgColor = m_isDarkTheme ? "#0f172a" : "#ffffff";
     QString accentColor = m_isDarkTheme ? "#3b82f6" : "#2563eb";
-    
-    // Style the checkbox
-    if (m_showHistogramCheckbox) {
-        m_showHistogramCheckbox->setStyleSheet(QString(
-            "QCheckBox { color: %1; font-weight: 500; }"
-            "QCheckBox::indicator { width: 18px; height: 18px; }"
-            "QCheckBox::indicator:unchecked { border: 2px solid %2; border-radius: 3px; background: transparent; }"
-            "QCheckBox::indicator:checked { border: 2px solid %3; border-radius: 3px; background: %3; }"
-        ).arg(textColor, borderColor, accentColor));
-    }
-    
-    // Style the reset buttons
-    QString buttonStyle = QString(
-        "QPushButton {"
-        "  background: %1;"
-        "  border: 1px solid %2;"
-        "  border-radius: 4px;"
-        "  color: %3;"
-        "  padding: 5px 10px;"
-        "  font-weight: 500;"
-        "}"
-        "QPushButton:hover {"
-        "  background: %4;"
-        "}"
-        "QPushButton:pressed {"
-        "  background: %2;"
-        "}"
-    ).arg(buttonBgColor, borderColor, textColor, buttonHoverColor);
-    
-    if (m_resetVelocityBtn) {
-        m_resetVelocityBtn->setStyleSheet(buttonStyle);
-    }
-    if (m_resetRangeBtn) {
-        m_resetRangeBtn->setStyleSheet(buttonStyle);
-    }
-    if (m_resetRangeVelocityBtn) {
-        m_resetRangeVelocityBtn->setStyleSheet(buttonStyle);
-    }
-    
-    // Style settings button
-    if (m_settingsBtn) {
-        QString settingsStyle = QString(
-            "QPushButton {"
-            "  background: %1;"
-            "  border: 1px solid %2;"
-            "  border-radius: 4px;"
-            "  color: %3;"
-            "  padding: 5px 15px;"
-            "  font-weight: 500;"
-            "}"
-            "QPushButton:hover {"
-            "  background: %4;"
-            "}"
-            "QPushButton:checked {"
-            "  background: %5;"
-            "  border-color: %5;"
-            "  color: white;"
-            "}"
-        ).arg(buttonBgColor, borderColor, textColor, buttonHoverColor, accentColor);
-        m_settingsBtn->setStyleSheet(settingsStyle);
-    }
     
     // Style the settings panel
     if (m_settingsPanel) {
@@ -1588,25 +1425,20 @@ void TimeSeriesPlotsWidget::applyTheme()
             "}"
             "QLabel {"
             "  color: %2;"
+            "  font-weight: 500;"
             "}"
             "QSpinBox, QDoubleSpinBox {"
             "  background: %3;"
             "  border: 1px solid %4;"
             "  border-radius: 4px;"
-            "  padding: 3px;"
+            "  padding: 5px;"
             "  color: %2;"
-            "  min-width: 100px;"
             "}"
             "QSpinBox:focus, QDoubleSpinBox:focus {"
             "  border-color: %5;"
+            "  border-width: 2px;"
             "}"
-            "QFrame {"
-            "  background-color: %1;"
-            "  border: 1px solid %4;"
-            "  border-radius: 6px;"
-            "  padding: 10px;"
-            "}"
-        ).arg(bgColor, textColor, groupBgColor, borderColor, accentColor);
+        ).arg(bgColor, textColor, inputBgColor, borderColor, accentColor);
         m_settingsPanel->setStyleSheet(settingsPanelStyle);
     }
     

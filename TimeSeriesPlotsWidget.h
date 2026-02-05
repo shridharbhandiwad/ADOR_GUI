@@ -244,10 +244,6 @@ public:
     void setMaxVelocity(float maxVelocity);
 
 public slots:
-    void onShowHistogramToggled(bool checked);
-    void onResetVelocityPlot();
-    void onResetRangePlot();
-    void onResetRangeVelocityPlot();
     void clearAllData();
     
     // Settings slots
@@ -259,6 +255,12 @@ public slots:
     void onTimeWindowChanged(int seconds);
     void onRVRangeMaxChanged(double value);
     void onRVVelocityMaxChanged(double value);
+
+private slots:
+    void onShowHistogramToggled(bool checked);
+    void onResetVelocityPlot();
+    void onResetRangePlot();
+    void onResetRangeVelocityPlot();
     void onSettingsToggled();
 
 private:
@@ -268,14 +270,9 @@ private:
     void updatePlotSettings();
     
     // UI Components
-    QCheckBox* m_showHistogramCheckbox;
     RangeVelocityPlotWidget* m_rangeVelocityPlot;
     TimeSeriesPlotWidget* m_velocityTimePlot;
     TimeSeriesPlotWidget* m_rangeTimePlot;
-    QPushButton* m_resetVelocityBtn;
-    QPushButton* m_resetRangeBtn;
-    QPushButton* m_resetRangeVelocityBtn;
-    QPushButton* m_settingsBtn;
     
     // Settings panel
     QWidget* m_settingsPanel;
