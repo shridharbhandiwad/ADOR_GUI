@@ -508,9 +508,9 @@ void TimeSeriesPlotWidget::leaveEvent(QEvent *event)
 RangeVelocityPlotWidget::RangeVelocityPlotWidget(QWidget *parent)
     : QWidget(parent)
     , m_maxRange(100.0f)
-    , m_maxVelocity(200.0f)
+    , m_maxVelocity(100.0f)
     , m_defaultMaxRange(100.0f)
-    , m_defaultMaxVelocity(200.0f)
+    , m_defaultMaxVelocity(100.0f)
     , m_showHistogram(true)
     , m_pointSize(4)
     , m_marginLeft(70)
@@ -1221,7 +1221,7 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     // Initialize RV plot spinboxes (not visible in the new layout, but keep for compatibility)
     m_rvRangeMaxSpinBox = new QDoubleSpinBox(this);
     m_rvRangeMaxSpinBox->setRange(10, 1000);
-    m_rvRangeMaxSpinBox->setValue(120);
+    m_rvRangeMaxSpinBox->setValue(100);
     m_rvRangeMaxSpinBox->setVisible(false);
     connect(m_rvRangeMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRVRangeMaxChanged);
@@ -1238,10 +1238,15 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     
     settingsLayout->addLayout(gridLayout);
     
-    // Add Save and Load Settings buttons
+    // Add Clear, Save and Load Settings buttons
     QHBoxLayout* buttonLayout = new QHBoxLayout();
     buttonLayout->setSpacing(10);
     buttonLayout->addStretch();
+    
+    QPushButton* clearButton = new QPushButton("Clear All Data", this);
+    clearButton->setMinimumWidth(120);
+    connect(clearButton, &QPushButton::clicked, this, &TimeSeriesPlotsWidget::clearAllData);
+    buttonLayout->addWidget(clearButton);
     
     QPushButton* loadButton = new QPushButton("Load Settings", this);
     loadButton->setMinimumWidth(120);
