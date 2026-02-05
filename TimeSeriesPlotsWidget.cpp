@@ -507,10 +507,10 @@ void TimeSeriesPlotWidget::leaveEvent(QEvent *event)
 
 RangeVelocityPlotWidget::RangeVelocityPlotWidget(QWidget *parent)
     : QWidget(parent)
-    , m_maxRange(150.0f)
-    , m_maxVelocity(240.0f)
-    , m_defaultMaxRange(150.0f)
-    , m_defaultMaxVelocity(240.0f)
+    , m_maxRange(100.0f)
+    , m_maxVelocity(200.0f)
+    , m_defaultMaxRange(100.0f)
+    , m_defaultMaxVelocity(200.0f)
     , m_showHistogram(true)
     , m_pointSize(4)
     , m_marginLeft(70)
@@ -1034,8 +1034,8 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_rvRangeMaxSpinBox(nullptr)
     , m_rvVelocityMaxSpinBox(nullptr)
     , m_isDarkTheme(false)
-    , m_maxRange(150.0f)
-    , m_maxVelocity(240.0f)
+    , m_maxRange(100.0f)
+    , m_maxVelocity(100.0f)
 {
     setupUI();
     loadSettings();  // Load saved settings on startup
@@ -1221,14 +1221,14 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     // Initialize RV plot spinboxes (not visible in the new layout, but keep for compatibility)
     m_rvRangeMaxSpinBox = new QDoubleSpinBox(this);
     m_rvRangeMaxSpinBox->setRange(10, 1000);
-    m_rvRangeMaxSpinBox->setValue(150);
+    m_rvRangeMaxSpinBox->setValue(120);
     m_rvRangeMaxSpinBox->setVisible(false);
     connect(m_rvRangeMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRVRangeMaxChanged);
     
     m_rvVelocityMaxSpinBox = new QDoubleSpinBox(this);
     m_rvVelocityMaxSpinBox->setRange(10, 1000);
-    m_rvVelocityMaxSpinBox->setValue(240);
+    m_rvVelocityMaxSpinBox->setValue(100);
     m_rvVelocityMaxSpinBox->setVisible(false);
     connect(m_rvVelocityMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRVVelocityMaxChanged);
@@ -1571,12 +1571,12 @@ void TimeSeriesPlotsWidget::loadSettings()
     }
     
     if (m_rvRangeMaxSpinBox) {
-        double rvRangeMax = settings.value("rvRangeMax", 150.0).toDouble();
+        double rvRangeMax = settings.value("rvRangeMax", 100.0).toDouble();
         m_rvRangeMaxSpinBox->setValue(rvRangeMax);
     }
     
     if (m_rvVelocityMaxSpinBox) {
-        double rvVelocityMax = settings.value("rvVelocityMax", 240.0).toDouble();
+        double rvVelocityMax = settings.value("rvVelocityMax", 100.0).toDouble();
         m_rvVelocityMaxSpinBox->setValue(rvVelocityMax);
     }
     

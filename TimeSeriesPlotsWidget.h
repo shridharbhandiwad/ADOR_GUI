@@ -121,7 +121,7 @@ private:
     bool m_showTooltip;
     
     // Maximum data points to keep
-    static constexpr int MAX_DATA_POINTS = 1000;
+    static constexpr int MAX_DATA_POINTS = 100000;
 };
 
 // Range-Velocity scatter plot widget
