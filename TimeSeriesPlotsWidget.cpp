@@ -7,6 +7,7 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QFrame>
+#include <QSettings>
 #include <cmath>
 
 // ==================== TimeSeriesPlotWidget Implementation ====================
@@ -19,7 +20,7 @@ TimeSeriesPlotWidget::TimeSeriesPlotWidget(QWidget *parent)
     , m_maxY(100.0f)
     , m_defaultMinY(0.0f)
     , m_defaultMaxY(100.0f)
-    , m_timeWindowSeconds(30)
+    , m_timeWindowSeconds(60)
     , m_pointSize(4)
     , m_marginLeft(70)
     , m_marginRight(20)
@@ -1037,6 +1038,7 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_maxVelocity(240.0f)
 {
     setupUI();
+    loadSettings();  // Load saved settings on startup
 }
 
 TimeSeriesPlotsWidget::~TimeSeriesPlotsWidget()
@@ -1082,7 +1084,7 @@ void TimeSeriesPlotsWidget::setupUI()
     m_velocityTimePlot->setYAxisLabel("Velocity");
     m_velocityTimePlot->setYAxisUnit("km/h");
     m_velocityTimePlot->setYAxisRange(-40, 40);  // Default range: -40 to +40 kph
-    m_velocityTimePlot->setTimeWindowSeconds(30);
+    m_velocityTimePlot->setTimeWindowSeconds(60);
     velocityGroupLayout->addWidget(m_velocityTimePlot);
     
     rightLayout->addWidget(velocityGroup, 1);
@@ -1096,7 +1098,7 @@ void TimeSeriesPlotsWidget::setupUI()
     m_rangeTimePlot->setYAxisLabel("Range");
     m_rangeTimePlot->setYAxisUnit("m");
     m_rangeTimePlot->setYAxisRange(0, 70);  // Default range: 0 to 70m
-    m_rangeTimePlot->setTimeWindowSeconds(30);
+    m_rangeTimePlot->setTimeWindowSeconds(60);
     rangeGroupLayout->addWidget(m_rangeTimePlot);
     
     rightLayout->addWidget(rangeGroup, 1);
@@ -1134,7 +1136,9 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     m_rangeMinSpinBox->setValue(0);
     m_rangeMinSpinBox->setSuffix(" m");
     m_rangeMinSpinBox->setDecimals(1);
+    m_rangeMinSpinBox->setSingleStep(1.0);  // Step by 1 meter
     m_rangeMinSpinBox->setMinimumWidth(120);
+    m_rangeMinSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_rangeMinSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRangeMinChanged);
     gridLayout->addWidget(minRangeLabel, 0, 0);
@@ -1147,7 +1151,9 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     m_velocityMinSpinBox->setValue(-40);
     m_velocityMinSpinBox->setSuffix(" km/h");
     m_velocityMinSpinBox->setDecimals(1);
+    m_velocityMinSpinBox->setSingleStep(1.0);  // Step by 1 km/h
     m_velocityMinSpinBox->setMinimumWidth(120);
+    m_velocityMinSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_velocityMinSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onVelocityMinChanged);
     gridLayout->addWidget(minVelocityLabel, 0, 1);
@@ -1159,7 +1165,9 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     m_pointSizeSpinBox->setRange(1, 10);
     m_pointSizeSpinBox->setValue(4);
     m_pointSizeSpinBox->setSuffix(" px");
+    m_pointSizeSpinBox->setSingleStep(1);  // Step by 1 pixel
     m_pointSizeSpinBox->setMinimumWidth(120);
+    m_pointSizeSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_pointSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onPointSizeChanged);
     gridLayout->addWidget(pointSizeLabel, 0, 2);
@@ -1173,7 +1181,9 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     m_rangeMaxSpinBox->setValue(70);
     m_rangeMaxSpinBox->setSuffix(" m");
     m_rangeMaxSpinBox->setDecimals(1);
+    m_rangeMaxSpinBox->setSingleStep(1.0);  // Step by 1 meter
     m_rangeMaxSpinBox->setMinimumWidth(120);
+    m_rangeMaxSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_rangeMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onRangeMaxChanged);
     gridLayout->addWidget(maxRangeLabel, 2, 0);
@@ -1186,7 +1196,9 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     m_velocityMaxSpinBox->setValue(40);
     m_velocityMaxSpinBox->setSuffix(" km/h");
     m_velocityMaxSpinBox->setDecimals(1);
+    m_velocityMaxSpinBox->setSingleStep(1.0);  // Step by 1 km/h
     m_velocityMaxSpinBox->setMinimumWidth(120);
+    m_velocityMaxSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_velocityMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onVelocityMaxChanged);
     gridLayout->addWidget(maxVelocityLabel, 2, 1);
@@ -1196,9 +1208,11 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     QLabel* timeWindowLabel = new QLabel("Time Window", this);
     m_timeWindowSpinBox = new QSpinBox(this);
     m_timeWindowSpinBox->setRange(5, 300);
-    m_timeWindowSpinBox->setValue(30);
+    m_timeWindowSpinBox->setValue(60);  // Default: 1 minute
     m_timeWindowSpinBox->setSuffix(" s");
+    m_timeWindowSpinBox->setSingleStep(5);  // Step by 5 seconds
     m_timeWindowSpinBox->setMinimumWidth(120);
+    m_timeWindowSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_timeWindowSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onTimeWindowChanged);
     gridLayout->addWidget(timeWindowLabel, 2, 2);
@@ -1223,6 +1237,24 @@ void TimeSeriesPlotsWidget::setupSettingsPanel()
     gridLayout->setColumnStretch(3, 1);
     
     settingsLayout->addLayout(gridLayout);
+    
+    // Add Save and Load Settings buttons
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    buttonLayout->setSpacing(10);
+    buttonLayout->addStretch();
+    
+    QPushButton* loadButton = new QPushButton("Load Settings", this);
+    loadButton->setMinimumWidth(120);
+    connect(loadButton, &QPushButton::clicked, this, &TimeSeriesPlotsWidget::onLoadSettings);
+    buttonLayout->addWidget(loadButton);
+    
+    QPushButton* saveButton = new QPushButton("Save Settings", this);
+    saveButton->setMinimumWidth(120);
+    connect(saveButton, &QPushButton::clicked, this, &TimeSeriesPlotsWidget::onSaveSettings);
+    buttonLayout->addWidget(saveButton);
+    
+    buttonLayout->addStretch();
+    settingsLayout->addLayout(buttonLayout);
 }
 
 void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
@@ -1415,6 +1447,9 @@ void TimeSeriesPlotsWidget::applyTheme()
     QString groupBgColor = m_isDarkTheme ? "#0f172a" : "#ffffff";
     QString inputBgColor = m_isDarkTheme ? "#0f172a" : "#ffffff";
     QString accentColor = m_isDarkTheme ? "#3b82f6" : "#2563eb";
+    QString buttonBgColor = m_isDarkTheme ? "#3b82f6" : "#2563eb";
+    QString buttonTextColor = "#ffffff";
+    QString buttonHoverColor = m_isDarkTheme ? "#2563eb" : "#1d4ed8";
     
     // Style the settings panel
     if (m_settingsPanel) {
@@ -1438,7 +1473,22 @@ void TimeSeriesPlotsWidget::applyTheme()
             "  border-color: %5;"
             "  border-width: 2px;"
             "}"
-        ).arg(bgColor, textColor, inputBgColor, borderColor, accentColor);
+            "QPushButton {"
+            "  background-color: %6;"
+            "  color: %7;"
+            "  border: none;"
+            "  border-radius: 6px;"
+            "  padding: 8px 16px;"
+            "  font-weight: 500;"
+            "}"
+            "QPushButton:hover {"
+            "  background-color: %8;"
+            "}"
+            "QPushButton:pressed {"
+            "  background-color: %5;"
+            "}"
+        ).arg(bgColor, textColor, inputBgColor, borderColor, accentColor, 
+              buttonBgColor, buttonTextColor, buttonHoverColor);
         m_settingsPanel->setStyleSheet(settingsPanelStyle);
     }
     
@@ -1462,4 +1512,85 @@ void TimeSeriesPlotsWidget::applyTheme()
     setStyleSheet(QString("QWidget { background-color: %1; }").arg(bgColor));
     
     update();
+}
+
+void TimeSeriesPlotsWidget::saveSettings()
+{
+    QSettings settings("Zoppler", "RadarVisualization");
+    
+    settings.beginGroup("TimeSeriesPlots");
+    
+    // Save all settings values
+    settings.setValue("pointSize", m_pointSizeSpinBox->value());
+    settings.setValue("velocityMin", m_velocityMinSpinBox->value());
+    settings.setValue("velocityMax", m_velocityMaxSpinBox->value());
+    settings.setValue("rangeMin", m_rangeMinSpinBox->value());
+    settings.setValue("rangeMax", m_rangeMaxSpinBox->value());
+    settings.setValue("timeWindow", m_timeWindowSpinBox->value());
+    settings.setValue("rvRangeMax", m_rvRangeMaxSpinBox->value());
+    settings.setValue("rvVelocityMax", m_rvVelocityMaxSpinBox->value());
+    
+    settings.endGroup();
+}
+
+void TimeSeriesPlotsWidget::loadSettings()
+{
+    QSettings settings("Zoppler", "RadarVisualization");
+    
+    settings.beginGroup("TimeSeriesPlots");
+    
+    // Load saved values, or use defaults if not found
+    if (m_pointSizeSpinBox) {
+        int pointSize = settings.value("pointSize", 4).toInt();
+        m_pointSizeSpinBox->setValue(pointSize);
+    }
+    
+    if (m_velocityMinSpinBox) {
+        double velocityMin = settings.value("velocityMin", -40.0).toDouble();
+        m_velocityMinSpinBox->setValue(velocityMin);
+    }
+    
+    if (m_velocityMaxSpinBox) {
+        double velocityMax = settings.value("velocityMax", 40.0).toDouble();
+        m_velocityMaxSpinBox->setValue(velocityMax);
+    }
+    
+    if (m_rangeMinSpinBox) {
+        double rangeMin = settings.value("rangeMin", 0.0).toDouble();
+        m_rangeMinSpinBox->setValue(rangeMin);
+    }
+    
+    if (m_rangeMaxSpinBox) {
+        double rangeMax = settings.value("rangeMax", 70.0).toDouble();
+        m_rangeMaxSpinBox->setValue(rangeMax);
+    }
+    
+    if (m_timeWindowSpinBox) {
+        int timeWindow = settings.value("timeWindow", 60).toInt();
+        m_timeWindowSpinBox->setValue(timeWindow);
+    }
+    
+    if (m_rvRangeMaxSpinBox) {
+        double rvRangeMax = settings.value("rvRangeMax", 150.0).toDouble();
+        m_rvRangeMaxSpinBox->setValue(rvRangeMax);
+    }
+    
+    if (m_rvVelocityMaxSpinBox) {
+        double rvVelocityMax = settings.value("rvVelocityMax", 240.0).toDouble();
+        m_rvVelocityMaxSpinBox->setValue(rvVelocityMax);
+    }
+    
+    settings.endGroup();
+}
+
+void TimeSeriesPlotsWidget::onSaveSettings()
+{
+    saveSettings();
+    // Could add a visual confirmation here (e.g., message box or status indication)
+}
+
+void TimeSeriesPlotsWidget::onLoadSettings()
+{
+    loadSettings();
+    // Could add a visual confirmation here (e.g., message box or status indication)
 }

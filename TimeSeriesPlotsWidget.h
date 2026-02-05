@@ -255,6 +255,8 @@ public slots:
     void onTimeWindowChanged(int seconds);
     void onRVRangeMaxChanged(double value);
     void onRVVelocityMaxChanged(double value);
+    void onSaveSettings();
+    void onLoadSettings();
 
 private slots:
     void onShowHistogramToggled(bool checked);
@@ -268,6 +270,8 @@ private:
     void setupSettingsPanel();
     void applyTheme();
     void updatePlotSettings();
+    void saveSettings();
+    void loadSettings();
     
     // UI Components
     RangeVelocityPlotWidget* m_rangeVelocityPlot;
