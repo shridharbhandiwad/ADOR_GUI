@@ -4,6 +4,8 @@
 #include <QPainter>
 #include <QTimer>
 #include <QMouseEvent>
+#include <QDoubleSpinBox>
+#include <QPushButton>
 #include <vector>
 #include "DataStructures.h"
 
@@ -28,6 +30,20 @@ public:
     float getMinAngle() const { return m_minAngle; }  // NEW: Get min angle
     float getMaxAngle() const { return m_maxAngle; }  // NEW: Get max angle
     bool isDarkTheme() const { return m_isDarkTheme; } // NEW: Get current theme
+    
+    // Settings persistence
+    void saveSettings();
+    void loadSettings();
+    
+    // Get settings panel widget
+    QWidget* getSettingsPanel() { return m_settingsPanel; }
+
+public slots:
+    void onSettingsToggled();
+    void onMinRangeChanged(double value);
+    void onMaxRangeChanged(double value);
+    void onMinAngleChanged(double value);
+    void onMaxAngleChanged(double value);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -50,6 +66,10 @@ private:
     QColor getTargetColor(float radialSpeed) const;
     QPointF polarToCartesian(float range, float azimuth) const;
     int findTrackAtPosition(const QPointF& pos) const;  // Find track under mouse position
+    
+    // Settings panel setup
+    void setupSettingsPanel();
+    void applyTheme();
 
     // Data members
     TargetTrackData m_currentTargets;
@@ -70,6 +90,14 @@ private:
 
     // Theme support
     bool m_isDarkTheme;         // Current theme state
+    
+    // Settings panel
+    QWidget* m_settingsPanel;
+    QPushButton* m_settingsBtn;
+    QDoubleSpinBox* m_minRangeSpinBox;
+    QDoubleSpinBox* m_maxRangeSpinBox;
+    QDoubleSpinBox* m_minAngleSpinBox;
+    QDoubleSpinBox* m_maxAngleSpinBox;
     
     // Theme-aware color helper methods
     QColor getBackgroundColor() const;

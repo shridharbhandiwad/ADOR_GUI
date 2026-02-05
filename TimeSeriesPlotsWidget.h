@@ -242,6 +242,10 @@ public:
     // Configuration
     void setMaxRange(float maxRange);
     void setMaxVelocity(float maxVelocity);
+    
+    // Settings persistence
+    void saveSettings();
+    void loadSettings();
 
 public slots:
     void onShowHistogramToggled(bool checked);
