@@ -460,19 +460,6 @@ void MainWindow::setupUI()
     int ppiMinHeight = static_cast<int>(200 * dpiScale);
     m_ppiWidget->setMinimumSize(ppiMinWidth, ppiMinHeight);
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
-    
-    // Add settings button for PPI
-    QPushButton* ppiSettingsBtn = new QPushButton("⚙ PPI Settings", this);
-    ppiSettingsBtn->setCheckable(true);
-    ppiSettingsBtn->setFixedHeight(30);
-    ppiSettingsBtn->setCursor(Qt::PointingHandCursor);
-    connect(ppiSettingsBtn, &QPushButton::clicked, m_ppiWidget, &PPIWidget::onSettingsToggled);
-    ppiLayout->addWidget(ppiSettingsBtn);
-    
-    // Add PPI settings panel
-    if (m_ppiWidget->getSettingsPanel()) {
-        ppiLayout->addWidget(m_ppiWidget->getSettingsPanel());
-    }
 
     topHorizontalSplitter->addWidget(ppiGroup);
 
@@ -522,20 +509,7 @@ void MainWindow::setupUI()
     int fftMinWidth = static_cast<int>(250 * dpiScale);
     int fftMinHeight = static_cast<int>(120 * dpiScale);
     m_fftWidget->setMinimumSize(fftMinWidth, fftMinHeight);
-    fftLayout->addWidget(m_fftWidget, 1);
-    
-    // Add settings button for FFT
-    QPushButton* fftSettingsBtn = new QPushButton("⚙ FFT Settings", this);
-    fftSettingsBtn->setCheckable(true);
-    fftSettingsBtn->setFixedHeight(30);
-    fftSettingsBtn->setCursor(Qt::PointingHandCursor);
-    connect(fftSettingsBtn, &QPushButton::clicked, m_fftWidget, &FFTWidget::onSettingsToggled);
-    fftLayout->addWidget(fftSettingsBtn);
-    
-    // Add FFT settings panel
-    if (m_fftWidget->getSettingsPanel()) {
-        fftLayout->addWidget(m_fftWidget->getSettingsPanel());
-    }
+    fftLayout->addWidget(m_fftWidget);
     
     rightVerticalSplitter->addWidget(fftGroup);
     
