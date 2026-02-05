@@ -738,7 +738,7 @@ void ModernSpeedButton::paintEvent(QPaintEvent *event)
     painter.drawText(btnRect, Qt::AlignCenter, text());
 }
 
-void ModernSpeedButton::enterEvent(QEnterEvent *event)
+void ModernSpeedButton::enterEvent(QEvent *event)
 {
     Q_UNUSED(event)
     m_hovered = true;
