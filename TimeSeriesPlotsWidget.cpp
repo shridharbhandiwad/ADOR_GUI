@@ -198,10 +198,9 @@ void TimeSeriesPlotWidget::drawData(QPainter& painter)
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     qint64 startTime = currentTime - (m_timeWindowSeconds * 1000);
     
-    // Build path for data line
-    QPainterPath dataPath;
-    QPainterPath fillPath;
-    bool firstPoint = true;
+    // Draw as scatter plot (point cloud) instead of connected lines
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(getDataLineColor());
     
     for (const auto& point : m_dataPoints) {
         // Calculate x position based on time
@@ -215,28 +214,8 @@ void TimeSeriesPlotWidget::drawData(QPainter& painter)
         valueRatio = qBound(0.0f, valueRatio, 1.0f);
         int y = m_plotRect.bottom() - int(valueRatio * m_plotRect.height());
         
-        if (firstPoint) {
-            dataPath.moveTo(x, y);
-            fillPath.moveTo(x, m_plotRect.bottom());
-            fillPath.lineTo(x, y);
-            firstPoint = false;
-        } else {
-            dataPath.lineTo(x, y);
-            fillPath.lineTo(x, y);
-        }
-    }
-    
-    // Complete fill path
-    if (!firstPoint && !m_dataPoints.isEmpty()) {
-        fillPath.lineTo(m_plotRect.right(), m_plotRect.bottom());
-        fillPath.closeSubpath();
-        
-        // Draw fill
-        painter.fillPath(fillPath, getDataFillColor());
-        
-        // Draw line
-        painter.setPen(QPen(getDataLineColor(), 2));
-        painter.drawPath(dataPath);
+        // Draw individual point
+        painter.drawEllipse(QPoint(x, y), 3, 3);
     }
 }
 
@@ -656,7 +635,7 @@ void TimeSeriesPlotsWidget::setupUI()
     m_velocityTimePlot = new TimeSeriesPlotWidget(this);
     m_velocityTimePlot->setYAxisLabel("Velocity");
     m_velocityTimePlot->setYAxisUnit("km/h");
-    m_velocityTimePlot->setYAxisRange(0, m_maxVelocity);
+    m_velocityTimePlot->setYAxisRange(-40, 40);  // Fixed range: -40 to +40 kph
     m_velocityTimePlot->setTimeWindowSeconds(30);
     velocityGroupLayout->addWidget(m_velocityTimePlot);
     
@@ -683,7 +662,7 @@ void TimeSeriesPlotsWidget::setupUI()
     m_rangeTimePlot = new TimeSeriesPlotWidget(this);
     m_rangeTimePlot->setYAxisLabel("Range");
     m_rangeTimePlot->setYAxisUnit("m");
-    m_rangeTimePlot->setYAxisRange(0, m_maxRange);
+    m_rangeTimePlot->setYAxisRange(0, 70);  // Fixed range: 0 to 70m
     m_rangeTimePlot->setTimeWindowSeconds(30);
     rangeGroupLayout->addWidget(m_rangeTimePlot);
     
@@ -713,15 +692,17 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
     
     for (size_t i = 0; i < targets.numTracks && i < targets.targets.size(); ++i) {
         const auto& target = targets.targets[i];
-        float velocityKmh = qAbs(target.radial_speed) * 3.6f;  // Convert m/s to km/h
+        // Preserve sign for velocity (can be positive or negative)
+        float velocityKmh = target.radial_speed * 3.6f;  // Convert m/s to km/h
+        float velocityKmhAbs = qAbs(velocityKmh);  // Absolute value for range-velocity plot
         float rangeM = target.radius;
         
-        // Update range-velocity plot
+        // Update range-velocity plot (uses absolute velocity)
         if (m_rangeVelocityPlot) {
-            m_rangeVelocityPlot->addDataPoint(velocityKmh, rangeM);
+            m_rangeVelocityPlot->addDataPoint(velocityKmhAbs, rangeM);
         }
         
-        // Update time series plots
+        // Update time series plots (velocity preserves sign)
         if (m_velocityTimePlot) {
             m_velocityTimePlot->addDataPoint(currentTime, velocityKmh);
         }
@@ -754,9 +735,10 @@ void TimeSeriesPlotsWidget::setMaxRange(float maxRange)
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->setRangeLimit(maxRange);
     }
-    if (m_rangeTimePlot) {
-        m_rangeTimePlot->setYAxisRange(0, maxRange);
-    }
+    // Keep time series plot at fixed range 0-70m
+    // if (m_rangeTimePlot) {
+    //     m_rangeTimePlot->setYAxisRange(0, maxRange);
+    // }
 }
 
 void TimeSeriesPlotsWidget::setMaxVelocity(float maxVelocity)
@@ -765,9 +747,10 @@ void TimeSeriesPlotsWidget::setMaxVelocity(float maxVelocity)
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->setVelocityLimit(maxVelocity);
     }
-    if (m_velocityTimePlot) {
-        m_velocityTimePlot->setYAxisRange(0, maxVelocity);
-    }
+    // Keep time series plot at fixed range -40 to +40 kph
+    // if (m_velocityTimePlot) {
+    //     m_velocityTimePlot->setYAxisRange(0, maxVelocity);
+    // }
 }
 
 void TimeSeriesPlotsWidget::onShowHistogramToggled(bool checked)
