@@ -466,7 +466,13 @@ void TimeSeriesPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void TimeSeriesPlotWidget::wheelEvent(QWheelEvent *event)
 {
-    if (m_plotRect.contains(event->position().toPoint())) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QPoint eventPos = event->position().toPoint();
+#else
+    QPoint eventPos = event->pos();
+#endif
+    
+    if (m_plotRect.contains(eventPos)) {
         // Zoom in/out
         float zoomFactor = 1.0f + (event->angleDelta().y() > 0 ? 0.1f : -0.1f);
         
@@ -474,7 +480,7 @@ void TimeSeriesPlotWidget::wheelEvent(QWheelEvent *event)
         float newRange = valueRange / zoomFactor;
         
         // Get mouse position in value space
-        float mouseValueRatio = float(m_plotRect.bottom() - event->position().y()) / m_plotRect.height();
+        float mouseValueRatio = float(m_plotRect.bottom() - eventPos.y()) / m_plotRect.height();
         float mouseValue = m_minY + mouseValueRatio * valueRange;
         
         // Zoom around mouse position
@@ -982,7 +988,13 @@ void RangeVelocityPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void RangeVelocityPlotWidget::wheelEvent(QWheelEvent *event)
 {
-    if (m_plotRect.contains(event->position().toPoint())) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QPoint eventPos = event->position().toPoint();
+#else
+    QPoint eventPos = event->pos();
+#endif
+    
+    if (m_plotRect.contains(eventPos)) {
         // Zoom in/out
         float zoomFactor = 1.0f + (event->angleDelta().y() > 0 ? 0.1f : -0.1f);
         
