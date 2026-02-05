@@ -21,7 +21,8 @@ SpeedometerGauge::SpeedometerGauge(QWidget *parent)
     , m_isDarkTheme(false)
     , m_radius(0.0f)
 {
-    // No hard-coded minimum size to allow responsive layout
+    // Set minimum size to ensure speedometer is visible
+    setMinimumSize(300, 300);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     // Setup animation timer for smooth needle movement
@@ -564,7 +565,8 @@ DigitalSpeedDisplay::DigitalSpeedDisplay(QWidget *parent)
     , m_unit("km/h")
     , m_isDarkTheme(false)
 {
-    // No hard-coded minimum size to allow responsive layout
+    // Set minimum size to ensure display is visible
+    setMinimumSize(200, 80);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     m_valueAnimation = new QPropertyAnimation(this, "displayValue", this);
@@ -883,6 +885,9 @@ SpeedWidgetTheme SpeedMeasurementWidget::createDarkTheme() const
 
 void SpeedMeasurementWidget::setupUI()
 {
+    // Set minimum size for the entire widget to ensure visibility
+    setMinimumSize(800, 500);
+    
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
     mainLayout->setSpacing(32);
     mainLayout->setContentsMargins(24, 24, 24, 24);
@@ -930,7 +935,7 @@ void SpeedMeasurementWidget::setupUI()
     
     // Top Speed Card (responsive size)
     m_topSpeedCard = new SpeedCard(this);
-    // Size will be determined by layout based on available space
+    m_topSpeedCard->setMinimumSize(250, 200);
     
     QVBoxLayout* topSpeedCardLayout = new QVBoxLayout(m_topSpeedCard);
     topSpeedCardLayout->setSpacing(16);
@@ -970,7 +975,7 @@ void SpeedMeasurementWidget::setupUI()
     
     // Output/Controls Card (responsive size)
     m_outputCard = new SpeedCard(this);
-    // Size will be determined by layout based on available space
+    m_outputCard->setMinimumSize(250, 180);
     
     QVBoxLayout* outputCardLayout = new QVBoxLayout(m_outputCard);
     outputCardLayout->setSpacing(20);
