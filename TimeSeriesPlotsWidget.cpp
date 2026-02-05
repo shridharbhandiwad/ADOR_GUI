@@ -17,17 +17,26 @@ TimeSeriesPlotWidget::TimeSeriesPlotWidget(QWidget *parent)
     , m_yAxisUnit("")
     , m_minY(0.0f)
     , m_maxY(100.0f)
+    , m_defaultMinY(0.0f)
+    , m_defaultMaxY(100.0f)
     , m_timeWindowSeconds(30)
+    , m_pointSize(4)
     , m_marginLeft(70)
     , m_marginRight(20)
     , m_marginTop(20)
     , m_marginBottom(50)
     , m_isDarkTheme(false)
+    , m_isPanning(false)
+    , m_zoomFactorY(1.0f)
+    , m_panOffsetY(0.0f)
+    , m_hoveredPointIndex(-1)
+    , m_showTooltip(false)
 {
     // No hard-coded minimum size to allow responsive layout
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setMouseTracking(true);  // Enable mouse tracking for hover effects
 }
 
 void TimeSeriesPlotWidget::setDarkTheme(bool isDark)
@@ -52,6 +61,14 @@ void TimeSeriesPlotWidget::setYAxisRange(float minY, float maxY)
 {
     m_minY = minY;
     m_maxY = maxY;
+    m_defaultMinY = minY;
+    m_defaultMaxY = maxY;
+    update();
+}
+
+void TimeSeriesPlotWidget::setPointSize(int size)
+{
+    m_pointSize = qMax(1, size);
     update();
 }
 
@@ -87,7 +104,11 @@ void TimeSeriesPlotWidget::addDataPoint(qint64 timestamp, float value)
 
 void TimeSeriesPlotWidget::onResetZoom()
 {
-    // Reset to default view - could implement zoom functionality later
+    // Reset zoom and pan to default view
+    m_zoomFactorY = 1.0f;
+    m_panOffsetY = 0.0f;
+    m_minY = m_defaultMinY;
+    m_maxY = m_defaultMaxY;
     update();
 }
 
@@ -112,6 +133,7 @@ void TimeSeriesPlotWidget::paintEvent(QPaintEvent *event)
     drawAxes(painter);
     drawData(painter);
     drawLabels(painter);
+    drawTooltip(painter);
 }
 
 QColor TimeSeriesPlotWidget::getBackgroundColor() const
@@ -198,11 +220,13 @@ void TimeSeriesPlotWidget::drawData(QPainter& painter)
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     qint64 startTime = currentTime - (m_timeWindowSeconds * 1000);
     
-    // Draw as scatter plot (point cloud) instead of connected lines
+    // Draw as scatter plot (point cloud) with filled circles
     painter.setPen(Qt::NoPen);
     painter.setBrush(getDataLineColor());
     
-    for (const auto& point : m_dataPoints) {
+    for (int i = 0; i < m_dataPoints.size(); ++i) {
+        const auto& point = m_dataPoints[i];
+        
         // Calculate x position based on time
         float timeRatio = float(point.first - startTime) / float(m_timeWindowSeconds * 1000);
         if (timeRatio < 0 || timeRatio > 1) continue;
@@ -214,8 +238,15 @@ void TimeSeriesPlotWidget::drawData(QPainter& painter)
         valueRatio = qBound(0.0f, valueRatio, 1.0f);
         int y = m_plotRect.bottom() - int(valueRatio * m_plotRect.height());
         
-        // Draw individual point
-        painter.drawEllipse(QPoint(x, y), 3, 3);
+        // Highlight hovered point
+        if (i == m_hoveredPointIndex) {
+            painter.setBrush(QColor(255, 200, 0));  // Yellow highlight
+            painter.drawEllipse(QPoint(x, y), m_pointSize + 2, m_pointSize + 2);
+            painter.setBrush(getDataLineColor());
+        } else {
+            // Draw filled circle
+            painter.drawEllipse(QPoint(x, y), m_pointSize, m_pointSize);
+        }
     }
 }
 
@@ -266,23 +297,233 @@ void TimeSeriesPlotWidget::drawLabels(QPainter& painter)
     }
 }
 
+void TimeSeriesPlotWidget::drawTooltip(QPainter& painter)
+{
+    if (!m_showTooltip || m_hoveredPointIndex < 0 || m_hoveredPointIndex >= m_dataPoints.size()) {
+        return;
+    }
+    
+    const auto& point = m_dataPoints[m_hoveredPointIndex];
+    QDateTime dt = QDateTime::fromMSecsSinceEpoch(point.first);
+    QString timeStr = dt.toString("hh:mm:ss.zzz");
+    QString valueStr = QString::number(point.second, 'f', 2);
+    QString tooltipText = QString("%1: %2 %3\nTime: %4")
+        .arg(m_yAxisLabel)
+        .arg(valueStr)
+        .arg(m_yAxisUnit)
+        .arg(timeStr);
+    
+    // Draw tooltip box
+    QFont font("Segoe UI", 9);
+    painter.setFont(font);
+    QFontMetrics fm(font);
+    
+    QStringList lines = tooltipText.split('\n');
+    int maxWidth = 0;
+    for (const QString& line : lines) {
+        maxWidth = qMax(maxWidth, fm.horizontalAdvance(line));
+    }
+    
+    int boxWidth = maxWidth + 20;
+    int boxHeight = lines.size() * fm.height() + 10;
+    
+    // Position tooltip near mouse, but keep it inside the widget
+    int tooltipX = m_mousePos.x() + 15;
+    int tooltipY = m_mousePos.y() - boxHeight - 5;
+    
+    if (tooltipX + boxWidth > width()) {
+        tooltipX = m_mousePos.x() - boxWidth - 15;
+    }
+    if (tooltipY < 0) {
+        tooltipY = m_mousePos.y() + 15;
+    }
+    
+    QRect tooltipRect(tooltipX, tooltipY, boxWidth, boxHeight);
+    
+    // Draw tooltip background
+    painter.setPen(QPen(getBorderColor(), 1));
+    painter.setBrush(m_isDarkTheme ? QColor(30, 41, 59, 240) : QColor(255, 255, 255, 240));
+    painter.drawRoundedRect(tooltipRect, 4, 4);
+    
+    // Draw tooltip text
+    painter.setPen(getTextColor());
+    int textY = tooltipRect.top() + fm.height();
+    for (const QString& line : lines) {
+        painter.drawText(tooltipRect.left() + 10, textY, line);
+        textY += fm.height();
+    }
+}
+
+QPointF TimeSeriesPlotWidget::dataToScreen(qint64 timestamp, float value) const
+{
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 startTime = currentTime - (m_timeWindowSeconds * 1000);
+    
+    float timeRatio = float(timestamp - startTime) / float(m_timeWindowSeconds * 1000);
+    float x = m_plotRect.left() + timeRatio * m_plotRect.width();
+    
+    float valueRatio = (value - m_minY) / (m_maxY - m_minY);
+    float y = m_plotRect.bottom() - valueRatio * m_plotRect.height();
+    
+    return QPointF(x, y);
+}
+
+bool TimeSeriesPlotWidget::screenToData(const QPoint& screenPos, qint64& timestamp, float& value) const
+{
+    if (!m_plotRect.contains(screenPos)) {
+        return false;
+    }
+    
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 startTime = currentTime - (m_timeWindowSeconds * 1000);
+    
+    float timeRatio = float(screenPos.x() - m_plotRect.left()) / m_plotRect.width();
+    timestamp = startTime + qint64(timeRatio * m_timeWindowSeconds * 1000);
+    
+    float valueRatio = float(m_plotRect.bottom() - screenPos.y()) / m_plotRect.height();
+    value = m_minY + valueRatio * (m_maxY - m_minY);
+    
+    return true;
+}
+
+int TimeSeriesPlotWidget::findNearestPoint(const QPoint& pos) const
+{
+    if (m_dataPoints.isEmpty() || !m_plotRect.contains(pos)) {
+        return -1;
+    }
+    
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 startTime = currentTime - (m_timeWindowSeconds * 1000);
+    
+    int nearestIndex = -1;
+    float minDistance = 20.0f;  // Maximum distance to consider
+    
+    for (int i = 0; i < m_dataPoints.size(); ++i) {
+        const auto& point = m_dataPoints[i];
+        QPointF screenPos = dataToScreen(point.first, point.second);
+        
+        float dx = screenPos.x() - pos.x();
+        float dy = screenPos.y() - pos.y();
+        float distance = std::sqrt(dx * dx + dy * dy);
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestIndex = i;
+        }
+    }
+    
+    return nearestIndex;
+}
+
+void TimeSeriesPlotWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    m_mousePos = event->pos();
+    
+    if (m_isPanning) {
+        // Handle panning
+        int dy = event->pos().y() - m_lastMousePos.y();
+        float valueRange = m_maxY - m_minY;
+        float panAmount = -dy * valueRange / m_plotRect.height();
+        
+        m_minY += panAmount;
+        m_maxY += panAmount;
+        
+        m_lastMousePos = event->pos();
+        update();
+    } else {
+        // Handle hover
+        int newHoveredIndex = findNearestPoint(event->pos());
+        if (newHoveredIndex != m_hoveredPointIndex) {
+            m_hoveredPointIndex = newHoveredIndex;
+            m_showTooltip = (m_hoveredPointIndex >= 0);
+            update();
+        }
+    }
+    
+    QWidget::mouseMoveEvent(event);
+}
+
+void TimeSeriesPlotWidget::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && m_plotRect.contains(event->pos())) {
+        m_isPanning = true;
+        m_lastMousePos = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+    }
+    
+    QWidget::mousePressEvent(event);
+}
+
+void TimeSeriesPlotWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        m_isPanning = false;
+        setCursor(Qt::ArrowCursor);
+    }
+    
+    QWidget::mouseReleaseEvent(event);
+}
+
+void TimeSeriesPlotWidget::wheelEvent(QWheelEvent *event)
+{
+    if (m_plotRect.contains(event->position().toPoint())) {
+        // Zoom in/out
+        float zoomFactor = 1.0f + (event->angleDelta().y() > 0 ? 0.1f : -0.1f);
+        
+        float valueRange = m_maxY - m_minY;
+        float newRange = valueRange / zoomFactor;
+        
+        // Get mouse position in value space
+        float mouseValueRatio = float(m_plotRect.bottom() - event->position().y()) / m_plotRect.height();
+        float mouseValue = m_minY + mouseValueRatio * valueRange;
+        
+        // Zoom around mouse position
+        m_minY = mouseValue - mouseValueRatio * newRange;
+        m_maxY = mouseValue + (1.0f - mouseValueRatio) * newRange;
+        
+        update();
+        event->accept();
+    } else {
+        QWidget::wheelEvent(event);
+    }
+}
+
+void TimeSeriesPlotWidget::leaveEvent(QEvent *event)
+{
+    m_hoveredPointIndex = -1;
+    m_showTooltip = false;
+    update();
+    QWidget::leaveEvent(event);
+}
+
 // ==================== RangeVelocityPlotWidget Implementation ====================
 
 RangeVelocityPlotWidget::RangeVelocityPlotWidget(QWidget *parent)
     : QWidget(parent)
     , m_maxRange(150.0f)
     , m_maxVelocity(240.0f)
+    , m_defaultMaxRange(150.0f)
+    , m_defaultMaxVelocity(240.0f)
     , m_showHistogram(true)
+    , m_pointSize(4)
     , m_marginLeft(70)
     , m_marginRight(20)
     , m_marginTop(20)
     , m_marginBottom(50)
     , m_isDarkTheme(false)
+    , m_isPanning(false)
+    , m_zoomFactorX(1.0f)
+    , m_zoomFactorY(1.0f)
+    , m_panOffsetX(0.0f)
+    , m_panOffsetY(0.0f)
+    , m_hoveredPointIndex(-1)
+    , m_showTooltip(false)
 {
     // No hard-coded minimum size to allow responsive layout
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    setMouseTracking(true);  // Enable mouse tracking for hover effects
     
     // Initialize histogram bins
     m_velocityHistogram.resize(HISTOGRAM_BINS);
@@ -300,18 +541,37 @@ void RangeVelocityPlotWidget::setDarkTheme(bool isDark)
 void RangeVelocityPlotWidget::setRangeLimit(float maxRange)
 {
     m_maxRange = maxRange;
+    m_defaultMaxRange = maxRange;
     update();
 }
 
 void RangeVelocityPlotWidget::setVelocityLimit(float maxVelocity)
 {
     m_maxVelocity = maxVelocity;
+    m_defaultMaxVelocity = maxVelocity;
     update();
 }
 
 void RangeVelocityPlotWidget::setShowHistogram(bool show)
 {
     m_showHistogram = show;
+    update();
+}
+
+void RangeVelocityPlotWidget::setPointSize(int size)
+{
+    m_pointSize = qMax(1, size);
+    update();
+}
+
+void RangeVelocityPlotWidget::onResetZoom()
+{
+    m_zoomFactorX = 1.0f;
+    m_zoomFactorY = 1.0f;
+    m_panOffsetX = 0.0f;
+    m_panOffsetY = 0.0f;
+    m_maxRange = m_defaultMaxRange;
+    m_maxVelocity = m_defaultMaxVelocity;
     update();
 }
 
@@ -378,6 +638,7 @@ void RangeVelocityPlotWidget::paintEvent(QPaintEvent *event)
         drawHistogram(painter);
     }
     drawLabels(painter);
+    drawTooltip(painter);
 }
 
 QColor RangeVelocityPlotWidget::getBackgroundColor() const
@@ -471,7 +732,8 @@ void RangeVelocityPlotWidget::drawDataPoints(QPainter& painter)
     painter.setPen(Qt::NoPen);
     painter.setBrush(getDataPointColor());
     
-    for (const auto& point : m_dataPoints) {
+    for (int i = 0; i < m_dataPoints.size(); ++i) {
+        const auto& point = m_dataPoints[i];
         float velocity = point.first;
         float range = point.second;
         
@@ -484,8 +746,15 @@ void RangeVelocityPlotWidget::drawDataPoints(QPainter& painter)
         int x = m_plotRect.left() + int(xRatio * m_plotRect.width());
         int y = m_plotRect.bottom() - int(yRatio * m_plotRect.height());
         
-        // Draw point
-        painter.drawEllipse(QPoint(x, y), 3, 3);
+        // Highlight hovered point
+        if (i == m_hoveredPointIndex) {
+            painter.setBrush(QColor(255, 200, 0));  // Yellow highlight
+            painter.drawEllipse(QPoint(x, y), m_pointSize + 2, m_pointSize + 2);
+            painter.setBrush(getDataPointColor());
+        } else {
+            // Draw filled circle with configurable size
+            painter.drawEllipse(QPoint(x, y), m_pointSize, m_pointSize);
+        }
     }
 }
 
@@ -568,6 +837,173 @@ void RangeVelocityPlotWidget::drawLabels(QPainter& painter)
     }
 }
 
+void RangeVelocityPlotWidget::drawTooltip(QPainter& painter)
+{
+    if (!m_showTooltip || m_hoveredPointIndex < 0 || m_hoveredPointIndex >= m_dataPoints.size()) {
+        return;
+    }
+    
+    const auto& point = m_dataPoints[m_hoveredPointIndex];
+    QString velocityStr = QString::number(point.first, 'f', 2);
+    QString rangeStr = QString::number(point.second, 'f', 2);
+    QString tooltipText = QString("Velocity: %1 km/h\nRange: %2 m")
+        .arg(velocityStr)
+        .arg(rangeStr);
+    
+    // Draw tooltip box
+    QFont font("Segoe UI", 9);
+    painter.setFont(font);
+    QFontMetrics fm(font);
+    
+    QStringList lines = tooltipText.split('\n');
+    int maxWidth = 0;
+    for (const QString& line : lines) {
+        maxWidth = qMax(maxWidth, fm.horizontalAdvance(line));
+    }
+    
+    int boxWidth = maxWidth + 20;
+    int boxHeight = lines.size() * fm.height() + 10;
+    
+    // Position tooltip near mouse, but keep it inside the widget
+    int tooltipX = m_mousePos.x() + 15;
+    int tooltipY = m_mousePos.y() - boxHeight - 5;
+    
+    if (tooltipX + boxWidth > width()) {
+        tooltipX = m_mousePos.x() - boxWidth - 15;
+    }
+    if (tooltipY < 0) {
+        tooltipY = m_mousePos.y() + 15;
+    }
+    
+    QRect tooltipRect(tooltipX, tooltipY, boxWidth, boxHeight);
+    
+    // Draw tooltip background
+    painter.setPen(QPen(getBorderColor(), 1));
+    painter.setBrush(m_isDarkTheme ? QColor(30, 41, 59, 240) : QColor(255, 255, 255, 240));
+    painter.drawRoundedRect(tooltipRect, 4, 4);
+    
+    // Draw tooltip text
+    painter.setPen(getTextColor());
+    int textY = tooltipRect.top() + fm.height();
+    for (const QString& line : lines) {
+        painter.drawText(tooltipRect.left() + 10, textY, line);
+        textY += fm.height();
+    }
+}
+
+int RangeVelocityPlotWidget::findNearestPoint(const QPoint& pos) const
+{
+    if (m_dataPoints.isEmpty() || !m_plotRect.contains(pos)) {
+        return -1;
+    }
+    
+    int nearestIndex = -1;
+    float minDistance = 20.0f;  // Maximum distance to consider
+    
+    for (int i = 0; i < m_dataPoints.size(); ++i) {
+        const auto& point = m_dataPoints[i];
+        float velocity = point.first;
+        float range = point.second;
+        
+        float xRatio = velocity / m_maxVelocity;
+        float yRatio = range / m_maxRange;
+        
+        if (xRatio < 0 || xRatio > 1 || yRatio < 0 || yRatio > 1) continue;
+        
+        int x = m_plotRect.left() + int(xRatio * m_plotRect.width());
+        int y = m_plotRect.bottom() - int(yRatio * m_plotRect.height());
+        
+        float dx = x - pos.x();
+        float dy = y - pos.y();
+        float distance = std::sqrt(dx * dx + dy * dy);
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestIndex = i;
+        }
+    }
+    
+    return nearestIndex;
+}
+
+void RangeVelocityPlotWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    m_mousePos = event->pos();
+    
+    if (m_isPanning) {
+        // Handle panning
+        int dx = event->pos().x() - m_lastMousePos.x();
+        int dy = event->pos().y() - m_lastMousePos.y();
+        
+        float velocityRange = m_maxVelocity;
+        float rangeRange = m_maxRange;
+        
+        float panAmountX = -dx * velocityRange / m_plotRect.width();
+        float panAmountY = dy * rangeRange / m_plotRect.height();
+        
+        m_panOffsetX += panAmountX;
+        m_panOffsetY += panAmountY;
+        
+        m_lastMousePos = event->pos();
+        update();
+    } else {
+        // Handle hover
+        int newHoveredIndex = findNearestPoint(event->pos());
+        if (newHoveredIndex != m_hoveredPointIndex) {
+            m_hoveredPointIndex = newHoveredIndex;
+            m_showTooltip = (m_hoveredPointIndex >= 0);
+            update();
+        }
+    }
+    
+    QWidget::mouseMoveEvent(event);
+}
+
+void RangeVelocityPlotWidget::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && m_plotRect.contains(event->pos())) {
+        m_isPanning = true;
+        m_lastMousePos = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+    }
+    
+    QWidget::mousePressEvent(event);
+}
+
+void RangeVelocityPlotWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        m_isPanning = false;
+        setCursor(Qt::ArrowCursor);
+    }
+    
+    QWidget::mouseReleaseEvent(event);
+}
+
+void RangeVelocityPlotWidget::wheelEvent(QWheelEvent *event)
+{
+    if (m_plotRect.contains(event->position().toPoint())) {
+        // Zoom in/out
+        float zoomFactor = 1.0f + (event->angleDelta().y() > 0 ? 0.1f : -0.1f);
+        
+        m_maxVelocity /= zoomFactor;
+        m_maxRange /= zoomFactor;
+        
+        update();
+        event->accept();
+    } else {
+        QWidget::wheelEvent(event);
+    }
+}
+
+void RangeVelocityPlotWidget::leaveEvent(QEvent *event)
+{
+    m_hoveredPointIndex = -1;
+    m_showTooltip = false;
+    update();
+    QWidget::leaveEvent(event);
+}
+
 // ==================== TimeSeriesPlotsWidget Implementation ====================
 
 TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
@@ -578,6 +1014,17 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_rangeTimePlot(nullptr)
     , m_resetVelocityBtn(nullptr)
     , m_resetRangeBtn(nullptr)
+    , m_resetRangeVelocityBtn(nullptr)
+    , m_settingsBtn(nullptr)
+    , m_settingsPanel(nullptr)
+    , m_pointSizeSpinBox(nullptr)
+    , m_velocityMinSpinBox(nullptr)
+    , m_velocityMaxSpinBox(nullptr)
+    , m_rangeMinSpinBox(nullptr)
+    , m_rangeMaxSpinBox(nullptr)
+    , m_timeWindowSpinBox(nullptr)
+    , m_rvRangeMaxSpinBox(nullptr)
+    , m_rvVelocityMaxSpinBox(nullptr)
     , m_isDarkTheme(false)
     , m_maxRange(150.0f)
     , m_maxVelocity(240.0f)
@@ -595,9 +1042,19 @@ void TimeSeriesPlotsWidget::setupUI()
     mainLayout->setSpacing(10);
     mainLayout->setContentsMargins(10, 10, 10, 10);
     
-    // Top row with checkbox
+    // Top row with controls
     QHBoxLayout* topLayout = new QHBoxLayout();
+    
+    // Settings button
+    m_settingsBtn = new QPushButton("⚙ Settings", this);
+    m_settingsBtn->setCheckable(true);
+    m_settingsBtn->setFixedHeight(30);
+    connect(m_settingsBtn, &QPushButton::clicked, 
+            this, &TimeSeriesPlotsWidget::onSettingsToggled);
+    topLayout->addWidget(m_settingsBtn);
+    
     topLayout->addStretch();
+    
     m_showHistogramCheckbox = new QCheckBox("Show Histogram", this);
     m_showHistogramCheckbox->setChecked(true);
     connect(m_showHistogramCheckbox, &QCheckBox::toggled, 
@@ -605,11 +1062,17 @@ void TimeSeriesPlotsWidget::setupUI()
     topLayout->addWidget(m_showHistogramCheckbox);
     mainLayout->addLayout(topLayout);
     
+    // Settings panel
+    setupSettingsPanel();
+    mainLayout->addWidget(m_settingsPanel);
+    
     // Main content area with horizontal split
     QHBoxLayout* contentLayout = new QHBoxLayout();
     contentLayout->setSpacing(15);
     
-    // Left side - Range vs Velocity plot
+    // Left side - Range vs Velocity plot with reset button
+    QVBoxLayout* leftColumn = new QVBoxLayout();
+    
     QGroupBox* leftGroup = new QGroupBox(this);
     QVBoxLayout* leftLayout = new QVBoxLayout(leftGroup);
     leftLayout->setContentsMargins(5, 5, 5, 5);
@@ -619,15 +1082,22 @@ void TimeSeriesPlotsWidget::setupUI()
     m_rangeVelocityPlot->setVelocityLimit(m_maxVelocity);
     leftLayout->addWidget(m_rangeVelocityPlot);
     
-    contentLayout->addWidget(leftGroup, 1);
+    leftColumn->addWidget(leftGroup);
+    
+    // Reset button for range-velocity plot
+    m_resetRangeVelocityBtn = new QPushButton("Reset Zoom", this);
+    m_resetRangeVelocityBtn->setFixedHeight(30);
+    connect(m_resetRangeVelocityBtn, &QPushButton::clicked, 
+            this, &TimeSeriesPlotsWidget::onResetRangeVelocityPlot);
+    leftColumn->addWidget(m_resetRangeVelocityBtn);
+    
+    contentLayout->addLayout(leftColumn, 1);
     
     // Right side - Time series plots (stacked)
     QVBoxLayout* rightLayout = new QVBoxLayout();
     rightLayout->setSpacing(10);
     
     // Velocity vs Time plot with reset button
-    QHBoxLayout* velocityLayout = new QHBoxLayout();
-    
     QGroupBox* velocityGroup = new QGroupBox(this);
     QVBoxLayout* velocityGroupLayout = new QVBoxLayout(velocityGroup);
     velocityGroupLayout->setContentsMargins(5, 5, 5, 5);
@@ -635,26 +1105,21 @@ void TimeSeriesPlotsWidget::setupUI()
     m_velocityTimePlot = new TimeSeriesPlotWidget(this);
     m_velocityTimePlot->setYAxisLabel("Velocity");
     m_velocityTimePlot->setYAxisUnit("km/h");
-    m_velocityTimePlot->setYAxisRange(-40, 40);  // Fixed range: -40 to +40 kph
+    m_velocityTimePlot->setYAxisRange(-40, 40);  // Default range: -40 to +40 kph
     m_velocityTimePlot->setTimeWindowSeconds(30);
     velocityGroupLayout->addWidget(m_velocityTimePlot);
     
-    velocityLayout->addWidget(velocityGroup, 1);
-    
     // Reset button for velocity plot
-    m_resetVelocityBtn = new QPushButton(this);
-    m_resetVelocityBtn->setFixedSize(32, 32);
-    m_resetVelocityBtn->setToolTip("Reset Velocity Plot");
-    m_resetVelocityBtn->setText("\xF0\x9F\x94\x8D");  // Magnifying glass emoji
+    m_resetVelocityBtn = new QPushButton("Reset Zoom", this);
+    m_resetVelocityBtn->setFixedHeight(25);
+    m_resetVelocityBtn->setToolTip("Reset Velocity Plot Zoom");
     connect(m_resetVelocityBtn, &QPushButton::clicked, 
             this, &TimeSeriesPlotsWidget::onResetVelocityPlot);
-    velocityLayout->addWidget(m_resetVelocityBtn, 0, Qt::AlignCenter);
+    velocityGroupLayout->addWidget(m_resetVelocityBtn);
     
-    rightLayout->addLayout(velocityLayout, 1);
+    rightLayout->addWidget(velocityGroup, 1);
     
     // Range vs Time plot with reset button
-    QHBoxLayout* rangeLayout = new QHBoxLayout();
-    
     QGroupBox* rangeGroup = new QGroupBox(this);
     QVBoxLayout* rangeGroupLayout = new QVBoxLayout(rangeGroup);
     rangeGroupLayout->setContentsMargins(5, 5, 5, 5);
@@ -662,28 +1127,193 @@ void TimeSeriesPlotsWidget::setupUI()
     m_rangeTimePlot = new TimeSeriesPlotWidget(this);
     m_rangeTimePlot->setYAxisLabel("Range");
     m_rangeTimePlot->setYAxisUnit("m");
-    m_rangeTimePlot->setYAxisRange(0, 70);  // Fixed range: 0 to 70m
+    m_rangeTimePlot->setYAxisRange(0, 70);  // Default range: 0 to 70m
     m_rangeTimePlot->setTimeWindowSeconds(30);
     rangeGroupLayout->addWidget(m_rangeTimePlot);
     
-    rangeLayout->addWidget(rangeGroup, 1);
-    
     // Reset button for range plot
-    m_resetRangeBtn = new QPushButton(this);
-    m_resetRangeBtn->setFixedSize(32, 32);
-    m_resetRangeBtn->setToolTip("Reset Range Plot");
-    m_resetRangeBtn->setText("\xF0\x9F\x94\x8D");
+    m_resetRangeBtn = new QPushButton("Reset Zoom", this);
+    m_resetRangeBtn->setFixedHeight(25);
+    m_resetRangeBtn->setToolTip("Reset Range Plot Zoom");
     connect(m_resetRangeBtn, &QPushButton::clicked, 
             this, &TimeSeriesPlotsWidget::onResetRangePlot);
-    rangeLayout->addWidget(m_resetRangeBtn, 0, Qt::AlignCenter);
+    rangeGroupLayout->addWidget(m_resetRangeBtn);
     
-    rightLayout->addLayout(rangeLayout, 1);
+    rightLayout->addWidget(rangeGroup, 1);
     
     contentLayout->addLayout(rightLayout, 1);
     
     mainLayout->addLayout(contentLayout, 1);
     
     applyTheme();
+}
+
+void TimeSeriesPlotsWidget::setupSettingsPanel()
+{
+    m_settingsPanel = new QWidget(this);
+    m_settingsPanel->setVisible(false);  // Hidden by default
+    
+    QVBoxLayout* settingsLayout = new QVBoxLayout(m_settingsPanel);
+    settingsLayout->setContentsMargins(10, 10, 10, 10);
+    settingsLayout->setSpacing(10);
+    
+    // Create a frame for better visual grouping
+    QFrame* settingsFrame = new QFrame(this);
+    settingsFrame->setFrameShape(QFrame::StyledPanel);
+    QGridLayout* gridLayout = new QGridLayout(settingsFrame);
+    gridLayout->setSpacing(10);
+    
+    int row = 0;
+    
+    // Point size setting (applies to all three plots)
+    QLabel* pointSizeLabel = new QLabel("Point Size:", this);
+    m_pointSizeSpinBox = new QSpinBox(this);
+    m_pointSizeSpinBox->setRange(1, 10);
+    m_pointSizeSpinBox->setValue(4);
+    m_pointSizeSpinBox->setSuffix(" px");
+    m_pointSizeSpinBox->setToolTip("Size of data points in all plots");
+    connect(m_pointSizeSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onPointSizeChanged);
+    gridLayout->addWidget(pointSizeLabel, row, 0);
+    gridLayout->addWidget(m_pointSizeSpinBox, row, 1);
+    row++;
+    
+    // Separator
+    QFrame* line1 = new QFrame(this);
+    line1->setFrameShape(QFrame::HLine);
+    line1->setFrameShadow(QFrame::Sunken);
+    gridLayout->addWidget(line1, row, 0, 1, 4);
+    row++;
+    
+    // Velocity time plot settings
+    QLabel* velocityPlotLabel = new QLabel("<b>Velocity vs Time Plot</b>", this);
+    gridLayout->addWidget(velocityPlotLabel, row, 0, 1, 2);
+    row++;
+    
+    QLabel* velocityMinLabel = new QLabel("Min Velocity:", this);
+    m_velocityMinSpinBox = new QDoubleSpinBox(this);
+    m_velocityMinSpinBox->setRange(-500, 500);
+    m_velocityMinSpinBox->setValue(-40);
+    m_velocityMinSpinBox->setSuffix(" km/h");
+    m_velocityMinSpinBox->setDecimals(1);
+    connect(m_velocityMinSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onVelocityMinChanged);
+    gridLayout->addWidget(velocityMinLabel, row, 0);
+    gridLayout->addWidget(m_velocityMinSpinBox, row, 1);
+    
+    QLabel* velocityMaxLabel = new QLabel("Max Velocity:", this);
+    m_velocityMaxSpinBox = new QDoubleSpinBox(this);
+    m_velocityMaxSpinBox->setRange(-500, 500);
+    m_velocityMaxSpinBox->setValue(40);
+    m_velocityMaxSpinBox->setSuffix(" km/h");
+    m_velocityMaxSpinBox->setDecimals(1);
+    connect(m_velocityMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onVelocityMaxChanged);
+    gridLayout->addWidget(velocityMaxLabel, row, 2);
+    gridLayout->addWidget(m_velocityMaxSpinBox, row, 3);
+    row++;
+    
+    // Separator
+    QFrame* line2 = new QFrame(this);
+    line2->setFrameShape(QFrame::HLine);
+    line2->setFrameShadow(QFrame::Sunken);
+    gridLayout->addWidget(line2, row, 0, 1, 4);
+    row++;
+    
+    // Range time plot settings
+    QLabel* rangePlotLabel = new QLabel("<b>Range vs Time Plot</b>", this);
+    gridLayout->addWidget(rangePlotLabel, row, 0, 1, 2);
+    row++;
+    
+    QLabel* rangeMinLabel = new QLabel("Min Range:", this);
+    m_rangeMinSpinBox = new QDoubleSpinBox(this);
+    m_rangeMinSpinBox->setRange(0, 1000);
+    m_rangeMinSpinBox->setValue(0);
+    m_rangeMinSpinBox->setSuffix(" m");
+    m_rangeMinSpinBox->setDecimals(1);
+    connect(m_rangeMinSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onRangeMinChanged);
+    gridLayout->addWidget(rangeMinLabel, row, 0);
+    gridLayout->addWidget(m_rangeMinSpinBox, row, 1);
+    
+    QLabel* rangeMaxLabel = new QLabel("Max Range:", this);
+    m_rangeMaxSpinBox = new QDoubleSpinBox(this);
+    m_rangeMaxSpinBox->setRange(0, 1000);
+    m_rangeMaxSpinBox->setValue(70);
+    m_rangeMaxSpinBox->setSuffix(" m");
+    m_rangeMaxSpinBox->setDecimals(1);
+    connect(m_rangeMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onRangeMaxChanged);
+    gridLayout->addWidget(rangeMaxLabel, row, 2);
+    gridLayout->addWidget(m_rangeMaxSpinBox, row, 3);
+    row++;
+    
+    // Separator
+    QFrame* line3 = new QFrame(this);
+    line3->setFrameShape(QFrame::HLine);
+    line3->setFrameShadow(QFrame::Sunken);
+    gridLayout->addWidget(line3, row, 0, 1, 4);
+    row++;
+    
+    // Time window setting (applies to both time series plots)
+    QLabel* timeWindowLabel = new QLabel("<b>Time Window (Both Plots)</b>", this);
+    gridLayout->addWidget(timeWindowLabel, row, 0, 1, 2);
+    row++;
+    
+    QLabel* timeWindowValueLabel = new QLabel("Duration:", this);
+    m_timeWindowSpinBox = new QSpinBox(this);
+    m_timeWindowSpinBox->setRange(5, 300);
+    m_timeWindowSpinBox->setValue(30);
+    m_timeWindowSpinBox->setSuffix(" seconds");
+    m_timeWindowSpinBox->setToolTip("Time period displayed in time series plots");
+    connect(m_timeWindowSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onTimeWindowChanged);
+    gridLayout->addWidget(timeWindowValueLabel, row, 0);
+    gridLayout->addWidget(m_timeWindowSpinBox, row, 1);
+    row++;
+    
+    // Separator
+    QFrame* line4 = new QFrame(this);
+    line4->setFrameShape(QFrame::HLine);
+    line4->setFrameShadow(QFrame::Sunken);
+    gridLayout->addWidget(line4, row, 0, 1, 4);
+    row++;
+    
+    // Range-Velocity scatter plot settings
+    QLabel* rvPlotLabel = new QLabel("<b>Range-Velocity Scatter Plot</b>", this);
+    gridLayout->addWidget(rvPlotLabel, row, 0, 1, 2);
+    row++;
+    
+    QLabel* rvRangeMaxLabel = new QLabel("Max Range:", this);
+    m_rvRangeMaxSpinBox = new QDoubleSpinBox(this);
+    m_rvRangeMaxSpinBox->setRange(10, 1000);
+    m_rvRangeMaxSpinBox->setValue(150);
+    m_rvRangeMaxSpinBox->setSuffix(" m");
+    m_rvRangeMaxSpinBox->setDecimals(1);
+    connect(m_rvRangeMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onRVRangeMaxChanged);
+    gridLayout->addWidget(rvRangeMaxLabel, row, 0);
+    gridLayout->addWidget(m_rvRangeMaxSpinBox, row, 1);
+    
+    QLabel* rvVelocityMaxLabel = new QLabel("Max Velocity:", this);
+    m_rvVelocityMaxSpinBox = new QDoubleSpinBox(this);
+    m_rvVelocityMaxSpinBox->setRange(10, 1000);
+    m_rvVelocityMaxSpinBox->setValue(240);
+    m_rvVelocityMaxSpinBox->setSuffix(" km/h");
+    m_rvVelocityMaxSpinBox->setDecimals(1);
+    connect(m_rvVelocityMaxSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onRVVelocityMaxChanged);
+    gridLayout->addWidget(rvVelocityMaxLabel, row, 2);
+    gridLayout->addWidget(m_rvVelocityMaxSpinBox, row, 3);
+    row++;
+    
+    settingsLayout->addWidget(settingsFrame);
+    
+    // Add info label
+    QLabel* infoLabel = new QLabel(
+        "<i>Tip: Use mouse wheel to zoom, click and drag to pan, hover over points for details</i>", this);
+    infoLabel->setWordWrap(true);
+    settingsLayout->addWidget(infoLabel);
 }
 
 void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
@@ -763,14 +1393,93 @@ void TimeSeriesPlotsWidget::onShowHistogramToggled(bool checked)
 void TimeSeriesPlotsWidget::onResetVelocityPlot()
 {
     if (m_velocityTimePlot) {
-        m_velocityTimePlot->clearData();
+        m_velocityTimePlot->onResetZoom();
     }
 }
 
 void TimeSeriesPlotsWidget::onResetRangePlot()
 {
     if (m_rangeTimePlot) {
-        m_rangeTimePlot->clearData();
+        m_rangeTimePlot->onResetZoom();
+    }
+}
+
+void TimeSeriesPlotsWidget::onResetRangeVelocityPlot()
+{
+    if (m_rangeVelocityPlot) {
+        m_rangeVelocityPlot->onResetZoom();
+    }
+}
+
+void TimeSeriesPlotsWidget::onSettingsToggled()
+{
+    if (m_settingsPanel) {
+        m_settingsPanel->setVisible(!m_settingsPanel->isVisible());
+    }
+}
+
+void TimeSeriesPlotsWidget::onPointSizeChanged(int size)
+{
+    if (m_velocityTimePlot) {
+        m_velocityTimePlot->setPointSize(size);
+    }
+    if (m_rangeTimePlot) {
+        m_rangeTimePlot->setPointSize(size);
+    }
+    if (m_rangeVelocityPlot) {
+        m_rangeVelocityPlot->setPointSize(size);
+    }
+}
+
+void TimeSeriesPlotsWidget::onVelocityMinChanged(double value)
+{
+    if (m_velocityTimePlot && value < m_velocityMaxSpinBox->value()) {
+        m_velocityTimePlot->setYAxisRange(value, m_velocityMaxSpinBox->value());
+    }
+}
+
+void TimeSeriesPlotsWidget::onVelocityMaxChanged(double value)
+{
+    if (m_velocityTimePlot && value > m_velocityMinSpinBox->value()) {
+        m_velocityTimePlot->setYAxisRange(m_velocityMinSpinBox->value(), value);
+    }
+}
+
+void TimeSeriesPlotsWidget::onRangeMinChanged(double value)
+{
+    if (m_rangeTimePlot && value < m_rangeMaxSpinBox->value()) {
+        m_rangeTimePlot->setYAxisRange(value, m_rangeMaxSpinBox->value());
+    }
+}
+
+void TimeSeriesPlotsWidget::onRangeMaxChanged(double value)
+{
+    if (m_rangeTimePlot && value > m_rangeMinSpinBox->value()) {
+        m_rangeTimePlot->setYAxisRange(m_rangeMinSpinBox->value(), value);
+    }
+}
+
+void TimeSeriesPlotsWidget::onTimeWindowChanged(int seconds)
+{
+    if (m_velocityTimePlot) {
+        m_velocityTimePlot->setTimeWindowSeconds(seconds);
+    }
+    if (m_rangeTimePlot) {
+        m_rangeTimePlot->setTimeWindowSeconds(seconds);
+    }
+}
+
+void TimeSeriesPlotsWidget::onRVRangeMaxChanged(double value)
+{
+    if (m_rangeVelocityPlot) {
+        m_rangeVelocityPlot->setRangeLimit(value);
+    }
+}
+
+void TimeSeriesPlotsWidget::onRVVelocityMaxChanged(double value)
+{
+    if (m_rangeVelocityPlot) {
+        m_rangeVelocityPlot->setVelocityLimit(value);
     }
 }
 
@@ -793,6 +1502,9 @@ void TimeSeriesPlotsWidget::applyTheme()
     QString bgColor = m_isDarkTheme ? "#1e293b" : "#f8fafc";
     QString borderColor = m_isDarkTheme ? "#334155" : "#e2e8f0";
     QString groupBgColor = m_isDarkTheme ? "#0f172a" : "#ffffff";
+    QString buttonBgColor = m_isDarkTheme ? "#334155" : "#f1f5f9";
+    QString buttonHoverColor = m_isDarkTheme ? "#475569" : "#e2e8f0";
+    QString accentColor = m_isDarkTheme ? "#3b82f6" : "#2563eb";
     
     // Style the checkbox
     if (m_showHistogramCheckbox) {
@@ -801,7 +1513,7 @@ void TimeSeriesPlotsWidget::applyTheme()
             "QCheckBox::indicator { width: 18px; height: 18px; }"
             "QCheckBox::indicator:unchecked { border: 2px solid %2; border-radius: 3px; background: transparent; }"
             "QCheckBox::indicator:checked { border: 2px solid %3; border-radius: 3px; background: %3; }"
-        ).arg(textColor, borderColor, m_isDarkTheme ? "#3b82f6" : "#2563eb"));
+        ).arg(textColor, borderColor, accentColor));
     }
     
     // Style the reset buttons
@@ -810,18 +1522,80 @@ void TimeSeriesPlotsWidget::applyTheme()
         "  background: %1;"
         "  border: 1px solid %2;"
         "  border-radius: 4px;"
-        "  font-size: 14px;"
+        "  color: %3;"
+        "  padding: 5px 10px;"
+        "  font-weight: 500;"
         "}"
         "QPushButton:hover {"
-        "  background: %3;"
+        "  background: %4;"
         "}"
-    ).arg(groupBgColor, borderColor, m_isDarkTheme ? "#334155" : "#e2e8f0");
+        "QPushButton:pressed {"
+        "  background: %2;"
+        "}"
+    ).arg(buttonBgColor, borderColor, textColor, buttonHoverColor);
     
     if (m_resetVelocityBtn) {
         m_resetVelocityBtn->setStyleSheet(buttonStyle);
     }
     if (m_resetRangeBtn) {
         m_resetRangeBtn->setStyleSheet(buttonStyle);
+    }
+    if (m_resetRangeVelocityBtn) {
+        m_resetRangeVelocityBtn->setStyleSheet(buttonStyle);
+    }
+    
+    // Style settings button
+    if (m_settingsBtn) {
+        QString settingsStyle = QString(
+            "QPushButton {"
+            "  background: %1;"
+            "  border: 1px solid %2;"
+            "  border-radius: 4px;"
+            "  color: %3;"
+            "  padding: 5px 15px;"
+            "  font-weight: 500;"
+            "}"
+            "QPushButton:hover {"
+            "  background: %4;"
+            "}"
+            "QPushButton:checked {"
+            "  background: %5;"
+            "  border-color: %5;"
+            "  color: white;"
+            "}"
+        ).arg(buttonBgColor, borderColor, textColor, buttonHoverColor, accentColor);
+        m_settingsBtn->setStyleSheet(settingsStyle);
+    }
+    
+    // Style the settings panel
+    if (m_settingsPanel) {
+        QString settingsPanelStyle = QString(
+            "QWidget {"
+            "  background-color: %1;"
+            "  color: %2;"
+            "}"
+            "QLabel {"
+            "  color: %2;"
+            "}"
+            "QSpinBox, QDoubleSpinBox {"
+            "  background: %3;"
+            "  border: 1px solid %4;"
+            "  border-radius: 4px;"
+            "  padding: 3px;"
+            "  color: %2;"
+            "  min-width: 100px;"
+            "}"
+            "QSpinBox:focus, QDoubleSpinBox:focus {"
+            "  border-color: %5;"
+            "}"
+            "QFrame {"
+            "  background-color: %1;"
+            "  border: 1px solid %4;"
+            "  border-radius: 6px;"
+            "  padding: 10px;"
+            "}"
+        ).arg(bgColor, textColor, groupBgColor, borderColor, accentColor);
+        m_settingsPanel->setStyleSheet(settingsPanelStyle);
     }
     
     // Style the group boxes

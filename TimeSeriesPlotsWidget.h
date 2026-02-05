@@ -10,6 +10,13 @@
 #include <QDateTime>
 #include <QVector>
 #include <QPainter>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QLabel>
+#include <QGroupBox>
+#include <QMouseEvent>
+#include <QWheelEvent>
+#include <QToolTip>
 #include "DataStructures.h"
 
 // Structure to hold time series data point
@@ -33,10 +40,17 @@ public:
     void setYAxisUnit(const QString& unit);
     void setYAxisRange(float minY, float maxY);
     void setTimeWindowSeconds(int seconds);
+    void setPointSize(int size);
     void clearData();
     
     // Add data point
     void addDataPoint(qint64 timestamp, float value);
+    
+    // Get current settings
+    float getMinY() const { return m_minY; }
+    float getMaxY() const { return m_maxY; }
+    int getTimeWindowSeconds() const { return m_timeWindowSeconds; }
+    int getPointSize() const { return m_pointSize; }
     
 public slots:
     void onResetZoom();
@@ -44,6 +58,11 @@ public slots:
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 private:
     void drawBackground(QPainter& painter);
@@ -51,6 +70,12 @@ private:
     void drawAxes(QPainter& painter);
     void drawData(QPainter& painter);
     void drawLabels(QPainter& painter);
+    void drawTooltip(QPainter& painter);
+    
+    // Helper functions
+    QPointF dataToScreen(qint64 timestamp, float value) const;
+    bool screenToData(const QPoint& screenPos, qint64& timestamp, float& value) const;
+    int findNearestPoint(const QPoint& pos) const;
     
     // Theme colors
     QColor getBackgroundColor() const;
@@ -69,7 +94,10 @@ private:
     QString m_yAxisUnit;
     float m_minY;
     float m_maxY;
+    float m_defaultMinY;
+    float m_defaultMaxY;
     int m_timeWindowSeconds;  // How many seconds of data to display
+    int m_pointSize;  // Point radius in pixels
     
     // Layout
     QRect m_plotRect;
@@ -80,6 +108,17 @@ private:
     
     // Theme
     bool m_isDarkTheme;
+    
+    // Pan and zoom state
+    bool m_isPanning;
+    QPoint m_lastMousePos;
+    float m_zoomFactorY;
+    float m_panOffsetY;
+    
+    // Hover state
+    int m_hoveredPointIndex;
+    QPoint m_mousePos;
+    bool m_showTooltip;
     
     // Maximum data points to keep
     static constexpr int MAX_DATA_POINTS = 1000;
@@ -98,15 +137,29 @@ public:
     void setRangeLimit(float maxRange);
     void setVelocityLimit(float maxVelocity);
     void setShowHistogram(bool show);
+    void setPointSize(int size);
     void clearData();
     
     // Add data point
     void addDataPoint(float velocity, float range);
     void updateFromTargets(const TargetTrackData& targets);
+    
+    // Get current settings
+    float getMaxRange() const { return m_maxRange; }
+    float getMaxVelocity() const { return m_maxVelocity; }
+    int getPointSize() const { return m_pointSize; }
+
+public slots:
+    void onResetZoom();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void leaveEvent(QEvent *event) override;
 
 private:
     void drawBackground(QPainter& painter);
@@ -116,6 +169,10 @@ private:
     void drawDataPoints(QPainter& painter);
     void drawHistogram(QPainter& painter);
     void drawLabels(QPainter& painter);
+    void drawTooltip(QPainter& painter);
+    
+    // Helper functions
+    int findNearestPoint(const QPoint& pos) const;
     
     // Theme colors
     QColor getBackgroundColor() const;
@@ -132,7 +189,10 @@ private:
     // Configuration
     float m_maxRange;
     float m_maxVelocity;
+    float m_defaultMaxRange;
+    float m_defaultMaxVelocity;
     bool m_showHistogram;
+    int m_pointSize;  // Point radius in pixels
     
     // Layout
     QRect m_plotRect;
@@ -143,6 +203,19 @@ private:
     
     // Theme
     bool m_isDarkTheme;
+    
+    // Pan and zoom state
+    bool m_isPanning;
+    QPoint m_lastMousePos;
+    float m_zoomFactorX;
+    float m_zoomFactorY;
+    float m_panOffsetX;
+    float m_panOffsetY;
+    
+    // Hover state
+    int m_hoveredPointIndex;
+    QPoint m_mousePos;
+    bool m_showTooltip;
     
     // Histogram bins
     static constexpr int HISTOGRAM_BINS = 20;
@@ -174,11 +247,25 @@ public slots:
     void onShowHistogramToggled(bool checked);
     void onResetVelocityPlot();
     void onResetRangePlot();
+    void onResetRangeVelocityPlot();
     void clearAllData();
+    
+    // Settings slots
+    void onPointSizeChanged(int size);
+    void onVelocityMinChanged(double value);
+    void onVelocityMaxChanged(double value);
+    void onRangeMinChanged(double value);
+    void onRangeMaxChanged(double value);
+    void onTimeWindowChanged(int seconds);
+    void onRVRangeMaxChanged(double value);
+    void onRVVelocityMaxChanged(double value);
+    void onSettingsToggled();
 
 private:
     void setupUI();
+    void setupSettingsPanel();
     void applyTheme();
+    void updatePlotSettings();
     
     // UI Components
     QCheckBox* m_showHistogramCheckbox;
@@ -187,6 +274,19 @@ private:
     TimeSeriesPlotWidget* m_rangeTimePlot;
     QPushButton* m_resetVelocityBtn;
     QPushButton* m_resetRangeBtn;
+    QPushButton* m_resetRangeVelocityBtn;
+    QPushButton* m_settingsBtn;
+    
+    // Settings panel
+    QWidget* m_settingsPanel;
+    QSpinBox* m_pointSizeSpinBox;
+    QDoubleSpinBox* m_velocityMinSpinBox;
+    QDoubleSpinBox* m_velocityMaxSpinBox;
+    QDoubleSpinBox* m_rangeMinSpinBox;
+    QDoubleSpinBox* m_rangeMaxSpinBox;
+    QSpinBox* m_timeWindowSpinBox;
+    QDoubleSpinBox* m_rvRangeMaxSpinBox;
+    QDoubleSpinBox* m_rvVelocityMaxSpinBox;
     
     // Theme
     bool m_isDarkTheme;
