@@ -8,6 +8,13 @@
 #include <QFontMetrics>
 #include <QPainterPath>
 #include <QVector>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QFrame>
+#include <QSettings>
 #include <cmath>
 #include <algorithm>
 
@@ -24,18 +31,31 @@ FFTWidget::FFTWidget(QWidget *parent)
     , m_maxAngle(0.0f)          // Default max angle
     , m_margin(55)               // Increased margin to accommodate Y-axis label and numbers
     , m_isDarkTheme(false)       // Default to light theme
+    , m_settingsPanel(nullptr)
+    , m_settingsBtn(nullptr)
+    , m_minRangeSpinBox(nullptr)
+    , m_maxRangeSpinBox(nullptr)
+    , m_minAngleSpinBox(nullptr)
+    , m_maxAngleSpinBox(nullptr)
 {
     // Minimum size is now set by parent widget based on screen DPI
     // No hard-coded minimum size to allow responsive layout
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    
+    // Setup settings panel
+    setupSettingsPanel();
+    
+    // Load saved settings
+    loadSettings();
 }
 
 void FFTWidget::setDarkTheme(bool isDark)
 {
     if (m_isDarkTheme != isDark) {
         m_isDarkTheme = isDark;
+        applyTheme();  // Update settings panel theme
         update();  // Trigger repaint with new theme colors
     }
 }
@@ -736,4 +756,238 @@ void FFTWidget::drawLabels(QPainter& painter)
     painter.setPen(QPen(getMutedTextColor(), 1));
     painter.drawText(infoBg.adjusted(8, 0, -8, 0), Qt::AlignVCenter, frameInfo);
     painter.restore();
+}
+
+void FFTWidget::setupSettingsPanel()
+{
+    m_settingsPanel = new QWidget(this);
+    m_settingsPanel->setVisible(false);  // Hidden by default
+    
+    QVBoxLayout* settingsLayout = new QVBoxLayout(m_settingsPanel);
+    settingsLayout->setContentsMargins(10, 10, 10, 10);
+    settingsLayout->setSpacing(10);
+    
+    // Create a frame for better visual grouping
+    QFrame* settingsFrame = new QFrame(this);
+    settingsFrame->setFrameShape(QFrame::StyledPanel);
+    QGridLayout* gridLayout = new QGridLayout(settingsFrame);
+    gridLayout->setSpacing(10);
+    
+    int row = 0;
+    
+    // Range settings
+    QLabel* rangeLabel = new QLabel("<b>Range Settings</b>", this);
+    gridLayout->addWidget(rangeLabel, row, 0, 1, 4);
+    row++;
+    
+    QLabel* minRangeLabel = new QLabel("Min Range:", this);
+    m_minRangeSpinBox = new QDoubleSpinBox(this);
+    m_minRangeSpinBox->setRange(0, 1000);
+    m_minRangeSpinBox->setValue(m_minRange);
+    m_minRangeSpinBox->setSuffix(" m");
+    m_minRangeSpinBox->setDecimals(1);
+    connect(m_minRangeSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &FFTWidget::onMinRangeChanged);
+    gridLayout->addWidget(minRangeLabel, row, 0);
+    gridLayout->addWidget(m_minRangeSpinBox, row, 1);
+    
+    QLabel* maxRangeLabel = new QLabel("Max Range:", this);
+    m_maxRangeSpinBox = new QDoubleSpinBox(this);
+    m_maxRangeSpinBox->setRange(1, 1000);
+    m_maxRangeSpinBox->setValue(m_maxRange);
+    m_maxRangeSpinBox->setSuffix(" m");
+    m_maxRangeSpinBox->setDecimals(1);
+    connect(m_maxRangeSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &FFTWidget::onMaxRangeChanged);
+    gridLayout->addWidget(maxRangeLabel, row, 2);
+    gridLayout->addWidget(m_maxRangeSpinBox, row, 3);
+    row++;
+    
+    // Separator
+    QFrame* line1 = new QFrame(this);
+    line1->setFrameShape(QFrame::HLine);
+    line1->setFrameShadow(QFrame::Sunken);
+    gridLayout->addWidget(line1, row, 0, 1, 4);
+    row++;
+    
+    // Angle settings
+    QLabel* angleLabel = new QLabel("<b>Angle Settings</b>", this);
+    gridLayout->addWidget(angleLabel, row, 0, 1, 4);
+    row++;
+    
+    QLabel* minAngleLabel = new QLabel("Min Angle:", this);
+    m_minAngleSpinBox = new QDoubleSpinBox(this);
+    m_minAngleSpinBox->setRange(-90, 90);
+    m_minAngleSpinBox->setValue(m_minAngle);
+    m_minAngleSpinBox->setSuffix(" °");
+    m_minAngleSpinBox->setDecimals(1);
+    connect(m_minAngleSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &FFTWidget::onMinAngleChanged);
+    gridLayout->addWidget(minAngleLabel, row, 0);
+    gridLayout->addWidget(m_minAngleSpinBox, row, 1);
+    
+    QLabel* maxAngleLabel = new QLabel("Max Angle:", this);
+    m_maxAngleSpinBox = new QDoubleSpinBox(this);
+    m_maxAngleSpinBox->setRange(-90, 90);
+    m_maxAngleSpinBox->setValue(m_maxAngle);
+    m_maxAngleSpinBox->setSuffix(" °");
+    m_maxAngleSpinBox->setDecimals(1);
+    connect(m_maxAngleSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &FFTWidget::onMaxAngleChanged);
+    gridLayout->addWidget(maxAngleLabel, row, 2);
+    gridLayout->addWidget(m_maxAngleSpinBox, row, 3);
+    row++;
+    
+    settingsLayout->addWidget(settingsFrame);
+    
+    // Add info label
+    QLabel* infoLabel = new QLabel(
+        "<i>Tip: Adjust range and angle filters for target display</i>", this);
+    infoLabel->setWordWrap(true);
+    settingsLayout->addWidget(infoLabel);
+    
+    applyTheme();
+}
+
+void FFTWidget::applyTheme()
+{
+    if (!m_settingsPanel) return;
+    
+    QString settingsPanelStyle;
+    if (m_isDarkTheme) {
+        settingsPanelStyle = R"(
+            QWidget {
+                background-color: #1e293b;
+                color: #e2e8f0;
+            }
+            QFrame {
+                background-color: #0f172a;
+                border: 1px solid #334155;
+                border-radius: 8px;
+            }
+            QLabel {
+                color: #e2e8f0;
+            }
+            QDoubleSpinBox {
+                background-color: #0f172a;
+                border: 1px solid #475569;
+                border-radius: 6px;
+                padding: 5px;
+                color: #e2e8f0;
+            }
+            QDoubleSpinBox:hover {
+                border-color: #64748b;
+            }
+            QDoubleSpinBox:focus {
+                border-color: #94a3b8;
+            }
+        )";
+    } else {
+        settingsPanelStyle = R"(
+            QWidget {
+                background-color: #f8fafc;
+                color: #1e293b;
+            }
+            QFrame {
+                background-color: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+            }
+            QLabel {
+                color: #1e293b;
+            }
+            QDoubleSpinBox {
+                background-color: #ffffff;
+                border: 1px solid #cbd5e1;
+                border-radius: 6px;
+                padding: 5px;
+                color: #1e293b;
+            }
+            QDoubleSpinBox:hover {
+                border-color: #94a3b8;
+            }
+            QDoubleSpinBox:focus {
+                border-color: #64748b;
+            }
+        )";
+    }
+    
+    m_settingsPanel->setStyleSheet(settingsPanelStyle);
+}
+
+void FFTWidget::saveSettings()
+{
+    QSettings settings;
+    settings.beginGroup("FFTWidget");
+    settings.setValue("minRange", m_minRange);
+    settings.setValue("maxRange", m_maxRange);
+    settings.setValue("minAngle", m_minAngle);
+    settings.setValue("maxAngle", m_maxAngle);
+    settings.endGroup();
+}
+
+void FFTWidget::loadSettings()
+{
+    QSettings settings;
+    settings.beginGroup("FFTWidget");
+    
+    if (settings.contains("minRange")) {
+        setMinRange(settings.value("minRange", 0.0f).toFloat());
+    }
+    if (settings.contains("maxRange")) {
+        setMaxRange(settings.value("maxRange", 50.0f).toFloat());
+    }
+    if (settings.contains("minAngle")) {
+        setMinAngle(settings.value("minAngle", -60.0f).toFloat());
+    }
+    if (settings.contains("maxAngle")) {
+        setMaxAngle(settings.value("maxAngle", 60.0f).toFloat());
+    }
+    
+    settings.endGroup();
+    
+    // Update spinboxes to reflect loaded values
+    if (m_minRangeSpinBox) m_minRangeSpinBox->setValue(m_minRange);
+    if (m_maxRangeSpinBox) m_maxRangeSpinBox->setValue(m_maxRange);
+    if (m_minAngleSpinBox) m_minAngleSpinBox->setValue(m_minAngle);
+    if (m_maxAngleSpinBox) m_maxAngleSpinBox->setValue(m_maxAngle);
+}
+
+void FFTWidget::onSettingsToggled()
+{
+    if (m_settingsPanel) {
+        m_settingsPanel->setVisible(!m_settingsPanel->isVisible());
+    }
+}
+
+void FFTWidget::onMinRangeChanged(double value)
+{
+    if (value < m_maxRangeSpinBox->value()) {
+        setMinRange(value);
+        saveSettings();
+    }
+}
+
+void FFTWidget::onMaxRangeChanged(double value)
+{
+    if (value > m_minRangeSpinBox->value()) {
+        setMaxRange(value);
+        saveSettings();
+    }
+}
+
+void FFTWidget::onMinAngleChanged(double value)
+{
+    if (value < m_maxAngleSpinBox->value()) {
+        setMinAngle(value);
+        saveSettings();
+    }
+}
+
+void FFTWidget::onMaxAngleChanged(double value)
+{
+    if (value > m_minAngleSpinBox->value()) {
+        setMaxAngle(value);
+        saveSettings();
+    }
 }

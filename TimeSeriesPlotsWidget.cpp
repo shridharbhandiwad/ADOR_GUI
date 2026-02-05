@@ -7,6 +7,7 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QFrame>
+#include <QSettings>
 #include <cmath>
 
 // ==================== TimeSeriesPlotWidget Implementation ====================
@@ -1042,6 +1043,7 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_maxVelocity(240.0f)
 {
     setupUI();
+    loadSettings();  // Load saved settings after UI is setup
 }
 
 TimeSeriesPlotsWidget::~TimeSeriesPlotsWidget()
@@ -1399,6 +1401,7 @@ void TimeSeriesPlotsWidget::onShowHistogramToggled(bool checked)
 {
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->setShowHistogram(checked);
+        saveSettings();
     }
 }
 
@@ -1441,12 +1444,14 @@ void TimeSeriesPlotsWidget::onPointSizeChanged(int size)
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->setPointSize(size);
     }
+    saveSettings();
 }
 
 void TimeSeriesPlotsWidget::onVelocityMinChanged(double value)
 {
     if (m_velocityTimePlot && value < m_velocityMaxSpinBox->value()) {
         m_velocityTimePlot->setYAxisRange(value, m_velocityMaxSpinBox->value());
+        saveSettings();
     }
 }
 
@@ -1454,6 +1459,7 @@ void TimeSeriesPlotsWidget::onVelocityMaxChanged(double value)
 {
     if (m_velocityTimePlot && value > m_velocityMinSpinBox->value()) {
         m_velocityTimePlot->setYAxisRange(m_velocityMinSpinBox->value(), value);
+        saveSettings();
     }
 }
 
@@ -1461,6 +1467,7 @@ void TimeSeriesPlotsWidget::onRangeMinChanged(double value)
 {
     if (m_rangeTimePlot && value < m_rangeMaxSpinBox->value()) {
         m_rangeTimePlot->setYAxisRange(value, m_rangeMaxSpinBox->value());
+        saveSettings();
     }
 }
 
@@ -1468,6 +1475,7 @@ void TimeSeriesPlotsWidget::onRangeMaxChanged(double value)
 {
     if (m_rangeTimePlot && value > m_rangeMinSpinBox->value()) {
         m_rangeTimePlot->setYAxisRange(m_rangeMinSpinBox->value(), value);
+        saveSettings();
     }
 }
 
@@ -1479,12 +1487,14 @@ void TimeSeriesPlotsWidget::onTimeWindowChanged(int seconds)
     if (m_rangeTimePlot) {
         m_rangeTimePlot->setTimeWindowSeconds(seconds);
     }
+    saveSettings();
 }
 
 void TimeSeriesPlotsWidget::onRVRangeMaxChanged(double value)
 {
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->setRangeLimit(value);
+        saveSettings();
     }
 }
 
@@ -1492,6 +1502,7 @@ void TimeSeriesPlotsWidget::onRVVelocityMaxChanged(double value)
 {
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->setVelocityLimit(value);
+        saveSettings();
     }
 }
 
@@ -1630,4 +1641,120 @@ void TimeSeriesPlotsWidget::applyTheme()
     setStyleSheet(QString("QWidget { background-color: %1; }").arg(bgColor));
     
     update();
+}
+
+void TimeSeriesPlotsWidget::saveSettings()
+{
+    QSettings settings;
+    settings.beginGroup("TimeSeriesPlotsWidget");
+    
+    // Save point size
+    if (m_pointSizeSpinBox) {
+        settings.setValue("pointSize", m_pointSizeSpinBox->value());
+    }
+    
+    // Save velocity time plot settings
+    if (m_velocityMinSpinBox && m_velocityMaxSpinBox) {
+        settings.setValue("velocityMin", m_velocityMinSpinBox->value());
+        settings.setValue("velocityMax", m_velocityMaxSpinBox->value());
+    }
+    
+    // Save range time plot settings
+    if (m_rangeMinSpinBox && m_rangeMaxSpinBox) {
+        settings.setValue("rangeMin", m_rangeMinSpinBox->value());
+        settings.setValue("rangeMax", m_rangeMaxSpinBox->value());
+    }
+    
+    // Save time window
+    if (m_timeWindowSpinBox) {
+        settings.setValue("timeWindow", m_timeWindowSpinBox->value());
+    }
+    
+    // Save range-velocity scatter plot settings
+    if (m_rvRangeMaxSpinBox && m_rvVelocityMaxSpinBox) {
+        settings.setValue("rvRangeMax", m_rvRangeMaxSpinBox->value());
+        settings.setValue("rvVelocityMax", m_rvVelocityMaxSpinBox->value());
+    }
+    
+    // Save histogram checkbox state
+    if (m_showHistogramCheckbox) {
+        settings.setValue("showHistogram", m_showHistogramCheckbox->isChecked());
+    }
+    
+    settings.endGroup();
+}
+
+void TimeSeriesPlotsWidget::loadSettings()
+{
+    QSettings settings;
+    settings.beginGroup("TimeSeriesPlotsWidget");
+    
+    // Load point size
+    if (settings.contains("pointSize") && m_pointSizeSpinBox) {
+        int pointSize = settings.value("pointSize", 4).toInt();
+        m_pointSizeSpinBox->setValue(pointSize);
+        onPointSizeChanged(pointSize);
+    }
+    
+    // Load velocity time plot settings
+    if (settings.contains("velocityMin") && m_velocityMinSpinBox) {
+        double velocityMin = settings.value("velocityMin", -40.0).toDouble();
+        m_velocityMinSpinBox->setValue(velocityMin);
+    }
+    if (settings.contains("velocityMax") && m_velocityMaxSpinBox) {
+        double velocityMax = settings.value("velocityMax", 40.0).toDouble();
+        m_velocityMaxSpinBox->setValue(velocityMax);
+    }
+    if (m_velocityTimePlot && m_velocityMinSpinBox && m_velocityMaxSpinBox) {
+        m_velocityTimePlot->setYAxisRange(m_velocityMinSpinBox->value(), 
+                                          m_velocityMaxSpinBox->value());
+    }
+    
+    // Load range time plot settings
+    if (settings.contains("rangeMin") && m_rangeMinSpinBox) {
+        double rangeMin = settings.value("rangeMin", 0.0).toDouble();
+        m_rangeMinSpinBox->setValue(rangeMin);
+    }
+    if (settings.contains("rangeMax") && m_rangeMaxSpinBox) {
+        double rangeMax = settings.value("rangeMax", 70.0).toDouble();
+        m_rangeMaxSpinBox->setValue(rangeMax);
+    }
+    if (m_rangeTimePlot && m_rangeMinSpinBox && m_rangeMaxSpinBox) {
+        m_rangeTimePlot->setYAxisRange(m_rangeMinSpinBox->value(), 
+                                       m_rangeMaxSpinBox->value());
+    }
+    
+    // Load time window
+    if (settings.contains("timeWindow") && m_timeWindowSpinBox) {
+        int timeWindow = settings.value("timeWindow", 30).toInt();
+        m_timeWindowSpinBox->setValue(timeWindow);
+        onTimeWindowChanged(timeWindow);
+    }
+    
+    // Load range-velocity scatter plot settings
+    if (settings.contains("rvRangeMax") && m_rvRangeMaxSpinBox) {
+        double rvRangeMax = settings.value("rvRangeMax", 150.0).toDouble();
+        m_rvRangeMaxSpinBox->setValue(rvRangeMax);
+        if (m_rangeVelocityPlot) {
+            m_rangeVelocityPlot->setRangeLimit(rvRangeMax);
+        }
+    }
+    if (settings.contains("rvVelocityMax") && m_rvVelocityMaxSpinBox) {
+        double rvVelocityMax = settings.value("rvVelocityMax", 240.0).toDouble();
+        m_rvVelocityMaxSpinBox->setValue(rvVelocityMax);
+        if (m_rangeVelocityPlot) {
+            m_rangeVelocityPlot->setVelocityLimit(rvVelocityMax);
+        }
+    }
+    
+    // Load histogram checkbox state
+    if (settings.contains("showHistogram") && m_showHistogramCheckbox) {
+        bool showHistogram = settings.value("showHistogram", false).toBool();
+        m_showHistogramCheckbox->setChecked(showHistogram);
+        if (m_rangeVelocityPlot) {
+            m_rangeVelocityPlot->setShowHistogram(showHistogram);
+        }
+    }
+    
+    settings.endGroup();
 }

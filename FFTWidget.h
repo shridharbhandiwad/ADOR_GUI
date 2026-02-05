@@ -87,6 +87,8 @@
 #include <QWidget>
 #include <QPainter>
 #include <QVector>
+#include <QDoubleSpinBox>
+#include <QPushButton>
 #include <vector>
 #include <complex>
 #include "DataStructures.h"
@@ -164,6 +166,20 @@ public:
     float getMinAngle() const { return m_minAngle; }
     float getMaxAngle() const { return m_maxAngle; }
     bool isDarkTheme() const { return m_isDarkTheme; }  // NEW: Get current theme
+    
+    // Settings persistence
+    void saveSettings();
+    void loadSettings();
+    
+    // Get settings panel widget
+    QWidget* getSettingsPanel() { return m_settingsPanel; }
+
+public slots:
+    void onSettingsToggled();
+    void onMinRangeChanged(double value);
+    void onMaxRangeChanged(double value);
+    void onMinAngleChanged(double value);
+    void onMaxAngleChanged(double value);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -202,6 +218,10 @@ private:
     void drawSpectrum(QPainter& painter);
     void drawTargetIndicators(QPainter& painter);
     void drawLabels(QPainter& painter);
+    
+    // Settings panel setup
+    void setupSettingsPanel();
+    void applyTheme();
 
     // Data storage
     RawADCFrameTest m_currentFrame;
@@ -232,6 +252,14 @@ private:
     
     // Theme support
     bool m_isDarkTheme;         // Current theme state
+    
+    // Settings panel
+    QWidget* m_settingsPanel;
+    QPushButton* m_settingsBtn;
+    QDoubleSpinBox* m_minRangeSpinBox;
+    QDoubleSpinBox* m_maxRangeSpinBox;
+    QDoubleSpinBox* m_minAngleSpinBox;
+    QDoubleSpinBox* m_maxAngleSpinBox;
     
     // Theme-aware color helper methods
     QColor getBackgroundColor() const;
