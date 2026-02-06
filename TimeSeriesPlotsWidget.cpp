@@ -1437,11 +1437,21 @@ void TimeSeriesPlotsWidget::onVelocityMinChanged(double value)
     }
     if (m_rangeVelocityPlot) {
         // For RV plot, use absolute values
-        // RV plot always starts from 0 (absolute velocity) and goes to the max absolute value
         double minVel = m_velocityMinSpinBox->value();
         double maxVel = m_velocityMaxSpinBox->value();
-        double absMin = 0.0;  // Always start from 0 for absolute velocity
-        double absMax = qMax(qAbs(minVel), qAbs(maxVel));
+        
+        // Calculate absolute min and max for RV plot
+        // If range spans zero (min < 0 and max > 0), start from 0
+        // Otherwise use the minimum absolute value
+        double absMin, absMax;
+        if (minVel < 0 && maxVel > 0) {
+            absMin = 0.0;
+            absMax = qMax(qAbs(minVel), qAbs(maxVel));
+        } else {
+            absMin = qMin(qAbs(minVel), qAbs(maxVel));
+            absMax = qMax(qAbs(minVel), qAbs(maxVel));
+        }
+        
         m_rangeVelocityPlot->setMinVelocityLimit(absMin);
         m_rangeVelocityPlot->setVelocityLimit(absMax);
     }
@@ -1454,11 +1464,21 @@ void TimeSeriesPlotsWidget::onVelocityMaxChanged(double value)
     }
     if (m_rangeVelocityPlot) {
         // For RV plot, use absolute values
-        // RV plot always starts from 0 (absolute velocity) and goes to the max absolute value
         double minVel = m_velocityMinSpinBox->value();
         double maxVel = m_velocityMaxSpinBox->value();
-        double absMin = 0.0;  // Always start from 0 for absolute velocity
-        double absMax = qMax(qAbs(minVel), qAbs(maxVel));
+        
+        // Calculate absolute min and max for RV plot
+        // If range spans zero (min < 0 and max > 0), start from 0
+        // Otherwise use the minimum absolute value
+        double absMin, absMax;
+        if (minVel < 0 && maxVel > 0) {
+            absMin = 0.0;
+            absMax = qMax(qAbs(minVel), qAbs(maxVel));
+        } else {
+            absMin = qMin(qAbs(minVel), qAbs(maxVel));
+            absMax = qMax(qAbs(minVel), qAbs(maxVel));
+        }
+        
         m_rangeVelocityPlot->setMinVelocityLimit(absMin);
         m_rangeVelocityPlot->setVelocityLimit(absMax);
     }
