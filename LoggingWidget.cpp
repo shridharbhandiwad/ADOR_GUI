@@ -1140,15 +1140,18 @@ void LoggingWidget::updateFromTargets(const TargetTrackData& targets)
         }
     }
     
-    // Update status
-    m_statusLabel->setText(QString("Status: Logging (%1 tracks, %2 data points)")
+    // Update status with second interval information
+    int totalIntervals = getTotalSecondIntervals();
+    m_statusLabel->setText(QString("Status: Logging (%1 tracks, %2 data points, %3 second intervals)")
                            .arg(m_trackLogs.size())
-                           .arg(m_totalDataPoints));
+                           .arg(m_totalDataPoints)
+                           .arg(totalIntervals));
 }
 
 void LoggingWidget::logTrackData(const TargetTrackData& targets)
 {
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 currentSecond = (currentTime / 1000) * 1000;  // Truncate to second boundary
     
     for (size_t i = 0; i < targets.numTracks && i < targets.targets.size(); ++i) {
         const TargetTrack& target = targets.targets[i];
@@ -1161,7 +1164,7 @@ void LoggingWidget::logTrackData(const TargetTrackData& targets)
         dataPoint.azimuth = target.azimuth;
         dataPoint.radial_speed = target.radial_speed;
         dataPoint.azimuth_speed = target.azimuth_speed;
-        dataPoint.computed_range_rate = 0.0f;  // Will be computed later
+        dataPoint.computed_range_rate = 0.0f;  // Will be computed from interval data
         
         // Add to track log
         if (!m_trackLogs.contains(target.target_id)) {
@@ -1169,6 +1172,7 @@ void LoggingWidget::logTrackData(const TargetTrackData& targets)
             newTrack.track_id = target.target_id;
             newTrack.firstSeen = currentTime;
             newTrack.lastSeen = currentTime;
+            newTrack.currentSecond = currentSecond;
             m_trackLogs[target.target_id] = newTrack;
             
             if (!m_activeTrackIds.contains(target.target_id)) {
@@ -1178,7 +1182,24 @@ void LoggingWidget::logTrackData(const TargetTrackData& targets)
         
         TrackLogData& trackLog = m_trackLogs[target.target_id];
         trackLog.lastSeen = currentTime;
+        
+        // Check if we've moved to a new second
+        if (currentSecond != trackLog.currentSecond && trackLog.currentSecond > 0) {
+            // Process the completed second interval
+            processSecondIntervalData(target.target_id, trackLog.currentSecond);
+            trackLog.currentSecond = currentSecond;
+        }
+        
+        // Initialize current second interval if needed
+        if (!trackLog.secondIntervals.contains(currentSecond)) {
+            SecondIntervalData newInterval;
+            newInterval.intervalStart = currentSecond;
+            trackLog.secondIntervals[currentSecond] = newInterval;
+        }
+        
+        // Add data point to both raw data and current second interval
         trackLog.dataPoints.append(dataPoint);
+        trackLog.secondIntervals[currentSecond].points.append(dataPoint);
         
         // Limit data points per track
         if (trackLog.dataPoints.size() > MAX_DATA_POINTS_PER_TRACK) {
@@ -1208,6 +1229,14 @@ void LoggingWidget::onStopLogging()
 {
     m_isLogging = false;
     
+    // Process any remaining incomplete second intervals
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    for (auto it = m_trackLogs.begin(); it != m_trackLogs.end(); ++it) {
+        if (it->currentSecond > 0) {
+            processSecondIntervalData(it.key(), it->currentSecond);
+        }
+    }
+    
     m_startButton->setEnabled(true);
     m_stopButton->setEnabled(false);
     m_statusLabel->setText(QString("Status: Stopped (%1 tracks, %2 data points)")
@@ -1221,6 +1250,8 @@ void LoggingWidget::onStopLogging()
     if (m_algorithmOutputText) {
         m_algorithmOutputText->append("Logging stopped at " + 
                                        QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"));
+        m_algorithmOutputText->append(QString("Processed %1 second intervals across all tracks")
+                                       .arg(getTotalSecondIntervals()));
     }
 }
 
@@ -1232,6 +1263,13 @@ void LoggingWidget::onClearLogs()
         QMessageBox::Yes | QMessageBox::No);
     
     if (reply == QMessageBox::Yes) {
+        // Clear all track logs including second intervals
+        for (auto it = m_trackLogs.begin(); it != m_trackLogs.end(); ++it) {
+            it->secondIntervals.clear();
+            it->dataPoints.clear();
+            it->currentSecond = 0;
+        }
+        
         m_trackLogs.clear();
         m_activeTrackIds.clear();
         m_totalDataPoints = 0;
@@ -1244,7 +1282,7 @@ void LoggingWidget::onClearLogs()
         m_statusLabel->setText("Status: Cleared");
         if (m_algorithmOutputText) {
             m_algorithmOutputText->clear();
-            m_algorithmOutputText->append("Logs cleared.");
+            m_algorithmOutputText->append("Logs cleared. All data and second intervals removed.");
         }
         
         onRefreshTrackList();
@@ -1389,18 +1427,36 @@ void LoggingWidget::onComputeRangeRate()
     m_smoothingWindow = m_smoothingWindowSpinBox->value();
     
     if (m_algorithmOutputText) {
+        m_algorithmOutputText->clear();
         m_algorithmOutputText->append(QString("Computing range rate with window=%1, smoothing=%2")
                                        .arg(m_algorithmWindow)
                                        .arg(m_smoothingWindow));
+        m_algorithmOutputText->append("Using 1-second interval aggregation for high-frequency data...");
     }
     
-    // Compute range rate for all tracks
+    // Re-process all second intervals to compute range rates
+    int totalIntervals = 0;
     for (auto it = m_trackLogs.begin(); it != m_trackLogs.end(); ++it) {
-        computeRangeRateForTrack(it.key());
+        uint32_t trackId = it.key();
+        TrackLogData& trackLog = it.value();
+        
+        // Get sorted list of second timestamps
+        QList<qint64> secondTimestamps = trackLog.secondIntervals.keys();
+        std::sort(secondTimestamps.begin(), secondTimestamps.end());
+        
+        // Process each second interval
+        for (qint64 secondTimestamp : secondTimestamps) {
+            processSecondIntervalData(trackId, secondTimestamp);
+            totalIntervals++;
+        }
+        
+        // Also compute using traditional method
+        computeRangeRateForTrack(trackId);
     }
     
     if (m_algorithmOutputText) {
-        m_algorithmOutputText->append("Range rate computation complete.");
+        m_algorithmOutputText->append(QString("Range rate computation complete. Processed %1 second intervals.")
+                                       .arg(totalIntervals));
     }
     
     // Update plots and table
@@ -1460,6 +1516,83 @@ float LoggingWidget::computeRangeRateAtIndex(const QVector<LoggedTrackDataPoint>
     }
     
     return avgRangeRate;
+}
+
+void LoggingWidget::processSecondIntervalData(uint32_t trackId, qint64 secondTimestamp)
+{
+    if (!m_trackLogs.contains(trackId)) return;
+    
+    TrackLogData& trackLog = m_trackLogs[trackId];
+    
+    if (!trackLog.secondIntervals.contains(secondTimestamp)) return;
+    
+    SecondIntervalData& currentInterval = trackLog.secondIntervals[secondTimestamp];
+    
+    // Calculate average values for this interval
+    if (!currentInterval.points.isEmpty()) {
+        float sumRange = 0.0f;
+        float sumSpeed = 0.0f;
+        
+        for (const LoggedTrackDataPoint& point : currentInterval.points) {
+            sumRange += point.range;
+            sumSpeed += point.radial_speed;
+        }
+        
+        currentInterval.avgRange = sumRange / currentInterval.points.size();
+        currentInterval.avgSpeed = sumSpeed / currentInterval.points.size();
+        
+        // Find previous second interval to compute range rate
+        qint64 previousSecond = secondTimestamp - 1000;
+        
+        if (trackLog.secondIntervals.contains(previousSecond)) {
+            const SecondIntervalData& previousInterval = trackLog.secondIntervals[previousSecond];
+            currentInterval.computedRangeRate = computeRangeRateFromInterval(currentInterval, previousInterval);
+        } else {
+            // No previous interval, use the average speed from current interval
+            currentInterval.computedRangeRate = currentInterval.avgSpeed;
+        }
+        
+        // Update all data points in this interval with the computed range rate
+        for (LoggedTrackDataPoint& point : currentInterval.points) {
+            point.computed_range_rate = currentInterval.computedRangeRate;
+        }
+        
+        // Also update the main dataPoints list
+        for (int i = trackLog.dataPoints.size() - 1; i >= 0; --i) {
+            qint64 pointSecond = (trackLog.dataPoints[i].timestamp / 1000) * 1000;
+            if (pointSecond == secondTimestamp) {
+                trackLog.dataPoints[i].computed_range_rate = currentInterval.computedRangeRate;
+            } else if (pointSecond < secondTimestamp) {
+                break;  // No need to check older points
+            }
+        }
+        
+        if (m_algorithmOutputText && currentInterval.points.size() > 1) {
+            m_algorithmOutputText->append(
+                QString("Track %1: Second %2 - Collected %3 points, Avg Range: %4 m, Computed Range Rate: %5 m/s")
+                .arg(trackId)
+                .arg(QDateTime::fromMSecsSinceEpoch(secondTimestamp).toString("hh:mm:ss"))
+                .arg(currentInterval.points.size())
+                .arg(currentInterval.avgRange, 0, 'f', 2)
+                .arg(currentInterval.computedRangeRate, 0, 'f', 2)
+            );
+        }
+    }
+}
+
+float LoggingWidget::computeRangeRateFromInterval(const SecondIntervalData& currentInterval, 
+                                                    const SecondIntervalData& previousInterval)
+{
+    // Compute range rate as the difference in average range over 1 second
+    float deltaRange = currentInterval.avgRange - previousInterval.avgRange;
+    float deltaTime = (currentInterval.intervalStart - previousInterval.intervalStart) / 1000.0f;  // Convert to seconds
+    
+    if (deltaTime > 0.001f) {
+        return deltaRange / deltaTime;
+    }
+    
+    // Fallback to average of the two intervals' speeds
+    return (currentInterval.avgSpeed + previousInterval.avgSpeed) / 2.0f;
 }
 
 void LoggingWidget::onAlgorithmWindowChanged(int value)
@@ -1668,4 +1801,13 @@ void LoggingWidget::stopLogging()
 void LoggingWidget::clearLogs()
 {
     onClearLogs();
+}
+
+int LoggingWidget::getTotalSecondIntervals() const
+{
+    int total = 0;
+    for (auto it = m_trackLogs.begin(); it != m_trackLogs.end(); ++it) {
+        total += it.value().secondIntervals.size();
+    }
+    return total;
 }

@@ -40,6 +40,18 @@ struct LoggedTrackDataPoint {
           azimuth(0), radial_speed(0), azimuth_speed(0), computed_range_rate(0) {}
 };
 
+// Structure to accumulate data within a 1-second interval
+struct SecondIntervalData {
+    qint64 intervalStart;   // Start of the 1-second interval (truncated to second)
+    QVector<LoggedTrackDataPoint> points;  // All points collected in this second
+    float computedRangeRate;  // Range rate computed from this interval
+    float avgRange;           // Average range in this interval
+    float avgSpeed;           // Average speed in this interval
+    
+    SecondIntervalData() 
+        : intervalStart(0), computedRangeRate(0), avgRange(0), avgSpeed(0) {}
+};
+
 // Structure to hold logged data per track
 struct TrackLogData {
     uint32_t track_id;
@@ -47,7 +59,11 @@ struct TrackLogData {
     qint64 firstSeen;
     qint64 lastSeen;
     
-    TrackLogData() : track_id(0), firstSeen(0), lastSeen(0) {}
+    // Per-second interval tracking for range rate computation
+    QMap<qint64, SecondIntervalData> secondIntervals;  // Maps second timestamp to interval data
+    qint64 currentSecond;  // Current second being accumulated
+    
+    TrackLogData() : track_id(0), firstSeen(0), lastSeen(0), currentSecond(0) {}
 };
 
 // Plot widget base class for logging plots
@@ -274,10 +290,16 @@ private:
     float computeRangeRateAtIndex(const QVector<LoggedTrackDataPoint>& points, 
                                     int index, int window, int smoothing);
     
+    // Per-second range rate computation
+    void processSecondIntervalData(uint32_t trackId, qint64 secondTimestamp);
+    float computeRangeRateFromInterval(const SecondIntervalData& currentInterval, 
+                                        const SecondIntervalData& previousInterval);
+    
     // Visualization helpers
     void updatePlotsForSelectedTrack();
     void updateDataTable();
     QVector<uint32_t> getSelectedTrackIds() const;
+    int getTotalSecondIntervals() const;
     
     // Export/Import helpers
     void exportToCSV(const QString& filename);
