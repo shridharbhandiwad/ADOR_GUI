@@ -3,10 +3,11 @@
 
 #include <QtCore/QDateTime>
 #include <cstdint>
+#include "DataStructures.h"  // For DSP_Settings_t (simple version)
 
-// DSP Settings structure for radar configuration
+// DSP Settings structure for radar configuration (Extended version for dialogs)
 #pragma pack(push, 1)
-struct DSP_Settings_t {
+struct DSP_Settings_Extended_t {
     // Detection threshold settings
     int16_t detection_threshold;       // Detection threshold in dB (-50 to 50)
     int16_t cfar_threshold;            // CFAR threshold offset in dB (0 to 30)
@@ -65,7 +66,7 @@ struct DSP_Settings_t {
     uint16_t reserved6;                // Reserved for alignment
     
     // Default constructor
-    DSP_Settings_t() :
+    DSP_Settings_Extended_t() :
         detection_threshold(0),
         cfar_threshold(10),
         range_min(0.5f),
@@ -106,7 +107,7 @@ struct DSP_Settings_t {
     // Calculate CRC16 checksum
     uint16_t calculateChecksum() const {
         const uint8_t* data = reinterpret_cast<const uint8_t*>(this);
-        size_t length = sizeof(DSP_Settings_t) - sizeof(checksum) - sizeof(reserved6);
+        size_t length = sizeof(DSP_Settings_Extended_t) - sizeof(checksum) - sizeof(reserved6);
         uint16_t crc = 0xFFFF;
         for (size_t i = 0; i < length; i++) {
             crc ^= data[i];

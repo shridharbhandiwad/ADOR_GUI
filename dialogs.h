@@ -249,7 +249,7 @@ private:
 };
 
 // Forward declaration for DSP Settings
-struct DSP_Settings_t;
+struct DSP_Settings_Extended_t;
 
 // DSP Settings Dialog
 class DSPSettingsDialog : public QDialog
@@ -260,16 +260,16 @@ public:
     explicit DSPSettingsDialog(QWidget* parent = nullptr);
     ~DSPSettingsDialog();
     
-    DSP_Settings_t getSettings() const;
-    void setSettings(const DSP_Settings_t& settings);
+    DSP_Settings_Extended_t getSettings() const;
+    void setSettings(const DSP_Settings_Extended_t& settings);
     
     // Theme support
     void setDarkTheme(bool isDark);
     bool isDarkTheme() const { return m_isDarkTheme; }
 
 signals:
-    void settingsChanged(const DSP_Settings_t& settings);
-    void sendSettingsRequested(const DSP_Settings_t& settings);
+    void settingsChanged(const DSP_Settings_Extended_t& settings);
+    void sendSettingsRequested(const DSP_Settings_Extended_t& settings);
 
 private slots:
     void onApplyClicked();

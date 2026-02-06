@@ -17,7 +17,6 @@ UdpHandler::UdpHandler(QObject *parent)
     , packetsDropped(0)
     , lastStatisticsUpdate(0)
     , lastPacketTime(0)
-    , trackDataFile(nullptr)
 {
     // Setup cleanup timer to remove old detections
     cleanupTimer = new QTimer(this);
@@ -35,13 +34,6 @@ UdpHandler::UdpHandler(QObject *parent)
 UdpHandler::~UdpHandler()
 {
     disconnectFromHost();
-    
-    // Close track data file if open
-    if (trackDataFile) {
-        trackDataFile->close();
-        delete trackDataFile;
-        trackDataFile = nullptr;
-    }
 }
 
 bool UdpHandler::connectToHost(const QString& host, int port)
@@ -317,17 +309,6 @@ void UdpHandler::addDetection(const DetectionData& detection)
 {
     //qDebug()<<"Added";
     QMutexLocker locker(&detectionsMutex);
-    
-    // Log track data as soon as it is received
-    qDebug() << "Track data received - ID:" << detection.target_id 
-             << "Range:" << detection.radius << "m"
-             << "Speed:" << detection.radial_speed << "m/s"
-             << "Azimuth:" << detection.azimuth << "deg"
-             << "Amplitude:" << detection.amplitude << "dB"
-             << "Timestamp:" << detection.timestamp;
-    
-    // Store track data to file
-    logTrackDataToFile(detection);
 
     detections.push_back(detection);
 
@@ -411,9 +392,8 @@ bool UdpHandler::sendDSPSettings(const DSP_Settings_t& settings)
         return false;
     }
     
-    // Create a copy and update checksum
+    // Create a copy for sending
     DSP_Settings_t settingsToSend = settings;
-    settingsToSend.updateChecksum();
     
     // Create packet with header
     QByteArray packet;
@@ -457,59 +437,4 @@ void UdpHandler::onSocketError(QAbstractSocket::SocketError socketError)
 {
     Q_UNUSED(socketError);
     qDebug() << "UDP Socket error:" << udpSocket->errorString();
-}
-
-QString UdpHandler::createTimestampedFilename()
-{
-    // Get current system time and format it
-    QDateTime currentTime = QDateTime::currentDateTime();
-    QString timestamp = currentTime.toString("yyyyMMdd_HHmmss_zzz");
-    QString filename = QString("D:/track_data_%1.csv").arg(timestamp);
-    return filename;
-}
-
-void UdpHandler::logTrackDataToFile(const DetectionData& detection)
-{
-    // Create new file if not exists or if file pointer is null
-    if (!trackDataFile) {
-        // Ensure D:/ directory exists and is accessible
-        QDir dDrive("D:/");
-        if (!dDrive.exists()) {
-            qDebug() << "Warning: D:/ drive not accessible. Attempting to create directory...";
-            if (!dDrive.mkpath("D:/")) {
-                qDebug() << "Failed to access or create D:/ directory. Track data logging disabled.";
-                return;
-            }
-        }
-        
-        currentLogFilename = createTimestampedFilename();
-        trackDataFile = new QFile(currentLogFilename);
-        
-        if (!trackDataFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-            qDebug() << "Failed to open track data file:" << currentLogFilename 
-                     << "Error:" << trackDataFile->errorString();
-            delete trackDataFile;
-            trackDataFile = nullptr;
-            return;
-        }
-        
-        // Write CSV header
-        QTextStream out(trackDataFile);
-        out << "Timestamp,Target_ID,Range_m,Radial_Speed_m_s,Azimuth_deg,Amplitude_dB,System_Time\n";
-        out.flush();
-        
-        qDebug() << "Created track data log file in D:/ drive:" << currentLogFilename;
-    }
-    
-    // Write detection data to file
-    QTextStream out(trackDataFile);
-    QDateTime systemTime = QDateTime::fromMSecsSinceEpoch(detection.timestamp);
-    out << detection.timestamp << ","
-        << detection.target_id << ","
-        << detection.radius << ","
-        << detection.radial_speed << ","
-        << detection.azimuth << ","
-        << detection.amplitude << ","
-        << systemTime.toString("yyyy-MM-dd HH:mm:ss.zzz") << "\n";
-    out.flush();
 }

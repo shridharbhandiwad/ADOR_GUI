@@ -64,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_numTargetsDist(3, 8)
     , m_frameCount(0)
     , m_targetCount(0)
+    , m_trackDataFile(nullptr)
     , m_dsp{}  // Zero-initialize the DSP settings struct
     , m_isDarkTheme(false)
     , m_expectedNumTargets(0)
@@ -98,6 +99,13 @@ MainWindow::~MainWindow()
     }
     if (m_trackRefreshTimer) {
         m_trackRefreshTimer->stop();
+    }
+    
+    // Close track data file if open
+    if (m_trackDataFile) {
+        m_trackDataFile->close();
+        delete m_trackDataFile;
+        m_trackDataFile = nullptr;
     }
 }
 
@@ -1078,6 +1086,9 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
     new_target.azimuth_speed = packet->azimuth_speed;
     new_target.elevation_speed = packet->elevation_speed;
     new_target.lastUpdateTime = QDateTime::currentMSecsSinceEpoch();
+    
+    // Log track data to file
+    logTrackDataToFile(new_target);
 
     // Add to frame buffer (check for duplicates in current frame)
     bool found = false;
@@ -1136,7 +1147,11 @@ void MainWindow::parseTrackMessage(const QString& message)
             tokens[++i].toInt();
         } else if (token == "TgtId:" && i + 1 < tokens.size()) {
             if (parsedTargets > 0 && currentTargetValid) {
+                // Set timestamp for the completed target before adding
+                target.lastUpdateTime = QDateTime::currentMSecsSinceEpoch();
                 m_currentTargets.targets.push_back(target);
+                // Log the completed target
+                logTrackDataToFile(target);
             }
             target = TargetTrack();
             target.target_id = tokens[++i].toInt();
@@ -1167,7 +1182,11 @@ void MainWindow::parseTrackMessage(const QString& message)
 
     // Append final target if one exists and is valid (target_id <= 50)
     if (parsedTargets > 0 && currentTargetValid) {
+        // Set timestamp for the final target before adding
+        target.lastUpdateTime = QDateTime::currentMSecsSinceEpoch();
         m_currentTargets.targets.push_back(target);
+        // Log the final target
+        logTrackDataToFile(target);
     }
 
     m_currentTargets.numTracks = m_currentTargets.targets.size();
@@ -3086,4 +3105,74 @@ void MainWindow::onOpenLoggingWindow()
     
     // Show the window
     m_loggingWindow->show();
+}
+
+//==============================================================================
+// TRACK DATA LOGGING
+//==============================================================================
+QString MainWindow::createTimestampedFilename()
+{
+    // Get current system time and format it
+    QDateTime currentTime = QDateTime::currentDateTime();
+    QString timestamp = currentTime.toString("yyyyMMdd_HHmmss_zzz");
+    QString filename = QString("D:/track_data_%1.csv").arg(timestamp);
+    return filename;
+}
+
+void MainWindow::logTrackDataToFile(const TargetTrack& track)
+{
+    // Create new file if not exists or if file pointer is null
+    if (!m_trackDataFile) {
+        // Ensure D:/ directory exists and is accessible
+        QDir dDrive("D:/");
+        if (!dDrive.exists()) {
+            qDebug() << "Warning: D:/ drive not accessible. Attempting to create directory...";
+            if (!dDrive.mkpath("D:/")) {
+                qDebug() << "Failed to access or create D:/ directory. Track data logging disabled.";
+                return;
+            }
+        }
+        
+        m_currentLogFilename = createTimestampedFilename();
+        m_trackDataFile = new QFile(m_currentLogFilename);
+        
+        if (!m_trackDataFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+            qDebug() << "Failed to open track data file:" << m_currentLogFilename 
+                     << "Error:" << m_trackDataFile->errorString();
+            delete m_trackDataFile;
+            m_trackDataFile = nullptr;
+            return;
+        }
+        
+        // Write CSV header
+        QTextStream out(m_trackDataFile);
+        out << "Timestamp,Target_ID,Range_m,Radial_Speed_m_s,Azimuth_deg,Elevation_deg,Level_dB,Azimuth_Speed_deg_s,Elevation_Speed_deg_s,System_Time\n";
+        out.flush();
+        
+        qDebug() << "Created track data log file in D:/ drive:" << m_currentLogFilename;
+    }
+    
+    // Write track data to file
+    QTextStream out(m_trackDataFile);
+    QDateTime systemTime = QDateTime::fromMSecsSinceEpoch(track.lastUpdateTime);
+    out << track.lastUpdateTime << ","
+        << track.target_id << ","
+        << track.radius << ","
+        << track.radial_speed << ","
+        << track.azimuth << ","
+        << track.elevation << ","
+        << track.level << ","
+        << track.azimuth_speed << ","
+        << track.elevation_speed << ","
+        << systemTime.toString("yyyy-MM-dd HH:mm:ss.zzz") << "\n";
+    out.flush();
+    
+    // Log to console for debugging
+    qDebug() << "Track data logged - ID:" << track.target_id 
+             << "Range:" << track.radius << "m"
+             << "Speed:" << track.radial_speed << "m/s"
+             << "Azimuth:" << track.azimuth << "deg"
+             << "Elevation:" << track.elevation << "deg"
+             << "Level:" << track.level << "dB"
+             << "Timestamp:" << track.lastUpdateTime;
 }
