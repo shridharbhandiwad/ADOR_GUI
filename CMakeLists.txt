@@ -27,6 +27,8 @@ set(SOURCES
     SpeedMeasurementWidget.cpp
     TimeSeriesPlotsWidget.cpp
     LoggingWidget.cpp
+    udphandler.cpp
+    dialogs.cpp
 )
 
 set(HEADERS
@@ -37,6 +39,9 @@ set(HEADERS
     TimeSeriesPlotsWidget.h
     LoggingWidget.h
     DataStructures.h
+    udphandler.h
+    dialogs.h
+    structures.h
 )
 
 # Create executable
