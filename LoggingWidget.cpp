@@ -423,7 +423,7 @@ void LoggingPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void LoggingPlotWidget::wheelEvent(QWheelEvent *event)
 {
-    if (m_plotRect.contains(event->position().toPoint())) {
+    if (m_plotRect.contains(event->pos())) {
         float zoomDelta = event->angleDelta().y() > 0 ? 0.9f : 1.1f;
         m_zoomFactorY *= zoomDelta;
         
@@ -789,7 +789,7 @@ void LoggingRVPlotWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void LoggingRVPlotWidget::wheelEvent(QWheelEvent *event)
 {
-    if (m_plotRect.contains(event->position().toPoint())) {
+    if (m_plotRect.contains(event->pos())) {
         float zoomDelta = event->angleDelta().y() > 0 ? 0.9f : 1.1f;
         
         float rangeCenter = (m_maxRange + m_minRange) / 2.0f;
