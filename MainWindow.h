@@ -22,6 +22,7 @@
 #include "FFTWidget.h"
 #include "SpeedMeasurementWidget.h"
 #include "TimeSeriesPlotsWidget.h"
+#include "LoggingWidget.h"
 #include "DataStructures.h"
 #include <QTabWidget>
 
@@ -95,6 +96,7 @@ private:
     FFTWidget* m_fftWidget;
     SpeedMeasurementWidget* m_speedMeasurementWidget;
     TimeSeriesPlotsWidget* m_timeSeriesPlotsWidget;
+    LoggingWidget* m_loggingWidget;
     QTabWidget* m_mainTabWidget;
     QTableWidget* m_trackTable;
     QSplitter* m_mainSplitter;
