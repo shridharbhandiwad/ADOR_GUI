@@ -91,6 +91,10 @@ private:
     // Text-based parsing (legacy/for track data)
     void parseADCMessage(const QString& message);
     void parseTrackMessage(const QString& message);
+    
+    // Track data logging
+    QString createTimestampedFilename();
+    void logTrackDataToFile(const TargetTrack& track);
 
     // UI Components
     PPIWidget* m_ppiWidget;
@@ -180,6 +184,10 @@ private:
     // Statistics
     uint64_t m_frameCount;
     uint64_t m_targetCount;
+    
+    // Track data logging
+    QFile* m_trackDataFile;
+    QString m_currentLogFilename;
 
     bool m_isDarkTheme;
     void applyTheme(bool isDark);

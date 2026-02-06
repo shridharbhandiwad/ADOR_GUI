@@ -769,7 +769,7 @@ DSPSettingsDialog::DSPSettingsDialog(QWidget* parent)
     applyThemeStyleSheet();  // Apply initial theme
     
     // Load default settings
-    DSP_Settings_t defaults;
+    DSP_Settings_Extended_t defaults;
     setSettings(defaults);
 }
 
@@ -1549,14 +1549,14 @@ void DSPSettingsDialog::updateAmplificationControls()
 
 void DSPSettingsDialog::onApplyClicked()
 {
-    DSP_Settings_t settings = getSettings();
+    DSP_Settings_Extended_t settings = getSettings();
     emit settingsChanged(settings);
     QMessageBox::information(this, "Settings Applied", "DSP settings have been applied locally.");
 }
 
 void DSPSettingsDialog::onSendClicked()
 {
-    DSP_Settings_t settings = getSettings();
+    DSP_Settings_Extended_t settings = getSettings();
     settings.updateChecksum();
     emit sendSettingsRequested(settings);
 }
@@ -1597,7 +1597,7 @@ void DSPSettingsDialog::onLoadFromFileClicked()
     }
     
     QJsonObject obj = doc.object();
-    DSP_Settings_t settings;
+    DSP_Settings_Extended_t settings;
     
     // Detection threshold settings
     if (obj.contains("detection_threshold"))
@@ -1696,7 +1696,7 @@ void DSPSettingsDialog::onSaveToFileClicked()
         fileName += ".json";
     }
     
-    DSP_Settings_t settings = getSettings();
+    DSP_Settings_Extended_t settings = getSettings();
     
     QJsonObject obj;
     
@@ -1764,9 +1764,9 @@ void DSPSettingsDialog::onSaveToFileClicked()
         QString("DSP settings have been saved to:\n%1").arg(fileName));
 }
 
-DSP_Settings_t DSPSettingsDialog::getSettings() const
+DSP_Settings_Extended_t DSPSettingsDialog::getSettings() const
 {
-    DSP_Settings_t settings;
+    DSP_Settings_Extended_t settings;
     
     // Detection threshold settings
     settings.detection_threshold = static_cast<int16_t>(detectionThresholdSpinBox->value());
@@ -1821,7 +1821,7 @@ DSP_Settings_t DSPSettingsDialog::getSettings() const
     return settings;
 }
 
-void DSPSettingsDialog::setSettings(const DSP_Settings_t& settings)
+void DSPSettingsDialog::setSettings(const DSP_Settings_Extended_t& settings)
 {
     // Detection threshold settings
     detectionThresholdSpinBox->setValue(settings.detection_threshold);

@@ -98,12 +98,6 @@ private:
     // Helper functions
     void resetStatistics();
     void emitStatistics();
-    
-    // File logging
-    void logTrackDataToFile(const DetectionData& detection);
-    QString createTimestampedFilename();
-    QFile* trackDataFile;
-    QString currentLogFilename;
 };
 
 #endif // UDPHANDLER_H
