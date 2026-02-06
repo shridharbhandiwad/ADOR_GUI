@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_fftWidget(nullptr)
     , m_speedMeasurementWidget(nullptr)
     , m_timeSeriesPlotsWidget(nullptr)
+    , m_loggingWidget(nullptr)
     , m_mainTabWidget(nullptr)
     , m_trackTable(nullptr)
     , m_udpSocket(nullptr)
@@ -792,6 +793,10 @@ void MainWindow::setupUI()
     m_speedMeasurementWidget = new SpeedMeasurementWidget(this);
     m_mainTabWidget->addTab(m_speedMeasurementWidget, "Speed Measurement");
     
+    // Create Logging tab
+    m_loggingWidget = new LoggingWidget(this);
+    m_mainTabWidget->addTab(m_loggingWidget, "Logging");
+    
     // Add the tab widget to the main layout with stretch
     mainLayout->addWidget(m_mainTabWidget, 1);
 
@@ -853,6 +858,11 @@ void MainWindow::updateDisplay()
     // Update time series plots widget with target data
     if (m_timeSeriesPlotsWidget) {
         m_timeSeriesPlotsWidget->updateFromTargets(m_currentTargets);
+    }
+    
+    // Update logging widget with target data
+    if (m_loggingWidget) {
+        m_loggingWidget->updateFromTargets(m_currentTargets);
     }
     
     updateTrackTable();
@@ -2507,6 +2517,9 @@ void MainWindow::applyTheme(bool isDark)
     }
     if (m_timeSeriesPlotsWidget) {
         m_timeSeriesPlotsWidget->setDarkTheme(isDark);
+    }
+    if (m_loggingWidget) {
+        m_loggingWidget->setDarkTheme(isDark);
     }
     
     // Apply theme to DSP Settings panel
