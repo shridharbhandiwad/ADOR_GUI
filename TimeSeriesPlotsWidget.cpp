@@ -509,11 +509,11 @@ RangeVelocityPlotWidget::RangeVelocityPlotWidget(QWidget *parent)
     : QWidget(parent)
     , m_minRange(0.0f)
     , m_maxRange(100.0f)
-    , m_minVelocity(0.0f)
+    , m_minVelocity(-100.0f)
     , m_maxVelocity(100.0f)
     , m_defaultMinRange(0.0f)
     , m_defaultMaxRange(100.0f)
-    , m_defaultMinVelocity(0.0f)
+    , m_defaultMinVelocity(-100.0f)
     , m_defaultMaxVelocity(100.0f)
     , m_showHistogram(true)
     , m_pointSize(4)
@@ -643,7 +643,7 @@ void RangeVelocityPlotWidget::updateFromTargets(const TargetTrackData& targets)
 {
     for (size_t i = 0; i < targets.numTracks && i < targets.targets.size(); ++i) {
         const auto& target = targets.targets[i];
-        float velocityKmh = qAbs(target.radial_speed) * 3.6f;  // Convert m/s to km/h
+        float velocityKmh = target.radial_speed * 3.6f;  // Convert m/s to km/h, preserve sign
         float rangeM = target.radius;
         addDataPoint(velocityKmh, rangeM);
     }
@@ -1114,8 +1114,8 @@ void TimeSeriesPlotsWidget::setupUI()
     m_rangeVelocityPlot = new RangeVelocityPlotWidget(this);
     m_rangeVelocityPlot->setMinRangeLimit(0.0f);  // Will be updated by spinbox
     m_rangeVelocityPlot->setRangeLimit(m_maxRange);
-    m_rangeVelocityPlot->setMinVelocityLimit(0.0f);  // Will be updated by spinbox
-    m_rangeVelocityPlot->setVelocityLimit(m_maxVelocity);
+    m_rangeVelocityPlot->setMinVelocityLimit(-40.0f);  // Will be updated by spinbox, allow negative
+    m_rangeVelocityPlot->setVelocityLimit(40.0f);  // Will be updated by spinbox
     leftLayout->addWidget(m_rangeVelocityPlot);
     
     leftColumn->addWidget(leftGroup);
@@ -1321,12 +1321,11 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         const auto& target = targets.targets[i];
         // Preserve sign for velocity (can be positive or negative)
         float velocityKmh = target.radial_speed * 3.6f;  // Convert m/s to km/h
-        float velocityKmhAbs = qAbs(velocityKmh);  // Absolute value for range-velocity plot
         float rangeM = target.radius;
         
-        // Update range-velocity plot (uses absolute velocity)
+        // Update range-velocity plot (preserves velocity sign)
         if (m_rangeVelocityPlot) {
-            m_rangeVelocityPlot->addDataPoint(velocityKmhAbs, rangeM);
+            m_rangeVelocityPlot->addDataPoint(velocityKmh, rangeM);
         }
         
         // Update time series plots (velocity preserves sign)
@@ -1436,24 +1435,12 @@ void TimeSeriesPlotsWidget::onVelocityMinChanged(double value)
         m_velocityTimePlot->setYAxisRange(value, m_velocityMaxSpinBox->value());
     }
     if (m_rangeVelocityPlot) {
-        // For RV plot, use absolute values
+        // For RV plot, use the same signed values as time series
         double minVel = m_velocityMinSpinBox->value();
         double maxVel = m_velocityMaxSpinBox->value();
         
-        // Calculate absolute min and max for RV plot
-        // If range spans zero (min < 0 and max > 0), start from 0
-        // Otherwise use the minimum absolute value
-        double absMin, absMax;
-        if (minVel < 0 && maxVel > 0) {
-            absMin = 0.0;
-            absMax = qMax(qAbs(minVel), qAbs(maxVel));
-        } else {
-            absMin = qMin(qAbs(minVel), qAbs(maxVel));
-            absMax = qMax(qAbs(minVel), qAbs(maxVel));
-        }
-        
-        m_rangeVelocityPlot->setMinVelocityLimit(absMin);
-        m_rangeVelocityPlot->setVelocityLimit(absMax);
+        m_rangeVelocityPlot->setMinVelocityLimit(minVel);
+        m_rangeVelocityPlot->setVelocityLimit(maxVel);
     }
 }
 
@@ -1463,24 +1450,12 @@ void TimeSeriesPlotsWidget::onVelocityMaxChanged(double value)
         m_velocityTimePlot->setYAxisRange(m_velocityMinSpinBox->value(), value);
     }
     if (m_rangeVelocityPlot) {
-        // For RV plot, use absolute values
+        // For RV plot, use the same signed values as time series
         double minVel = m_velocityMinSpinBox->value();
         double maxVel = m_velocityMaxSpinBox->value();
         
-        // Calculate absolute min and max for RV plot
-        // If range spans zero (min < 0 and max > 0), start from 0
-        // Otherwise use the minimum absolute value
-        double absMin, absMax;
-        if (minVel < 0 && maxVel > 0) {
-            absMin = 0.0;
-            absMax = qMax(qAbs(minVel), qAbs(maxVel));
-        } else {
-            absMin = qMin(qAbs(minVel), qAbs(maxVel));
-            absMax = qMax(qAbs(minVel), qAbs(maxVel));
-        }
-        
-        m_rangeVelocityPlot->setMinVelocityLimit(absMin);
-        m_rangeVelocityPlot->setVelocityLimit(absMax);
+        m_rangeVelocityPlot->setMinVelocityLimit(minVel);
+        m_rangeVelocityPlot->setVelocityLimit(maxVel);
     }
 }
 
