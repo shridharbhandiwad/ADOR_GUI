@@ -507,9 +507,13 @@ void TimeSeriesPlotWidget::leaveEvent(QEvent *event)
 
 RangeVelocityPlotWidget::RangeVelocityPlotWidget(QWidget *parent)
     : QWidget(parent)
+    , m_minRange(0.0f)
     , m_maxRange(100.0f)
+    , m_minVelocity(0.0f)
     , m_maxVelocity(100.0f)
+    , m_defaultMinRange(0.0f)
     , m_defaultMaxRange(100.0f)
+    , m_defaultMinVelocity(0.0f)
     , m_defaultMaxVelocity(100.0f)
     , m_showHistogram(true)
     , m_pointSize(4)
@@ -559,6 +563,20 @@ void RangeVelocityPlotWidget::setVelocityLimit(float maxVelocity)
     update();
 }
 
+void RangeVelocityPlotWidget::setMinRangeLimit(float minRange)
+{
+    m_minRange = minRange;
+    m_defaultMinRange = minRange;
+    update();
+}
+
+void RangeVelocityPlotWidget::setMinVelocityLimit(float minVelocity)
+{
+    m_minVelocity = minVelocity;
+    m_defaultMinVelocity = minVelocity;
+    update();
+}
+
 void RangeVelocityPlotWidget::setShowHistogram(bool show)
 {
     m_showHistogram = show;
@@ -577,7 +595,9 @@ void RangeVelocityPlotWidget::onResetZoom()
     m_zoomFactorY = 1.0f;
     m_panOffsetX = 0.0f;
     m_panOffsetY = 0.0f;
+    m_minRange = m_defaultMinRange;
     m_maxRange = m_defaultMaxRange;
+    m_minVelocity = m_defaultMinVelocity;
     m_maxVelocity = m_defaultMaxVelocity;
     update();
 }
@@ -596,10 +616,19 @@ void RangeVelocityPlotWidget::addDataPoint(float velocity, float range)
     
     // Update histograms
     if (m_showHistogram) {
-        int velBin = qBound(0, int(velocity / m_maxVelocity * HISTOGRAM_BINS), HISTOGRAM_BINS - 1);
-        int rangeBin = qBound(0, int(range / m_maxRange * HISTOGRAM_BINS), HISTOGRAM_BINS - 1);
-        m_velocityHistogram[velBin]++;
-        m_rangeHistogram[rangeBin]++;
+        float velocityRange = m_maxVelocity - m_minVelocity;
+        float rangeRange = m_maxRange - m_minRange;
+        
+        // Only bin if within limits
+        if (velocity >= m_minVelocity && velocity <= m_maxVelocity) {
+            int velBin = qBound(0, int((velocity - m_minVelocity) / velocityRange * HISTOGRAM_BINS), HISTOGRAM_BINS - 1);
+            m_velocityHistogram[velBin]++;
+        }
+        
+        if (range >= m_minRange && range <= m_maxRange) {
+            int rangeBin = qBound(0, int((range - m_minRange) / rangeRange * HISTOGRAM_BINS), HISTOGRAM_BINS - 1);
+            m_rangeHistogram[rangeBin]++;
+        }
     }
     
     // Limit data points
@@ -739,14 +768,23 @@ void RangeVelocityPlotWidget::drawDataPoints(QPainter& painter)
     painter.setPen(Qt::NoPen);
     painter.setBrush(getDataPointColor());
     
+    float velocityRange = m_maxVelocity - m_minVelocity;
+    float rangeRange = m_maxRange - m_minRange;
+    
     for (int i = 0; i < m_dataPoints.size(); ++i) {
         const auto& point = m_dataPoints[i];
         float velocity = point.first;
         float range = point.second;
         
-        // Calculate position
-        float xRatio = velocity / m_maxVelocity;
-        float yRatio = range / m_maxRange;
+        // Skip points outside the range
+        if (velocity < m_minVelocity || velocity > m_maxVelocity || 
+            range < m_minRange || range > m_maxRange) {
+            continue;
+        }
+        
+        // Calculate position relative to min/max range
+        float xRatio = (velocity - m_minVelocity) / velocityRange;
+        float yRatio = (range - m_minRange) / rangeRange;
         
         if (xRatio < 0 || xRatio > 1 || yRatio < 0 || yRatio > 1) continue;
         
@@ -824,8 +862,9 @@ void RangeVelocityPlotWidget::drawLabels(QPainter& painter)
     // Y-axis tick labels
     painter.setFont(axisFont);
     int numYTicks = 6;
+    float rangeSpan = m_maxRange - m_minRange;
     for (int i = 0; i <= numYTicks; ++i) {
-        float value = m_maxRange * i / numYTicks;
+        float value = m_minRange + (rangeSpan * i / numYTicks);
         int y = m_plotRect.bottom() - (m_plotRect.height() * i / numYTicks);
         QString label = QString::number(int(value));
         QFontMetrics axisfm(axisFont);
@@ -834,8 +873,9 @@ void RangeVelocityPlotWidget::drawLabels(QPainter& painter)
     
     // X-axis tick labels
     int numXTicks = 6;
+    float velocitySpan = m_maxVelocity - m_minVelocity;
     for (int i = 0; i <= numXTicks; ++i) {
-        float value = m_maxVelocity * i / numXTicks;
+        float value = m_minVelocity + (velocitySpan * i / numXTicks);
         int x = m_plotRect.left() + (m_plotRect.width() * i / numXTicks);
         QString label = QString::number(int(value));
         QFontMetrics axisfm(axisFont);
@@ -907,13 +947,22 @@ int RangeVelocityPlotWidget::findNearestPoint(const QPoint& pos) const
     int nearestIndex = -1;
     float minDistance = 20.0f;  // Maximum distance to consider
     
+    float velocityRange = m_maxVelocity - m_minVelocity;
+    float rangeRange = m_maxRange - m_minRange;
+    
     for (int i = 0; i < m_dataPoints.size(); ++i) {
         const auto& point = m_dataPoints[i];
         float velocity = point.first;
         float range = point.second;
         
-        float xRatio = velocity / m_maxVelocity;
-        float yRatio = range / m_maxRange;
+        // Skip points outside the range
+        if (velocity < m_minVelocity || velocity > m_maxVelocity || 
+            range < m_minRange || range > m_maxRange) {
+            continue;
+        }
+        
+        float xRatio = (velocity - m_minVelocity) / velocityRange;
+        float yRatio = (range - m_minRange) / rangeRange;
         
         if (xRatio < 0 || xRatio > 1 || yRatio < 0 || yRatio > 1) continue;
         
@@ -942,8 +991,8 @@ void RangeVelocityPlotWidget::mouseMoveEvent(QMouseEvent *event)
         int dx = event->pos().x() - m_lastMousePos.x();
         int dy = event->pos().y() - m_lastMousePos.y();
         
-        float velocityRange = m_maxVelocity;
-        float rangeRange = m_maxRange;
+        float velocityRange = m_maxVelocity - m_minVelocity;
+        float rangeRange = m_maxRange - m_minRange;
         
         float panAmountX = -dx * velocityRange / m_plotRect.width();
         float panAmountY = dy * rangeRange / m_plotRect.height();
@@ -1063,7 +1112,9 @@ void TimeSeriesPlotsWidget::setupUI()
     leftLayout->setContentsMargins(5, 5, 5, 5);
     
     m_rangeVelocityPlot = new RangeVelocityPlotWidget(this);
+    m_rangeVelocityPlot->setMinRangeLimit(0.0f);  // Will be updated by spinbox
     m_rangeVelocityPlot->setRangeLimit(m_maxRange);
+    m_rangeVelocityPlot->setMinVelocityLimit(0.0f);  // Will be updated by spinbox
     m_rangeVelocityPlot->setVelocityLimit(m_maxVelocity);
     leftLayout->addWidget(m_rangeVelocityPlot);
     
@@ -1384,12 +1435,30 @@ void TimeSeriesPlotsWidget::onVelocityMinChanged(double value)
     if (m_velocityTimePlot && value < m_velocityMaxSpinBox->value()) {
         m_velocityTimePlot->setYAxisRange(value, m_velocityMaxSpinBox->value());
     }
+    if (m_rangeVelocityPlot) {
+        // For RV plot, use absolute values and determine min/max
+        double minVel = m_velocityMinSpinBox->value();
+        double maxVel = m_velocityMaxSpinBox->value();
+        double absMin = qMin(qAbs(minVel), qAbs(maxVel));
+        double absMax = qMax(qAbs(minVel), qAbs(maxVel));
+        m_rangeVelocityPlot->setMinVelocityLimit(absMin);
+        m_rangeVelocityPlot->setVelocityLimit(absMax);
+    }
 }
 
 void TimeSeriesPlotsWidget::onVelocityMaxChanged(double value)
 {
     if (m_velocityTimePlot && value > m_velocityMinSpinBox->value()) {
         m_velocityTimePlot->setYAxisRange(m_velocityMinSpinBox->value(), value);
+    }
+    if (m_rangeVelocityPlot) {
+        // For RV plot, use absolute values and determine min/max
+        double minVel = m_velocityMinSpinBox->value();
+        double maxVel = m_velocityMaxSpinBox->value();
+        double absMin = qMin(qAbs(minVel), qAbs(maxVel));
+        double absMax = qMax(qAbs(minVel), qAbs(maxVel));
+        m_rangeVelocityPlot->setMinVelocityLimit(absMin);
+        m_rangeVelocityPlot->setVelocityLimit(absMax);
     }
 }
 
@@ -1398,12 +1467,18 @@ void TimeSeriesPlotsWidget::onRangeMinChanged(double value)
     if (m_rangeTimePlot && value < m_rangeMaxSpinBox->value()) {
         m_rangeTimePlot->setYAxisRange(value, m_rangeMaxSpinBox->value());
     }
+    if (m_rangeVelocityPlot) {
+        m_rangeVelocityPlot->setMinRangeLimit(value);
+    }
 }
 
 void TimeSeriesPlotsWidget::onRangeMaxChanged(double value)
 {
     if (m_rangeTimePlot && value > m_rangeMinSpinBox->value()) {
         m_rangeTimePlot->setYAxisRange(m_rangeMinSpinBox->value(), value);
+    }
+    if (m_rangeVelocityPlot) {
+        m_rangeVelocityPlot->setRangeLimit(value);
     }
 }
 

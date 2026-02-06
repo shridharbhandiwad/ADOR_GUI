@@ -136,6 +136,8 @@ public:
     bool isDarkTheme() const { return m_isDarkTheme; }
     void setRangeLimit(float maxRange);
     void setVelocityLimit(float maxVelocity);
+    void setMinRangeLimit(float minRange);
+    void setMinVelocityLimit(float minVelocity);
     void setShowHistogram(bool show);
     void setPointSize(int size);
     void clearData();
@@ -147,6 +149,8 @@ public:
     // Get current settings
     float getMaxRange() const { return m_maxRange; }
     float getMaxVelocity() const { return m_maxVelocity; }
+    float getMinRange() const { return m_minRange; }
+    float getMinVelocity() const { return m_minVelocity; }
     int getPointSize() const { return m_pointSize; }
 
 public slots:
@@ -187,9 +191,13 @@ private:
     QVector<QPair<float, float>> m_dataPoints;
     
     // Configuration
+    float m_minRange;
     float m_maxRange;
+    float m_minVelocity;
     float m_maxVelocity;
+    float m_defaultMinRange;
     float m_defaultMaxRange;
+    float m_defaultMinVelocity;
     float m_defaultMaxVelocity;
     bool m_showHistogram;
     int m_pointSize;  // Point radius in pixels
