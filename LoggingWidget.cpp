@@ -844,6 +844,8 @@ LoggingWidget::LoggingWidget(QWidget *parent)
     , m_isDarkTheme(false)
     , m_loggingStartTime(0)
     , m_totalDataPoints(0)
+    , m_isDetached(false)
+    , m_detachedWindow(nullptr)
     , m_plotRefreshTimer(nullptr)
     , m_algorithmWindow(5)
     , m_smoothingWindow(3)
@@ -860,6 +862,13 @@ LoggingWidget::~LoggingWidget()
 {
     if (m_plotRefreshTimer) {
         m_plotRefreshTimer->stop();
+    }
+    
+    // Clean up detached window if it exists
+    if (m_detachedWindow) {
+        m_detachedWindow->close();
+        m_detachedWindow->deleteLater();
+        m_detachedWindow = nullptr;
     }
 }
 
@@ -1279,7 +1288,7 @@ void LoggingWidget::exportToCSV(const QString& filename)
     QTextStream out(&file);
     
     // Write header
-    out << "Timestamp,Track_ID,Range_m,Speed_m_s,Azimuth_deg,Level_dB,Range_Rate_m_s\n";
+    out << "Timestamp,Track_ID,Range_m,Speed_m_s,Azimuth_deg,Azimuth_Speed_deg_s,Level_dB,Range_Rate_m_s\n";
     
     // Write data for all tracks
     for (auto it = m_trackLogs.begin(); it != m_trackLogs.end(); ++it) {
@@ -1290,6 +1299,7 @@ void LoggingWidget::exportToCSV(const QString& filename)
                 << point.range << ","
                 << point.radial_speed << ","
                 << point.azimuth << ","
+                << point.azimuth_speed << ","
                 << point.level << ","
                 << point.computed_range_rate << "\n";
         }
@@ -1321,15 +1331,16 @@ void LoggingWidget::importFromCSV(const QString& filename)
         QString line = in.readLine();
         QStringList fields = line.split(',');
         
-        if (fields.size() >= 7) {
+        if (fields.size() >= 8) {
             LoggedTrackDataPoint point;
             point.timestamp = fields[0].toLongLong();
             point.target_id = fields[1].toUInt();
             point.range = fields[2].toFloat();
             point.radial_speed = fields[3].toFloat();
             point.azimuth = fields[4].toFloat();
-            point.level = fields[5].toFloat();
-            point.computed_range_rate = fields[6].toFloat();
+            point.azimuth_speed = fields[5].toFloat();
+            point.level = fields[6].toFloat();
+            point.computed_range_rate = fields[7].toFloat();
             
             if (!m_trackLogs.contains(point.target_id)) {
                 TrackLogData newTrack;
@@ -1586,29 +1597,45 @@ void LoggingWidget::onRefreshPlotsTimer()
 
 void LoggingWidget::onDetachWindow()
 {
+    // If already detached, bring the window to front
+    if (m_isDetached && m_detachedWindow) {
+        m_detachedWindow->raise();
+        m_detachedWindow->activateWindow();
+        return;
+    }
+    
     // Create a new detached window
-    QDialog* detachedWindow = new QDialog(nullptr);
-    detachedWindow->setWindowTitle("Logging Tab - Detached");
-    detachedWindow->resize(1200, 800);
-    detachedWindow->setAttribute(Qt::WA_DeleteOnClose);
+    m_detachedWindow = new QDialog(nullptr);
+    m_detachedWindow->setWindowTitle("Logging Tab - Detached");
+    m_detachedWindow->resize(1200, 800);
     
     // Clone the widget
-    LoggingWidget* clonedWidget = new LoggingWidget(detachedWindow);
+    LoggingWidget* clonedWidget = new LoggingWidget(m_detachedWindow);
     clonedWidget->m_trackLogs = this->m_trackLogs;
     clonedWidget->m_activeTrackIds = this->m_activeTrackIds;
     clonedWidget->m_totalDataPoints = this->m_totalDataPoints;
+    clonedWidget->m_isLogging = this->m_isLogging;
     clonedWidget->setDarkTheme(this->m_isDarkTheme);
     clonedWidget->onRefreshTrackList();
     clonedWidget->updatePlotsForSelectedTrack();
     
-    QVBoxLayout* layout = new QVBoxLayout(detachedWindow);
+    QVBoxLayout* layout = new QVBoxLayout(m_detachedWindow);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(clonedWidget);
     
-    detachedWindow->show();
+    // Connect window closed signal to reset detached state
+    connect(m_detachedWindow, &QDialog::finished, this, [this]() {
+        m_isDetached = false;
+        m_detachedWindow = nullptr;
+    });
     
-    QMessageBox::information(this, "Window Detached", 
-                             "Logging tab has been detached to a separate window.");
+    m_isDetached = true;
+    m_detachedWindow->show();
+    
+    // Disable the detach button while detached
+    if (m_detachButton) {
+        m_detachButton->setText("Show Detached Window");
+    }
 }
 
 void LoggingWidget::setDarkTheme(bool isDark)
