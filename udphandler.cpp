@@ -1,6 +1,7 @@
 #include "udphandler.h"
 #include <QNetworkDatagram>
 #include <QHostAddress>
+#include <QDir>
 #include <algorithm>
 
 UdpHandler::UdpHandler(QObject *parent)
@@ -463,7 +464,7 @@ QString UdpHandler::createTimestampedFilename()
     // Get current system time and format it
     QDateTime currentTime = QDateTime::currentDateTime();
     QString timestamp = currentTime.toString("yyyyMMdd_HHmmss_zzz");
-    QString filename = QString("track_data_%1.csv").arg(timestamp);
+    QString filename = QString("D:/track_data_%1.csv").arg(timestamp);
     return filename;
 }
 
@@ -471,11 +472,22 @@ void UdpHandler::logTrackDataToFile(const DetectionData& detection)
 {
     // Create new file if not exists or if file pointer is null
     if (!trackDataFile) {
+        // Ensure D:/ directory exists and is accessible
+        QDir dDrive("D:/");
+        if (!dDrive.exists()) {
+            qDebug() << "Warning: D:/ drive not accessible. Attempting to create directory...";
+            if (!dDrive.mkpath("D:/")) {
+                qDebug() << "Failed to access or create D:/ directory. Track data logging disabled.";
+                return;
+            }
+        }
+        
         currentLogFilename = createTimestampedFilename();
         trackDataFile = new QFile(currentLogFilename);
         
         if (!trackDataFile->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
-            qDebug() << "Failed to open track data file:" << currentLogFilename;
+            qDebug() << "Failed to open track data file:" << currentLogFilename 
+                     << "Error:" << trackDataFile->errorString();
             delete trackDataFile;
             trackDataFile = nullptr;
             return;
@@ -486,7 +498,7 @@ void UdpHandler::logTrackDataToFile(const DetectionData& detection)
         out << "Timestamp,Target_ID,Range_m,Radial_Speed_m_s,Azimuth_deg,Amplitude_dB,System_Time\n";
         out.flush();
         
-        qDebug() << "Created track data log file:" << currentLogFilename;
+        qDebug() << "Created track data log file in D:/ drive:" << currentLogFilename;
     }
     
     // Write detection data to file
