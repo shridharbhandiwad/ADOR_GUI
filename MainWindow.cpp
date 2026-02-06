@@ -793,9 +793,9 @@ void MainWindow::setupUI()
     m_speedMeasurementWidget = new SpeedMeasurementWidget(this);
     m_mainTabWidget->addTab(m_speedMeasurementWidget, "Speed Measurement");
     
-    // Create Logging tab
-    m_loggingWidget = new LoggingWidget(this);
-    m_mainTabWidget->addTab(m_loggingWidget, "Logging");
+    // Create Logging widget (will be shown in separate window, not as tab)
+    m_loggingWidget = nullptr;
+    m_loggingWindow = nullptr;
     
     // Add the tab widget to the main layout with stretch
     mainLayout->addWidget(m_mainTabWidget, 1);
@@ -1734,6 +1734,12 @@ void MainWindow::createMenuBar()
     
     // View Menu
     QMenu* viewMenu = menuBar->addMenu(tr("&View"));
+    
+    QAction* loggingAction = viewMenu->addAction(tr("&Logging"));
+    loggingAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
+    connect(loggingAction, &QAction::triggered, this, &MainWindow::onOpenLoggingWindow);
+    
+    viewMenu->addSeparator();
     
     QAction* fullScreenAction = viewMenu->addAction(tr("&Full Screen"));
     fullScreenAction->setShortcut(QKeySequence(Qt::Key_F11));
@@ -3043,4 +3049,41 @@ void MainWindow::onSaveToFile()
     m_statusLabel->setText("Status: Settings saved to file");
     QMessageBox::information(this, "Settings Saved", 
         QString("DSP settings have been saved to:\n%1").arg(fileName));
+}
+
+void MainWindow::onOpenLoggingWindow()
+{
+    // If window already exists, just show and raise it
+    if (m_loggingWindow && m_loggingWidget) {
+        m_loggingWindow->show();
+        m_loggingWindow->raise();
+        m_loggingWindow->activateWindow();
+        return;
+    }
+    
+    // Create new window
+    m_loggingWindow = new QWidget(nullptr, Qt::Window);
+    m_loggingWindow->setWindowTitle("Logging");
+    m_loggingWindow->setAttribute(Qt::WA_DeleteOnClose);
+    m_loggingWindow->resize(1200, 800);
+    
+    // Create layout for the window
+    QVBoxLayout* windowLayout = new QVBoxLayout(m_loggingWindow);
+    windowLayout->setContentsMargins(0, 0, 0, 0);
+    
+    // Create logging widget
+    m_loggingWidget = new LoggingWidget(m_loggingWindow);
+    windowLayout->addWidget(m_loggingWidget);
+    
+    // Apply current theme to logging widget
+    m_loggingWidget->setDarkTheme(m_isDarkTheme);
+    
+    // Connect to clean up when window is closed
+    connect(m_loggingWindow, &QWidget::destroyed, this, [this]() {
+        m_loggingWindow = nullptr;
+        m_loggingWidget = nullptr;
+    });
+    
+    // Show the window
+    m_loggingWindow->show();
 }
