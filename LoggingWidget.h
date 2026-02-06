@@ -327,6 +327,8 @@ private:
     bool m_isDarkTheme;
     qint64 m_loggingStartTime;
     int m_totalDataPoints;
+    bool m_isDetached;
+    QDialog* m_detachedWindow;
     
     // Timers
     QTimer* m_plotRefreshTimer;
