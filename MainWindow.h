@@ -38,6 +38,7 @@ private slots:
     void updateDisplay();
     void readPendingDatagrams();
     void onSimulateDataToggled();
+    void onOpenLoggingWindow();
 
     // Radar parameter slots
     void onRangeChanged(int range);
@@ -97,6 +98,7 @@ private:
     SpeedMeasurementWidget* m_speedMeasurementWidget;
     TimeSeriesPlotsWidget* m_timeSeriesPlotsWidget;
     LoggingWidget* m_loggingWidget;
+    QWidget* m_loggingWindow;  // Separate window for logging
     QTabWidget* m_mainTabWidget;
     QTableWidget* m_trackTable;
     QSplitter* m_mainSplitter;
