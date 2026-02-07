@@ -184,9 +184,11 @@ private:
 
     // Enhanced processing functions
     float applyWindowWithCorrection(std::vector<std::complex<float>>& data, size_t validSamples);
-    void addSimpleNoiseFloor();
-    void addDetectedTargetPeaks();
-    void addSyntheticTarget(float range, float magnitude_db, float rcs_m2);
+    
+    // REMOVED: These functions were creating synthetic/phantom targets
+    // void addSimpleNoiseFloor();
+    // void addDetectedTargetPeaks();
+    // void addSyntheticTarget(float range, float magnitude_db, float rcs_m2);
 
     // NEW: Radar-specific functions for Infineon-style display
     // DISABLED: addSyntheticRadarPeaks() was creating phantom targets - function has been removed
