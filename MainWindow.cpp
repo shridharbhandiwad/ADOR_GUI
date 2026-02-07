@@ -3367,6 +3367,9 @@ void MainWindow::onStartLoggingClicked()
     // Create new log file (will be created on first track data write)
     m_currentLogFilename = "";
     
+    // Set logging state to active
+    m_isLogging = true;
+    
     // Update UI
     updateLoggingStatus();
 }
@@ -3382,14 +3385,17 @@ void MainWindow::onStopLoggingClicked()
         qDebug() << "Logging stopped. Log file saved:" << m_currentLogFilename;
     }
     
+    // Set logging state to inactive
+    m_isLogging = false;
+    
     // Update UI
     updateLoggingStatus();
 }
 
 void MainWindow::updateLoggingStatus()
 {
-    // Check if logging is active (track data file is open)
-    m_isLogging = (m_trackDataFile != nullptr && m_trackDataFile->isOpen());
+    // Use the m_isLogging flag (set by Start/Stop buttons)
+    // Note: m_isLogging is managed by onStartLoggingClicked() and onStopLoggingClicked()
     
     if (m_loggingStatusLabel) {
         if (m_isLogging) {
@@ -3468,6 +3474,11 @@ QString MainWindow::createTimestampedFilename()
 
 void MainWindow::logTrackDataToFile(const TargetTrack& track)
 {
+    // Only log if logging is enabled
+    if (!m_isLogging) {
+        return;
+    }
+    
     // Create new file if not exists or if file pointer is null
     if (!m_trackDataFile) {
         // Ensure D:/ directory exists and is accessible
