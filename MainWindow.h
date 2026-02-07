@@ -39,6 +39,9 @@ private slots:
     void readPendingDatagrams();
     void onSimulateDataToggled();
     void onOpenLoggingWindow();
+    void onStartLoggingClicked();
+    void onStopLoggingClicked();
+    void updateLoggingStatus();
 
     // Radar parameter slots
     void onRangeChanged(int range);
@@ -145,6 +148,13 @@ private:
     QGroupBox* m_dspLeftGroup;
     QGroupBox* m_dspRightGroup;
     QVector<QLabel*> m_dspLabels;  // Store labels for theme updates
+    
+    // Logging Control Widgets (in DSP Settings panel)
+    QGroupBox* m_loggingControlGroup;
+    QLabel* m_loggingStatusLabel;
+    QPushButton* m_startLoggingButton;
+    QPushButton* m_stopLoggingButton;
+    QPushButton* m_openLoggingDetailsButton;
 
     // Network
     QUdpSocket* m_udpSocket;

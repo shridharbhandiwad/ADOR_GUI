@@ -47,8 +47,14 @@ MainWindow::MainWindow(QWidget *parent)
     , m_speedMeasurementWidget(nullptr)
     , m_timeSeriesPlotsWidget(nullptr)
     , m_loggingWidget(nullptr)
+    , m_loggingWindow(nullptr)
     , m_mainTabWidget(nullptr)
     , m_trackTable(nullptr)
+    , m_loggingControlGroup(nullptr)
+    , m_loggingStatusLabel(nullptr)
+    , m_startLoggingButton(nullptr)
+    , m_stopLoggingButton(nullptr)
+    , m_openLoggingDetailsButton(nullptr)
     , m_udpSocket(nullptr)
     , m_updateTimer(nullptr)
     , m_trackRefreshTimer(nullptr)
@@ -722,6 +728,102 @@ void MainWindow::setupUI()
     buttonLayout->addWidget(m_saveToFileButton, 1, 1);
 
     settingsMainLayout->addWidget(buttonContainer, 0);
+    
+    // ========== LOGGING CONTROL SECTION ==========
+    m_loggingControlGroup = new QGroupBox("Logging Control", this);
+    QVBoxLayout* loggingLayout = new QVBoxLayout(m_loggingControlGroup);
+    loggingLayout->setSpacing(8);
+    loggingLayout->setContentsMargins(12, 16, 12, 12);
+    
+    // Status label with icon-like indicator
+    m_loggingStatusLabel = new QLabel("⚫ Logging: Not Active", this);
+    m_loggingStatusLabel->setStyleSheet(R"(
+        QLabel {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666666;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-radius: 6px;
+        }
+    )");
+    m_loggingStatusLabel->setAlignment(Qt::AlignCenter);
+    loggingLayout->addWidget(m_loggingStatusLabel);
+    
+    // Logging control buttons
+    QHBoxLayout* loggingButtonLayout = new QHBoxLayout();
+    loggingButtonLayout->setSpacing(8);
+    
+    m_startLoggingButton = new QPushButton("Start", this);
+    m_startLoggingButton->setMinimumHeight(36);
+    m_startLoggingButton->setStyleSheet(R"(
+        QPushButton {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 12px;
+            background-color: transparent;
+            color: #1a1a1a;
+            border: 2px solid #1a1a1a;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        QPushButton:hover {
+            background-color: rgba(26, 26, 26, 0.08);
+            border-color: #333333;
+            color: #0a0a0a;
+        }
+        QPushButton:pressed {
+            background-color: rgba(26, 26, 26, 0.15);
+            border-color: #0a0a0a;
+        }
+        QPushButton:disabled {
+            color: #999999;
+            border-color: #cccccc;
+        }
+    )");
+    
+    m_stopLoggingButton = new QPushButton("Stop", this);
+    m_stopLoggingButton->setMinimumHeight(36);
+    m_stopLoggingButton->setEnabled(false);
+    m_stopLoggingButton->setStyleSheet(m_startLoggingButton->styleSheet());
+    
+    loggingButtonLayout->addWidget(m_startLoggingButton);
+    loggingButtonLayout->addWidget(m_stopLoggingButton);
+    loggingLayout->addLayout(loggingButtonLayout);
+    
+    // Open Details button
+    m_openLoggingDetailsButton = new QPushButton("Open Details...", this);
+    m_openLoggingDetailsButton->setMinimumHeight(36);
+    m_openLoggingDetailsButton->setStyleSheet(R"(
+        QPushButton {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 12px;
+            background-color: transparent;
+            color: #1a1a1a;
+            border: 2px solid #1a1a1a;
+            border-radius: 8px;
+            letter-spacing: 0.3px;
+        }
+        QPushButton:hover {
+            background-color: rgba(26, 26, 26, 0.08);
+            border-color: #333333;
+            color: #0a0a0a;
+        }
+        QPushButton:pressed {
+            background-color: rgba(26, 26, 26, 0.15);
+            border-color: #0a0a0a;
+        }
+    )");
+    loggingLayout->addWidget(m_openLoggingDetailsButton);
+    
+    // Add logging control group to settings layout
+    settingsMainLayout->addWidget(m_loggingControlGroup, 0);
+    
+    // Connect logging control signals
+    connect(m_startLoggingButton, &QPushButton::clicked, this, &MainWindow::onStartLoggingClicked);
+    connect(m_stopLoggingButton, &QPushButton::clicked, this, &MainWindow::onStopLoggingClicked);
+    connect(m_openLoggingDetailsButton, &QPushButton::clicked, this, &MainWindow::onOpenLoggingWindow);
 
     // Connect DSP settings signals
     connect(m_rangeAvgEdit,        &QLineEdit::editingFinished, this, &MainWindow::onRangeAvgEdited);
@@ -2675,6 +2777,63 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
         for (QLineEdit* edit : lineEdits) {
             if (edit) edit->setStyleSheet(darkEditStyle);
         }
+        
+        // Apply dark theme to logging control group
+        if (m_loggingControlGroup) {
+            m_loggingControlGroup->setStyleSheet(R"(
+                QGroupBox {
+                    font-size: 14px;
+                    font-weight: 600;
+                    padding: 16px 12px 12px 12px;
+                    margin-top: 14px;
+                    background-color: #0a0a0a;
+                    border: 1px solid #262626;
+                    border-radius: 12px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    left: 12px;
+                    top: 2px;
+                    padding: 4px 12px;
+                    background-color: #fafafa;
+                    color: #0a0a0a;
+                    font-weight: 600;
+                    font-size: 13px;
+                    border-radius: 6px;
+                    letter-spacing: 0.5px;
+                }
+            )");
+        }
+        
+        // Apply dark theme to logging buttons
+        const QString darkButtonStyle = R"(
+            QPushButton {
+                font-size: 13px;
+                font-weight: 600;
+                padding: 6px 12px;
+                background-color: transparent;
+                color: #fafafa;
+                border: 2px solid #fafafa;
+                border-radius: 8px;
+                letter-spacing: 0.3px;
+            }
+            QPushButton:hover {
+                background-color: rgba(250, 250, 250, 0.12);
+                border-color: #ffffff;
+            }
+            QPushButton:pressed {
+                background-color: rgba(250, 250, 250, 0.20);
+            }
+            QPushButton:disabled {
+                color: #525252;
+                border-color: #262626;
+            }
+        )";
+        if (m_startLoggingButton) m_startLoggingButton->setStyleSheet(darkButtonStyle);
+        if (m_stopLoggingButton) m_stopLoggingButton->setStyleSheet(darkButtonStyle);
+        if (m_openLoggingDetailsButton) m_openLoggingDetailsButton->setStyleSheet(darkButtonStyle);
+        
     } else {
         // Light theme styles for DSP Settings panel - Monochrome design
         if (m_dspSettingsGroup) {
@@ -2786,6 +2945,119 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
                                        m_numTracksEdit, m_medianFilterEdit, m_mtiLengthEdit};
         for (QLineEdit* edit : lineEdits) {
             if (edit) edit->setStyleSheet(lightEditStyle);
+        }
+        
+        // Apply light theme to logging control group
+        if (m_loggingControlGroup) {
+            m_loggingControlGroup->setStyleSheet(R"(
+                QGroupBox {
+                    font-size: 14px;
+                    font-weight: 600;
+                    padding: 16px 12px 12px 12px;
+                    margin-top: 14px;
+                    background-color: #fafafa;
+                    border: 1px solid #e5e5e5;
+                    border-radius: 12px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    subcontrol-position: top left;
+                    left: 12px;
+                    top: 2px;
+                    padding: 4px 12px;
+                    background-color: #1a1a1a;
+                    color: #ffffff;
+                    font-weight: 600;
+                    font-size: 13px;
+                    border-radius: 6px;
+                    letter-spacing: 0.5px;
+                }
+            )");
+        }
+        
+        // Apply light theme to logging buttons
+        const QString lightButtonStyle = R"(
+            QPushButton {
+                font-size: 13px;
+                font-weight: 600;
+                padding: 6px 12px;
+                background-color: transparent;
+                color: #1a1a1a;
+                border: 2px solid #1a1a1a;
+                border-radius: 8px;
+                letter-spacing: 0.3px;
+            }
+            QPushButton:hover {
+                background-color: rgba(26, 26, 26, 0.08);
+                border-color: #333333;
+                color: #0a0a0a;
+            }
+            QPushButton:pressed {
+                background-color: rgba(26, 26, 26, 0.15);
+                border-color: #0a0a0a;
+            }
+            QPushButton:disabled {
+                color: #999999;
+                border-color: #cccccc;
+            }
+        )";
+        if (m_startLoggingButton) m_startLoggingButton->setStyleSheet(lightButtonStyle);
+        if (m_stopLoggingButton) m_stopLoggingButton->setStyleSheet(lightButtonStyle);
+        if (m_openLoggingDetailsButton) m_openLoggingDetailsButton->setStyleSheet(lightButtonStyle);
+    }
+    
+    // Update logging status display with theme-aware colors
+    if (m_loggingWidget && m_loggingWidget->isLogging()) {
+        if (m_loggingStatusLabel) {
+            if (isDark) {
+                m_loggingStatusLabel->setStyleSheet(R"(
+                    QLabel {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #22c55e;
+                        padding: 8px;
+                        background-color: #14532d;
+                        border-radius: 6px;
+                    }
+                )");
+            } else {
+                m_loggingStatusLabel->setStyleSheet(R"(
+                    QLabel {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #16a34a;
+                        padding: 8px;
+                        background-color: #dcfce7;
+                        border-radius: 6px;
+                    }
+                )");
+            }
+        }
+    } else {
+        if (m_loggingStatusLabel) {
+            if (isDark) {
+                m_loggingStatusLabel->setStyleSheet(R"(
+                    QLabel {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #a3a3a3;
+                        padding: 8px;
+                        background-color: #0a0a0a;
+                        border-radius: 6px;
+                    }
+                )");
+            } else {
+                m_loggingStatusLabel->setStyleSheet(R"(
+                    QLabel {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #666666;
+                        padding: 8px;
+                        background-color: #f5f5f5;
+                        border-radius: 6px;
+                    }
+                )");
+            }
         }
     }
 }
@@ -3105,6 +3377,106 @@ void MainWindow::onOpenLoggingWindow()
     
     // Show the window
     m_loggingWindow->show();
+    
+    // If logging widget exists, sync the status
+    updateLoggingStatus();
+}
+
+void MainWindow::onStartLoggingClicked()
+{
+    // Create logging widget if it doesn't exist yet
+    if (!m_loggingWidget) {
+        // Create a hidden logging widget for background logging
+        m_loggingWidget = new LoggingWidget(this);
+        m_loggingWidget->setDarkTheme(m_isDarkTheme);
+        m_loggingWidget->hide();  // Keep it hidden unless details window is opened
+        
+        // Connect to clean up when this MainWindow is destroyed
+        connect(this, &QObject::destroyed, m_loggingWidget, &QObject::deleteLater);
+    }
+    
+    // Start logging
+    m_loggingWidget->startLogging();
+    
+    // Update UI
+    updateLoggingStatus();
+}
+
+void MainWindow::onStopLoggingClicked()
+{
+    if (m_loggingWidget) {
+        m_loggingWidget->stopLogging();
+    }
+    
+    // Update UI
+    updateLoggingStatus();
+}
+
+void MainWindow::updateLoggingStatus()
+{
+    bool isLogging = m_loggingWidget && m_loggingWidget->isLogging();
+    
+    if (m_loggingStatusLabel) {
+        if (isLogging) {
+            m_loggingStatusLabel->setText("🟢 Logging: Active");
+            if (m_isDarkTheme) {
+                m_loggingStatusLabel->setStyleSheet(R"(
+                    QLabel {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #22c55e;
+                        padding: 8px;
+                        background-color: #14532d;
+                        border-radius: 6px;
+                    }
+                )");
+            } else {
+                m_loggingStatusLabel->setStyleSheet(R"(
+                    QLabel {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #16a34a;
+                        padding: 8px;
+                        background-color: #dcfce7;
+                        border-radius: 6px;
+                    }
+                )");
+            }
+        } else {
+            m_loggingStatusLabel->setText("⚫ Logging: Not Active");
+            if (m_isDarkTheme) {
+                m_loggingStatusLabel->setStyleSheet(R"(
+                    QLabel {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #a3a3a3;
+                        padding: 8px;
+                        background-color: #0a0a0a;
+                        border-radius: 6px;
+                    }
+                )");
+            } else {
+                m_loggingStatusLabel->setStyleSheet(R"(
+                    QLabel {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #666666;
+                        padding: 8px;
+                        background-color: #f5f5f5;
+                        border-radius: 6px;
+                    }
+                )");
+            }
+        }
+    }
+    
+    if (m_startLoggingButton) {
+        m_startLoggingButton->setEnabled(!isLogging);
+    }
+    
+    if (m_stopLoggingButton) {
+        m_stopLoggingButton->setEnabled(isLogging);
+    }
 }
 
 //==============================================================================
