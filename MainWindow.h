@@ -195,6 +195,7 @@ private:
     // Track data logging
     QFile* m_trackDataFile;
     QString m_currentLogFilename;
+    bool m_isLogging;
 
     bool m_isDarkTheme;
     void applyTheme(bool isDark);

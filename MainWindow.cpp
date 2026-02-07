@@ -71,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_frameCount(0)
     , m_targetCount(0)
     , m_trackDataFile(nullptr)
+    , m_isLogging(false)
     , m_dsp{}  // Zero-initialize the DSP settings struct
     , m_isDarkTheme(false)
     , m_expectedNumTargets(0)
@@ -3388,10 +3389,10 @@ void MainWindow::onStopLoggingClicked()
 void MainWindow::updateLoggingStatus()
 {
     // Check if logging is active (track data file is open)
-    bool isLogging = (m_trackDataFile != nullptr && m_trackDataFile->isOpen());
+    m_isLogging = (m_trackDataFile != nullptr && m_trackDataFile->isOpen());
     
     if (m_loggingStatusLabel) {
-        if (isLogging) {
+        if (m_isLogging) {
             m_loggingStatusLabel->setText("🟢 Logging: Active");
             if (m_isDarkTheme) {
                 m_loggingStatusLabel->setStyleSheet(R"(
@@ -3445,11 +3446,11 @@ void MainWindow::updateLoggingStatus()
     }
     
     if (m_startLoggingButton) {
-        m_startLoggingButton->setEnabled(!isLogging);
+        m_startLoggingButton->setEnabled(!m_isLogging);
     }
     
     if (m_stopLoggingButton) {
-        m_stopLoggingButton->setEnabled(isLogging);
+        m_stopLoggingButton->setEnabled(m_isLogging);
     }
 }
 
