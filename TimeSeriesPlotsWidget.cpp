@@ -281,20 +281,18 @@ void TimeSeriesPlotWidget::drawLabels(QPainter& painter)
         painter.drawText(m_marginLeft - axisfm.horizontalAdvance(label) - 5, y + 4, label);
     }
     
-    // X-axis tick labels (time)
-    if (!m_dataPoints.isEmpty()) {
-        qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
-        int numXTicks = 4;
-        for (int i = 0; i <= numXTicks; ++i) {
-            qint64 tickTime = currentTime - m_timeWindowSeconds * 1000 + 
-                              (m_timeWindowSeconds * 1000 * i / numXTicks);
-            QDateTime dt = QDateTime::fromMSecsSinceEpoch(tickTime);
-            QString timeStr = dt.toString("hh:mm:ss");
-            int x = m_plotRect.left() + (m_plotRect.width() * i / numXTicks);
-            QFontMetrics axisfm(axisFont);
-            painter.drawText(x - axisfm.horizontalAdvance(timeStr) / 2, 
-                           m_plotRect.bottom() + 20, timeStr);
-        }
+    // X-axis tick labels (time) - always show even with no data
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    int numXTicks = 4;
+    for (int i = 0; i <= numXTicks; ++i) {
+        qint64 tickTime = currentTime - m_timeWindowSeconds * 1000 + 
+                          (m_timeWindowSeconds * 1000 * i / numXTicks);
+        QDateTime dt = QDateTime::fromMSecsSinceEpoch(tickTime);
+        QString timeStr = dt.toString("hh:mm:ss");
+        int x = m_plotRect.left() + (m_plotRect.width() * i / numXTicks);
+        QFontMetrics axisfm(axisFont);
+        painter.drawText(x - axisfm.horizontalAdvance(timeStr) / 2, 
+                       m_plotRect.bottom() + 20, timeStr);
     }
 }
 
@@ -1196,86 +1194,71 @@ void TimeSeriesPlotsWidget::setupFilterControls()
 {
     m_filterPanel = new QWidget(this);
     
-    QVBoxLayout* filterLayout = new QVBoxLayout(m_filterPanel);
-    filterLayout->setContentsMargins(0, 5, 0, 0);
-    filterLayout->setSpacing(5);
+    QHBoxLayout* filterLayout = new QHBoxLayout(m_filterPanel);
+    filterLayout->setContentsMargins(0, 5, 0, 5);
+    filterLayout->setSpacing(15);
     
-    // Title
-    QLabel* filterTitleLabel = new QLabel("Track filter options", this);
-    QFont titleFont("Segoe UI", 11, QFont::Bold);
+    // Title label on the left
+    QLabel* filterTitleLabel = new QLabel("Track filter options:", this);
+    QFont titleFont("Segoe UI", 10, QFont::Bold);
     filterTitleLabel->setFont(titleFont);
-    filterTitleLabel->setAlignment(Qt::AlignCenter);
     filterLayout->addWidget(filterTitleLabel);
     
-    // Filter controls in horizontal layout
-    QHBoxLayout* filterControlsLayout = new QHBoxLayout();
-    filterControlsLayout->setSpacing(20);
-    filterControlsLayout->addStretch();
-    
     // Min Range
-    QVBoxLayout* minRangeLayout = new QVBoxLayout();
     QLabel* minRangeLabel = new QLabel("Min Range(m)", this);
     m_filterMinRangeSpinBox = new QDoubleSpinBox(this);
     m_filterMinRangeSpinBox->setRange(0, 1000);
     m_filterMinRangeSpinBox->setValue(10.0);  // Default: 10m
     m_filterMinRangeSpinBox->setDecimals(1);
     m_filterMinRangeSpinBox->setSingleStep(1.0);
-    m_filterMinRangeSpinBox->setMinimumWidth(140);
+    m_filterMinRangeSpinBox->setMinimumWidth(100);
+    m_filterMinRangeSpinBox->setMaximumWidth(120);
     connect(m_filterMinRangeSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onFilterMinRangeChanged);
-    minRangeLayout->addWidget(minRangeLabel);
-    minRangeLayout->addWidget(m_filterMinRangeSpinBox);
-    filterControlsLayout->addLayout(minRangeLayout);
+    filterLayout->addWidget(minRangeLabel);
+    filterLayout->addWidget(m_filterMinRangeSpinBox);
     
     // Min Velocity
-    QVBoxLayout* minVelocityLayout = new QVBoxLayout();
     QLabel* minVelocityLabel = new QLabel("Min Velocity(kph)", this);
     m_filterMinVelocitySpinBox = new QDoubleSpinBox(this);
     m_filterMinVelocitySpinBox->setRange(0, 500);
     m_filterMinVelocitySpinBox->setValue(30.0);  // Default: 30kph
     m_filterMinVelocitySpinBox->setDecimals(1);
     m_filterMinVelocitySpinBox->setSingleStep(1.0);
-    m_filterMinVelocitySpinBox->setMinimumWidth(140);
+    m_filterMinVelocitySpinBox->setMinimumWidth(100);
+    m_filterMinVelocitySpinBox->setMaximumWidth(120);
     connect(m_filterMinVelocitySpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onFilterMinVelocityChanged);
-    minVelocityLayout->addWidget(minVelocityLabel);
-    minVelocityLayout->addWidget(m_filterMinVelocitySpinBox);
-    filterControlsLayout->addLayout(minVelocityLayout);
+    filterLayout->addWidget(minVelocityLabel);
+    filterLayout->addWidget(m_filterMinVelocitySpinBox);
     
     // Moving Avg size
-    QVBoxLayout* movingAvgLayout = new QVBoxLayout();
     QLabel* movingAvgLabel = new QLabel("Moving Avg size", this);
     m_filterMovingAvgSpinBox = new QSpinBox(this);
     m_filterMovingAvgSpinBox->setRange(1, 20);
     m_filterMovingAvgSpinBox->setValue(1);  // Default: 1
     m_filterMovingAvgSpinBox->setSingleStep(1);
-    m_filterMovingAvgSpinBox->setMinimumWidth(140);
+    m_filterMovingAvgSpinBox->setMinimumWidth(80);
+    m_filterMovingAvgSpinBox->setMaximumWidth(100);
     connect(m_filterMovingAvgSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onFilterMovingAvgChanged);
-    movingAvgLayout->addWidget(movingAvgLabel);
-    movingAvgLayout->addWidget(m_filterMovingAvgSpinBox);
-    filterControlsLayout->addLayout(movingAvgLayout);
+    filterLayout->addWidget(movingAvgLabel);
+    filterLayout->addWidget(m_filterMovingAvgSpinBox);
     
     // Direction filters (Receding/Approaching)
-    QVBoxLayout* directionLayout = new QVBoxLayout();
-    QLabel* directionLabel = new QLabel(" ", this);  // Empty label for alignment
-    QHBoxLayout* checkboxLayout = new QHBoxLayout();
     m_filterRecedingCheckBox = new QCheckBox("Receding", this);
     m_filterRecedingCheckBox->setChecked(true);  // Default: true
     connect(m_filterRecedingCheckBox, &QCheckBox::toggled,
             this, &TimeSeriesPlotsWidget::onFilterDirectionChanged);
+    filterLayout->addWidget(m_filterRecedingCheckBox);
+    
     m_filterApproachingCheckBox = new QCheckBox("Approaching", this);
     m_filterApproachingCheckBox->setChecked(false);  // Default: false
     connect(m_filterApproachingCheckBox, &QCheckBox::toggled,
             this, &TimeSeriesPlotsWidget::onFilterDirectionChanged);
-    checkboxLayout->addWidget(m_filterRecedingCheckBox);
-    checkboxLayout->addWidget(m_filterApproachingCheckBox);
-    directionLayout->addWidget(directionLabel);
-    directionLayout->addLayout(checkboxLayout);
-    filterControlsLayout->addLayout(directionLayout);
+    filterLayout->addWidget(m_filterApproachingCheckBox);
     
-    filterControlsLayout->addStretch();
-    filterLayout->addLayout(filterControlsLayout);
+    filterLayout->addStretch();
 }
 
 void TimeSeriesPlotsWidget::setupSettingsPanel()
@@ -1430,6 +1413,8 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
 {
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     
+    bool anyTrackPassed = false;
+    
     for (size_t i = 0; i < targets.numTracks && i < targets.targets.size(); ++i) {
         const auto& target = targets.targets[i];
         // Preserve sign for velocity (can be positive or negative)
@@ -1440,6 +1425,8 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         if (!passesFilters(target, velocityKmh)) {
             continue;  // Skip this track if it doesn't pass filters
         }
+        
+        anyTrackPassed = true;
         
         // Apply moving average to range and velocity
         float avgRangeM = applyMovingAverage(target.target_id, rangeM);
@@ -1462,6 +1449,20 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         }
         if (m_rangeRatePlot) {
             m_rangeRatePlot->addDataPoint(currentTime, rangeRateKmh);
+        }
+    }
+    
+    // Even when no tracks pass the filter, trigger a repaint of time series plots
+    // to keep the time axis moving and show that the system is working
+    if (!anyTrackPassed) {
+        if (m_velocityTimePlot) {
+            m_velocityTimePlot->update();
+        }
+        if (m_rangeTimePlot) {
+            m_rangeTimePlot->update();
+        }
+        if (m_rangeRatePlot) {
+            m_rangeRatePlot->update();
         }
     }
 }
