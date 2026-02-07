@@ -1073,6 +1073,7 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_rangeVelocityPlot(nullptr)
     , m_velocityTimePlot(nullptr)
     , m_rangeTimePlot(nullptr)
+    , m_rangeRatePlot(nullptr)
     , m_settingsPanel(nullptr)
     , m_pointSizeSpinBox(nullptr)
     , m_velocityMinSpinBox(nullptr)
@@ -1082,9 +1083,20 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_timeWindowSpinBox(nullptr)
     , m_rvRangeMaxSpinBox(nullptr)
     , m_rvVelocityMaxSpinBox(nullptr)
+    , m_filterPanel(nullptr)
+    , m_filterMinRangeSpinBox(nullptr)
+    , m_filterMinVelocitySpinBox(nullptr)
+    , m_filterMovingAvgSpinBox(nullptr)
+    , m_filterRecedingCheckBox(nullptr)
+    , m_filterApproachingCheckBox(nullptr)
     , m_isDarkTheme(false)
     , m_maxRange(100.0f)
     , m_maxVelocity(100.0f)
+    , m_filterMinRange(10.0f)
+    , m_filterMinVelocity(30.0f)
+    , m_filterMovingAvgSize(1)
+    , m_filterReceding(true)
+    , m_filterApproaching(false)
 {
     setupUI();
     loadSettings();  // Load saved settings on startup
@@ -1100,33 +1112,18 @@ void TimeSeriesPlotsWidget::setupUI()
     mainLayout->setSpacing(10);
     mainLayout->setContentsMargins(10, 10, 10, 10);
     
-    // Main content area with horizontal split
-    QHBoxLayout* contentLayout = new QHBoxLayout();
-    contentLayout->setSpacing(15);
+    // Add title
+    QLabel* titleLabel = new QLabel("Time Series Plots", this);
+    QFont titleFont("Segoe UI", 14, QFont::Bold);
+    titleLabel->setFont(titleFont);
+    titleLabel->setAlignment(Qt::AlignCenter);
+    mainLayout->addWidget(titleLabel);
     
-    // Left side - Range vs Velocity plot
-    QVBoxLayout* leftColumn = new QVBoxLayout();
+    // Main content area with 2x2 grid layout
+    QGridLayout* gridLayout = new QGridLayout();
+    gridLayout->setSpacing(10);
     
-    QGroupBox* leftGroup = new QGroupBox(this);
-    QVBoxLayout* leftLayout = new QVBoxLayout(leftGroup);
-    leftLayout->setContentsMargins(5, 5, 5, 5);
-    
-    m_rangeVelocityPlot = new RangeVelocityPlotWidget(this);
-    m_rangeVelocityPlot->setMinRangeLimit(0.0f);  // Will be updated by spinbox
-    m_rangeVelocityPlot->setRangeLimit(m_maxRange);
-    m_rangeVelocityPlot->setMinVelocityLimit(-40.0f);  // Will be updated by spinbox, allow negative
-    m_rangeVelocityPlot->setVelocityLimit(40.0f);  // Will be updated by spinbox
-    leftLayout->addWidget(m_rangeVelocityPlot);
-    
-    leftColumn->addWidget(leftGroup);
-    
-    contentLayout->addLayout(leftColumn, 1);
-    
-    // Right side - Time series plots (stacked)
-    QVBoxLayout* rightLayout = new QVBoxLayout();
-    rightLayout->setSpacing(10);
-    
-    // Velocity vs Time plot
+    // Top-left: Velocity vs Time plot
     QGroupBox* velocityGroup = new QGroupBox(this);
     QVBoxLayout* velocityGroupLayout = new QVBoxLayout(velocityGroup);
     velocityGroupLayout->setContentsMargins(5, 5, 5, 5);
@@ -1138,9 +1135,9 @@ void TimeSeriesPlotsWidget::setupUI()
     m_velocityTimePlot->setTimeWindowSeconds(60);
     velocityGroupLayout->addWidget(m_velocityTimePlot);
     
-    rightLayout->addWidget(velocityGroup, 1);
+    gridLayout->addWidget(velocityGroup, 0, 0);
     
-    // Range vs Time plot
+    // Top-right: Range vs Time plot
     QGroupBox* rangeGroup = new QGroupBox(this);
     QVBoxLayout* rangeGroupLayout = new QVBoxLayout(rangeGroup);
     rangeGroupLayout->setContentsMargins(5, 5, 5, 5);
@@ -1152,17 +1149,133 @@ void TimeSeriesPlotsWidget::setupUI()
     m_rangeTimePlot->setTimeWindowSeconds(60);
     rangeGroupLayout->addWidget(m_rangeTimePlot);
     
-    rightLayout->addWidget(rangeGroup, 1);
+    gridLayout->addWidget(rangeGroup, 0, 1);
     
-    contentLayout->addLayout(rightLayout, 1);
+    // Bottom-left: Range Rate vs Time plot
+    QGroupBox* rangeRateGroup = new QGroupBox("Range Rate plot", this);
+    QVBoxLayout* rangeRateGroupLayout = new QVBoxLayout(rangeRateGroup);
+    rangeRateGroupLayout->setContentsMargins(5, 5, 5, 5);
     
-    mainLayout->addLayout(contentLayout, 1);
+    m_rangeRatePlot = new TimeSeriesPlotWidget(this);
+    m_rangeRatePlot->setYAxisLabel("Range Rate");
+    m_rangeRatePlot->setYAxisUnit("kph");
+    m_rangeRatePlot->setYAxisRange(-100, 100);  // Default range: -100 to +100 kph
+    m_rangeRatePlot->setTimeWindowSeconds(60);
+    rangeRateGroupLayout->addWidget(m_rangeRatePlot);
+    
+    gridLayout->addWidget(rangeRateGroup, 1, 0);
+    
+    // Bottom-right: Range vs Velocity plot
+    QGroupBox* rvGroup = new QGroupBox(this);
+    QVBoxLayout* rvGroupLayout = new QVBoxLayout(rvGroup);
+    rvGroupLayout->setContentsMargins(5, 5, 5, 5);
+    
+    m_rangeVelocityPlot = new RangeVelocityPlotWidget(this);
+    m_rangeVelocityPlot->setMinRangeLimit(0.0f);  // Will be updated by spinbox
+    m_rangeVelocityPlot->setRangeLimit(m_maxRange);
+    m_rangeVelocityPlot->setMinVelocityLimit(-40.0f);  // Will be updated by spinbox, allow negative
+    m_rangeVelocityPlot->setVelocityLimit(40.0f);  // Will be updated by spinbox
+    rvGroupLayout->addWidget(m_rangeVelocityPlot);
+    
+    gridLayout->addWidget(rvGroup, 1, 1);
+    
+    mainLayout->addLayout(gridLayout, 1);
+    
+    // Filter controls panel
+    setupFilterControls();
+    mainLayout->addWidget(m_filterPanel);
     
     // Settings panel at the bottom
     setupSettingsPanel();
     mainLayout->addWidget(m_settingsPanel);
     
     applyTheme();
+}
+
+void TimeSeriesPlotsWidget::setupFilterControls()
+{
+    m_filterPanel = new QWidget(this);
+    
+    QVBoxLayout* filterLayout = new QVBoxLayout(m_filterPanel);
+    filterLayout->setContentsMargins(0, 5, 0, 0);
+    filterLayout->setSpacing(5);
+    
+    // Title
+    QLabel* filterTitleLabel = new QLabel("Track filter options", this);
+    QFont titleFont("Segoe UI", 11, QFont::Bold);
+    filterTitleLabel->setFont(titleFont);
+    filterTitleLabel->setAlignment(Qt::AlignCenter);
+    filterLayout->addWidget(filterTitleLabel);
+    
+    // Filter controls in horizontal layout
+    QHBoxLayout* filterControlsLayout = new QHBoxLayout();
+    filterControlsLayout->setSpacing(20);
+    filterControlsLayout->addStretch();
+    
+    // Min Range
+    QVBoxLayout* minRangeLayout = new QVBoxLayout();
+    QLabel* minRangeLabel = new QLabel("Min Range(m)", this);
+    m_filterMinRangeSpinBox = new QDoubleSpinBox(this);
+    m_filterMinRangeSpinBox->setRange(0, 1000);
+    m_filterMinRangeSpinBox->setValue(10.0);  // Default: 10m
+    m_filterMinRangeSpinBox->setDecimals(1);
+    m_filterMinRangeSpinBox->setSingleStep(1.0);
+    m_filterMinRangeSpinBox->setMinimumWidth(140);
+    connect(m_filterMinRangeSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onFilterMinRangeChanged);
+    minRangeLayout->addWidget(minRangeLabel);
+    minRangeLayout->addWidget(m_filterMinRangeSpinBox);
+    filterControlsLayout->addLayout(minRangeLayout);
+    
+    // Min Velocity
+    QVBoxLayout* minVelocityLayout = new QVBoxLayout();
+    QLabel* minVelocityLabel = new QLabel("Min Velocity(kph)", this);
+    m_filterMinVelocitySpinBox = new QDoubleSpinBox(this);
+    m_filterMinVelocitySpinBox->setRange(0, 500);
+    m_filterMinVelocitySpinBox->setValue(30.0);  // Default: 30kph
+    m_filterMinVelocitySpinBox->setDecimals(1);
+    m_filterMinVelocitySpinBox->setSingleStep(1.0);
+    m_filterMinVelocitySpinBox->setMinimumWidth(140);
+    connect(m_filterMinVelocitySpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onFilterMinVelocityChanged);
+    minVelocityLayout->addWidget(minVelocityLabel);
+    minVelocityLayout->addWidget(m_filterMinVelocitySpinBox);
+    filterControlsLayout->addLayout(minVelocityLayout);
+    
+    // Moving Avg size
+    QVBoxLayout* movingAvgLayout = new QVBoxLayout();
+    QLabel* movingAvgLabel = new QLabel("Moving Avg size", this);
+    m_filterMovingAvgSpinBox = new QSpinBox(this);
+    m_filterMovingAvgSpinBox->setRange(1, 20);
+    m_filterMovingAvgSpinBox->setValue(1);  // Default: 1
+    m_filterMovingAvgSpinBox->setSingleStep(1);
+    m_filterMovingAvgSpinBox->setMinimumWidth(140);
+    connect(m_filterMovingAvgSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &TimeSeriesPlotsWidget::onFilterMovingAvgChanged);
+    movingAvgLayout->addWidget(movingAvgLabel);
+    movingAvgLayout->addWidget(m_filterMovingAvgSpinBox);
+    filterControlsLayout->addLayout(movingAvgLayout);
+    
+    // Direction filters (Receding/Approaching)
+    QVBoxLayout* directionLayout = new QVBoxLayout();
+    QLabel* directionLabel = new QLabel(" ", this);  // Empty label for alignment
+    QHBoxLayout* checkboxLayout = new QHBoxLayout();
+    m_filterRecedingCheckBox = new QCheckBox("Receding", this);
+    m_filterRecedingCheckBox->setChecked(true);  // Default: true
+    connect(m_filterRecedingCheckBox, &QCheckBox::toggled,
+            this, &TimeSeriesPlotsWidget::onFilterDirectionChanged);
+    m_filterApproachingCheckBox = new QCheckBox("Approaching", this);
+    m_filterApproachingCheckBox->setChecked(false);  // Default: false
+    connect(m_filterApproachingCheckBox, &QCheckBox::toggled,
+            this, &TimeSeriesPlotsWidget::onFilterDirectionChanged);
+    checkboxLayout->addWidget(m_filterRecedingCheckBox);
+    checkboxLayout->addWidget(m_filterApproachingCheckBox);
+    directionLayout->addWidget(directionLabel);
+    directionLayout->addLayout(checkboxLayout);
+    filterControlsLayout->addLayout(directionLayout);
+    
+    filterControlsLayout->addStretch();
+    filterLayout->addLayout(filterControlsLayout);
 }
 
 void TimeSeriesPlotsWidget::setupSettingsPanel()
@@ -1323,17 +1436,32 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         float velocityKmh = target.radial_speed * 3.6f;  // Convert m/s to km/h
         float rangeM = target.radius;
         
+        // Apply filters
+        if (!passesFilters(target, velocityKmh)) {
+            continue;  // Skip this track if it doesn't pass filters
+        }
+        
+        // Apply moving average to range and velocity
+        float avgRangeM = applyMovingAverage(target.target_id, rangeM);
+        float avgVelocityKmh = applyMovingAverage(target.target_id + 1000000, velocityKmh);  // Use offset ID for velocity buffer
+        
+        // Calculate range rate (dR/dT)
+        float rangeRateKmh = calculateRangeRate(target.target_id, avgRangeM, currentTime);
+        
         // Update range-velocity plot (preserves velocity sign)
         if (m_rangeVelocityPlot) {
-            m_rangeVelocityPlot->addDataPoint(velocityKmh, rangeM);
+            m_rangeVelocityPlot->addDataPoint(avgVelocityKmh, avgRangeM);
         }
         
         // Update time series plots (velocity preserves sign)
         if (m_velocityTimePlot) {
-            m_velocityTimePlot->addDataPoint(currentTime, velocityKmh);
+            m_velocityTimePlot->addDataPoint(currentTime, avgVelocityKmh);
         }
         if (m_rangeTimePlot) {
-            m_rangeTimePlot->addDataPoint(currentTime, rangeM);
+            m_rangeTimePlot->addDataPoint(currentTime, avgRangeM);
+        }
+        if (m_rangeRatePlot) {
+            m_rangeRatePlot->addDataPoint(currentTime, rangeRateKmh);
         }
     }
 }
@@ -1350,6 +1478,9 @@ void TimeSeriesPlotsWidget::setDarkTheme(bool isDark)
     }
     if (m_rangeTimePlot) {
         m_rangeTimePlot->setDarkTheme(isDark);
+    }
+    if (m_rangeRatePlot) {
+        m_rangeRatePlot->setDarkTheme(isDark);
     }
     
     applyTheme();
@@ -1424,6 +1555,9 @@ void TimeSeriesPlotsWidget::onPointSizeChanged(int size)
     if (m_rangeTimePlot) {
         m_rangeTimePlot->setPointSize(size);
     }
+    if (m_rangeRatePlot) {
+        m_rangeRatePlot->setPointSize(size);
+    }
     if (m_rangeVelocityPlot) {
         m_rangeVelocityPlot->setPointSize(size);
     }
@@ -1487,6 +1621,9 @@ void TimeSeriesPlotsWidget::onTimeWindowChanged(int seconds)
     if (m_rangeTimePlot) {
         m_rangeTimePlot->setTimeWindowSeconds(seconds);
     }
+    if (m_rangeRatePlot) {
+        m_rangeRatePlot->setTimeWindowSeconds(seconds);
+    }
 }
 
 void TimeSeriesPlotsWidget::onRVRangeMaxChanged(double value)
@@ -1514,6 +1651,13 @@ void TimeSeriesPlotsWidget::clearAllData()
     if (m_rangeTimePlot) {
         m_rangeTimePlot->clearData();
     }
+    if (m_rangeRatePlot) {
+        m_rangeRatePlot->clearData();
+    }
+    
+    // Clear track history and moving average buffers
+    m_trackHistory.clear();
+    m_movingAvgBuffer.clear();
 }
 
 void TimeSeriesPlotsWidget::applyTheme()
@@ -1528,45 +1672,66 @@ void TimeSeriesPlotsWidget::applyTheme()
     QString buttonTextColor = "#ffffff";
     QString buttonHoverColor = m_isDarkTheme ? "#2563eb" : "#1d4ed8";
     
+    QString panelStyle = QString(
+        "QWidget {"
+        "  background-color: %1;"
+        "  color: %2;"
+        "}"
+        "QLabel {"
+        "  color: %2;"
+        "  font-weight: 500;"
+        "}"
+        "QSpinBox, QDoubleSpinBox {"
+        "  background: %3;"
+        "  border: 1px solid %4;"
+        "  border-radius: 4px;"
+        "  padding: 5px;"
+        "  color: %2;"
+        "}"
+        "QSpinBox:focus, QDoubleSpinBox:focus {"
+        "  border-color: %5;"
+        "  border-width: 2px;"
+        "}"
+        "QCheckBox {"
+        "  color: %2;"
+        "  spacing: 5px;"
+        "}"
+        "QCheckBox::indicator {"
+        "  width: 18px;"
+        "  height: 18px;"
+        "  border: 1px solid %4;"
+        "  border-radius: 3px;"
+        "  background: %3;"
+        "}"
+        "QCheckBox::indicator:checked {"
+        "  background: %5;"
+        "  border-color: %5;"
+        "}"
+        "QPushButton {"
+        "  background-color: %6;"
+        "  color: %7;"
+        "  border: none;"
+        "  border-radius: 6px;"
+        "  padding: 8px 16px;"
+        "  font-weight: 500;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: %8;"
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: %5;"
+        "}"
+    ).arg(bgColor, textColor, inputBgColor, borderColor, accentColor, 
+          buttonBgColor, buttonTextColor, buttonHoverColor);
+    
+    // Style the filter panel
+    if (m_filterPanel) {
+        m_filterPanel->setStyleSheet(panelStyle);
+    }
+    
     // Style the settings panel
     if (m_settingsPanel) {
-        QString settingsPanelStyle = QString(
-            "QWidget {"
-            "  background-color: %1;"
-            "  color: %2;"
-            "}"
-            "QLabel {"
-            "  color: %2;"
-            "  font-weight: 500;"
-            "}"
-            "QSpinBox, QDoubleSpinBox {"
-            "  background: %3;"
-            "  border: 1px solid %4;"
-            "  border-radius: 4px;"
-            "  padding: 5px;"
-            "  color: %2;"
-            "}"
-            "QSpinBox:focus, QDoubleSpinBox:focus {"
-            "  border-color: %5;"
-            "  border-width: 2px;"
-            "}"
-            "QPushButton {"
-            "  background-color: %6;"
-            "  color: %7;"
-            "  border: none;"
-            "  border-radius: 6px;"
-            "  padding: 8px 16px;"
-            "  font-weight: 500;"
-            "}"
-            "QPushButton:hover {"
-            "  background-color: %8;"
-            "}"
-            "QPushButton:pressed {"
-            "  background-color: %5;"
-            "}"
-        ).arg(bgColor, textColor, inputBgColor, borderColor, accentColor, 
-              buttonBgColor, buttonTextColor, buttonHoverColor);
-        m_settingsPanel->setStyleSheet(settingsPanelStyle);
+        m_settingsPanel->setStyleSheet(panelStyle);
     }
     
     // Style the group boxes
@@ -1577,8 +1742,10 @@ void TimeSeriesPlotsWidget::applyTheme()
         "  border-radius: 8px;"
         "  margin-top: 0px;"
         "  padding: 5px;"
+        "  font-weight: bold;"
+        "  color: %3;"
         "}"
-    ).arg(groupBgColor, borderColor);
+    ).arg(groupBgColor, borderColor, textColor);
     
     QList<QGroupBox*> groupBoxes = findChildren<QGroupBox*>();
     for (QGroupBox* gb : groupBoxes) {
@@ -1606,6 +1773,13 @@ void TimeSeriesPlotsWidget::saveSettings()
     settings.setValue("timeWindow", m_timeWindowSpinBox->value());
     settings.setValue("rvRangeMax", m_rvRangeMaxSpinBox->value());
     settings.setValue("rvVelocityMax", m_rvVelocityMaxSpinBox->value());
+    
+    // Save filter settings
+    settings.setValue("filterMinRange", m_filterMinRangeSpinBox->value());
+    settings.setValue("filterMinVelocity", m_filterMinVelocitySpinBox->value());
+    settings.setValue("filterMovingAvg", m_filterMovingAvgSpinBox->value());
+    settings.setValue("filterReceding", m_filterRecedingCheckBox->isChecked());
+    settings.setValue("filterApproaching", m_filterApproachingCheckBox->isChecked());
     
     settings.endGroup();
 }
@@ -1657,6 +1831,32 @@ void TimeSeriesPlotsWidget::loadSettings()
         m_rvVelocityMaxSpinBox->setValue(rvVelocityMax);
     }
     
+    // Load filter settings
+    if (m_filterMinRangeSpinBox) {
+        double filterMinRange = settings.value("filterMinRange", 10.0).toDouble();
+        m_filterMinRangeSpinBox->setValue(filterMinRange);
+    }
+    
+    if (m_filterMinVelocitySpinBox) {
+        double filterMinVelocity = settings.value("filterMinVelocity", 30.0).toDouble();
+        m_filterMinVelocitySpinBox->setValue(filterMinVelocity);
+    }
+    
+    if (m_filterMovingAvgSpinBox) {
+        int filterMovingAvg = settings.value("filterMovingAvg", 1).toInt();
+        m_filterMovingAvgSpinBox->setValue(filterMovingAvg);
+    }
+    
+    if (m_filterRecedingCheckBox) {
+        bool filterReceding = settings.value("filterReceding", true).toBool();
+        m_filterRecedingCheckBox->setChecked(filterReceding);
+    }
+    
+    if (m_filterApproachingCheckBox) {
+        bool filterApproaching = settings.value("filterApproaching", false).toBool();
+        m_filterApproachingCheckBox->setChecked(filterApproaching);
+    }
+    
     settings.endGroup();
 }
 
@@ -1670,4 +1870,127 @@ void TimeSeriesPlotsWidget::onLoadSettings()
 {
     loadSettings();
     // Could add a visual confirmation here (e.g., message box or status indication)
+}
+
+// Filter control slots implementation
+void TimeSeriesPlotsWidget::onFilterMinRangeChanged(double value)
+{
+    m_filterMinRange = value;
+}
+
+void TimeSeriesPlotsWidget::onFilterMinVelocityChanged(double value)
+{
+    m_filterMinVelocity = value;
+}
+
+void TimeSeriesPlotsWidget::onFilterMovingAvgChanged(int value)
+{
+    m_filterMovingAvgSize = value;
+    // Clear moving average buffers when size changes
+    m_movingAvgBuffer.clear();
+}
+
+void TimeSeriesPlotsWidget::onFilterDirectionChanged()
+{
+    m_filterReceding = m_filterRecedingCheckBox->isChecked();
+    m_filterApproaching = m_filterApproachingCheckBox->isChecked();
+}
+
+// Check if a track passes all filters
+bool TimeSeriesPlotsWidget::passesFilters(const TargetTrack& track, float velocityKmh) const
+{
+    // Filter by minimum range
+    if (track.radius < m_filterMinRange) {
+        return false;
+    }
+    
+    // Filter by minimum velocity (absolute value)
+    if (std::abs(velocityKmh) < m_filterMinVelocity) {
+        return false;
+    }
+    
+    // Filter by direction (receding = negative velocity, approaching = positive velocity)
+    bool isReceding = (track.radial_speed < 0);
+    bool isApproaching = (track.radial_speed > 0);
+    
+    // If neither filter is checked, allow all
+    if (!m_filterReceding && !m_filterApproaching) {
+        return true;
+    }
+    
+    // Check direction filters
+    if (m_filterReceding && isReceding) {
+        return true;
+    }
+    if (m_filterApproaching && isApproaching) {
+        return true;
+    }
+    
+    return false;
+}
+
+// Apply moving average to a value
+float TimeSeriesPlotsWidget::applyMovingAverage(uint32_t trackId, float value)
+{
+    if (m_filterMovingAvgSize <= 1) {
+        return value;  // No averaging needed
+    }
+    
+    // Get or create buffer for this track
+    if (!m_movingAvgBuffer.contains(trackId)) {
+        m_movingAvgBuffer[trackId] = QVector<float>();
+    }
+    
+    QVector<float>& buffer = m_movingAvgBuffer[trackId];
+    buffer.append(value);
+    
+    // Keep only the last N values
+    while (buffer.size() > m_filterMovingAvgSize) {
+        buffer.removeFirst();
+    }
+    
+    // Calculate average
+    float sum = 0.0f;
+    for (float v : buffer) {
+        sum += v;
+    }
+    
+    return sum / buffer.size();
+}
+
+// Calculate range rate (dR/dT) in kph
+float TimeSeriesPlotsWidget::calculateRangeRate(uint32_t trackId, float currentRange, qint64 timestamp)
+{
+    // Get or create history for this track
+    if (!m_trackHistory.contains(trackId)) {
+        m_trackHistory[trackId] = QVector<TrackHistory>();
+    }
+    
+    QVector<TrackHistory>& history = m_trackHistory[trackId];
+    
+    float rangeRate = 0.0f;
+    
+    // If we have previous data, calculate range rate
+    if (!history.isEmpty()) {
+        const TrackHistory& lastPoint = history.last();
+        float dR = currentRange - lastPoint.range;  // meters
+        float dT = (timestamp - lastPoint.timestamp) / 1000.0f;  // convert ms to seconds
+        
+        if (dT > 0.001f) {  // Avoid division by zero
+            rangeRate = (dR / dT) * 3.6f;  // Convert m/s to kph
+        }
+    }
+    
+    // Add current point to history
+    TrackHistory current;
+    current.timestamp = timestamp;
+    current.range = currentRange;
+    history.append(current);
+    
+    // Keep only the last 10 points per track to avoid memory growth
+    while (history.size() > 10) {
+        history.removeFirst();
+    }
+    
+    return rangeRate;
 }
