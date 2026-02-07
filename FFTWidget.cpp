@@ -262,40 +262,47 @@ void FFTWidget::performFFTFromComplexData(const std::vector<ComplexSample>& comp
         }
     }
 
-    // Add synthetic peaks for testing (similar to Infineon GUI)
-    if (!m_magnitudeSpectrum.empty()) {
-        addSyntheticRadarPeaks();
-    }
+    // REMOVED: Synthetic peaks were causing phantom targets to appear even with no real data
+    // This was a dangerous bug as it could mislead users into thinking targets exist when they don't
+    // if (!m_magnitudeSpectrum.empty()) {
+    //     addSyntheticRadarPeaks();
+    // }
 }
 
-void FFTWidget::addSyntheticRadarPeaks()
-{
-    // Add a strong peak at ~1.5m range (like Infineon GUI shows)
-    float targetRange = 1.49f; // meters
-    float targetMagnitude = 54.0f; // dB (matching Infineon display)
-
-    // Find the closest bin to 1.49m
-    for (size_t i = 0; i < m_rangeAxis.size(); ++i) {
-        if (std::abs(m_rangeAxis[i] - targetRange) < 0.1f) {
-            m_magnitudeSpectrum[i] = targetMagnitude;
-            // Add some spreading to adjacent bins for realistic peak
-            if (i > 0) m_magnitudeSpectrum[i-1] = targetMagnitude - 3.0f;
-            if (i < m_magnitudeSpectrum.size()-1) m_magnitudeSpectrum[i+1] = targetMagnitude - 3.0f;
-            break;
-        }
-    }
-
-    // Add a weaker peak at ~5m range
-    float targetRange2 = 5.0f;
-    float targetMagnitude2 = 35.0f;
-
-    for (size_t i = 0; i < m_rangeAxis.size(); ++i) {
-        if (std::abs(m_rangeAxis[i] - targetRange2) < 0.2f) {
-            m_magnitudeSpectrum[i] = std::max(m_magnitudeSpectrum[i], targetMagnitude2);
-            break;
-        }
-    }
-}
+// DISABLED: This function was adding synthetic/fake radar peaks which caused phantom targets
+// to appear even when no real data was received. This is a DANGEROUS BUG as it misleads users
+// into thinking targets exist when they actually don't.
+// 
+// The function has been disabled to ensure only real radar data is displayed.
+//
+// void FFTWidget::addSyntheticRadarPeaks()
+// {
+//     // Add a strong peak at ~1.5m range (like Infineon GUI shows)
+//     float targetRange = 1.49f; // meters
+//     float targetMagnitude = 54.0f; // dB (matching Infineon display)
+// 
+//     // Find the closest bin to 1.49m
+//     for (size_t i = 0; i < m_rangeAxis.size(); ++i) {
+//         if (std::abs(m_rangeAxis[i] - targetRange) < 0.1f) {
+//             m_magnitudeSpectrum[i] = targetMagnitude;
+//             // Add some spreading to adjacent bins for realistic peak
+//             if (i > 0) m_magnitudeSpectrum[i-1] = targetMagnitude - 3.0f;
+//             if (i < m_magnitudeSpectrum.size()-1) m_magnitudeSpectrum[i+1] = targetMagnitude - 3.0f;
+//             break;
+//         }
+//     }
+// 
+//     // Add a weaker peak at ~5m range
+//     float targetRange2 = 5.0f;
+//     float targetMagnitude2 = 35.0f;
+// 
+//     for (size_t i = 0; i < m_rangeAxis.size(); ++i) {
+//         if (std::abs(m_rangeAxis[i] - targetRange2) < 0.2f) {
+//             m_magnitudeSpectrum[i] = std::max(m_magnitudeSpectrum[i], targetMagnitude2);
+//             break;
+//         }
+//     }
+// }
 
 void FFTWidget::applyWindow(std::vector<std::complex<float>>& data, size_t validSamples)
 {
