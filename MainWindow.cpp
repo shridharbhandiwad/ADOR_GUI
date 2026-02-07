@@ -1419,29 +1419,21 @@ void MainWindow::generateSimulatedTargetData()
 
 void MainWindow::generateSimulatedADCData()
 {
+    // DISABLED: Synthetic signal generation was creating fake radar peaks
+    // This misled users into thinking targets exist when they don't
+    // Now only generating noise floor to avoid phantom targets
+    
     uint32_t numComplexSamples = 32;
     m_currentADCFrame.complex_data.resize(numComplexSamples);
     m_currentADCFrame.num_samples_per_chirp = numComplexSamples;
 
-    float sampleRate = 100000.0f;
-    float t_step = 1.0f / sampleRate;
-    float freq1 = 5000.0f;
-    float freq2 = 15000.0f;
-    float freq3 = 25000.0f;
+    // Generate only noise - no synthetic signals
     std::uniform_real_distribution<float> noiseDist(-0.05f, 0.05f);
 
     for (uint32_t i = 0; i < numComplexSamples; ++i) {
-        float t = i * t_step;
-        float I_signal = 0.8f * std::cos(2.0f * M_PI * freq1 * t) +
-                        0.5f * std::cos(2.0f * M_PI * freq2 * t) +
-                        0.3f * std::cos(2.0f * M_PI * freq3 * t);
-        float Q_signal = 0.8f * std::sin(2.0f * M_PI * freq1 * t) +
-                        0.5f * std::sin(2.0f * M_PI * freq2 * t) +
-                        0.3f * std::sin(2.0f * M_PI * freq3 * t);
-        I_signal += noiseDist(m_randomEngine);
-        Q_signal += noiseDist(m_randomEngine);
-        m_currentADCFrame.complex_data[i].I = I_signal;
-        m_currentADCFrame.complex_data[i].Q = Q_signal;
+        // Only noise, no synthetic peaks
+        m_currentADCFrame.complex_data[i].I = noiseDist(m_randomEngine);
+        m_currentADCFrame.complex_data[i].Q = noiseDist(m_randomEngine);
     }
     m_currentADCFrame.computeMagnitudes();
 }
