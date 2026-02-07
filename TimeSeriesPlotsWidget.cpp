@@ -1095,6 +1095,7 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_filterMovingAvgSize(1)
     , m_filterReceding(true)
     , m_filterApproaching(false)
+    , m_lastDataReceivedTime(0)
 {
     setupUI();
     loadSettings();  // Load saved settings on startup
@@ -1413,6 +1414,24 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
 {
     qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
     
+    // Check if no tracks are received at all
+    if (targets.numTracks == 0) {
+        // Clear all time series plots when no data is received
+        if (m_velocityTimePlot) {
+            m_velocityTimePlot->clearData();
+        }
+        if (m_rangeTimePlot) {
+            m_rangeTimePlot->clearData();
+        }
+        if (m_rangeRatePlot) {
+            m_rangeRatePlot->clearData();
+        }
+        // Don't clear range-velocity plot as it accumulates data over time
+        
+        m_lastDataReceivedTime = 0;
+        return;
+    }
+    
     bool anyTrackPassed = false;
     
     for (size_t i = 0; i < targets.numTracks && i < targets.targets.size(); ++i) {
@@ -1452,9 +1471,23 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         }
     }
     
-    // Even when no tracks pass the filter, trigger a repaint of time series plots
-    // to keep the time axis moving and show that the system is working
+    // If tracks exist but none pass the filter, check if we should clear the plots
     if (!anyTrackPassed) {
+        // If we haven't received valid data for more than 2 seconds, clear the time series plots
+        if (m_lastDataReceivedTime > 0 && (currentTime - m_lastDataReceivedTime) > 2000) {
+            if (m_velocityTimePlot) {
+                m_velocityTimePlot->clearData();
+            }
+            if (m_rangeTimePlot) {
+                m_rangeTimePlot->clearData();
+            }
+            if (m_rangeRatePlot) {
+                m_rangeRatePlot->clearData();
+            }
+            m_lastDataReceivedTime = 0;
+        }
+        
+        // Trigger a repaint to update the time axis
         if (m_velocityTimePlot) {
             m_velocityTimePlot->update();
         }
@@ -1464,6 +1497,9 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         if (m_rangeRatePlot) {
             m_rangeRatePlot->update();
         }
+    } else {
+        // Update the last data received time when we have valid data
+        m_lastDataReceivedTime = currentTime;
     }
 }
 
