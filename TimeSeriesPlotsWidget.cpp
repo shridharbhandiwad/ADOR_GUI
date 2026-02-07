@@ -32,12 +32,25 @@ TimeSeriesPlotWidget::TimeSeriesPlotWidget(QWidget *parent)
     , m_panOffsetY(0.0f)
     , m_hoveredPointIndex(-1)
     , m_showTooltip(false)
+    , m_cleanupTimer(nullptr)
 {
     // No hard-coded minimum size to allow responsive layout
     setBackgroundRole(QPalette::Base);
     setAutoFillBackground(true);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setMouseTracking(true);  // Enable mouse tracking for hover effects
+    
+    // Setup cleanup timer to remove old data points every second
+    m_cleanupTimer = new QTimer(this);
+    connect(m_cleanupTimer, &QTimer::timeout, this, &TimeSeriesPlotWidget::cleanupOldData);
+    m_cleanupTimer->start(1000); // Check every 1 second
+}
+
+TimeSeriesPlotWidget::~TimeSeriesPlotWidget()
+{
+    if (m_cleanupTimer) {
+        m_cleanupTimer->stop();
+    }
 }
 
 void TimeSeriesPlotWidget::setDarkTheme(bool isDark)
@@ -90,7 +103,16 @@ void TimeSeriesPlotWidget::addDataPoint(qint64 timestamp, float value)
     m_dataPoints.append(qMakePair(timestamp, value));
     
     // Remove old data points beyond the time window
+    cleanupOldData();
+    
+    update();
+}
+
+void TimeSeriesPlotWidget::cleanupOldData()
+{
     qint64 cutoffTime = QDateTime::currentMSecsSinceEpoch() - (m_timeWindowSeconds * 1000);
+    
+    // Remove all data points older than the time window
     while (!m_dataPoints.isEmpty() && m_dataPoints.first().first < cutoffTime) {
         m_dataPoints.removeFirst();
     }
@@ -100,6 +122,7 @@ void TimeSeriesPlotWidget::addDataPoint(qint64 timestamp, float value)
         m_dataPoints.removeFirst();
     }
     
+    // Trigger repaint if data was removed
     update();
 }
 
@@ -1096,13 +1119,34 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_filterReceding(true)
     , m_filterApproaching(false)
     , m_lastDataReceivedTime(0)
+    , m_cleanupTimer(nullptr)
 {
     setupUI();
     loadSettings();  // Load saved settings on startup
+    
+    // Setup cleanup timer to periodically check and clear stale data
+    m_cleanupTimer = new QTimer(this);
+    connect(m_cleanupTimer, &QTimer::timeout, this, [this]() {
+        // The TimeSeriesPlotWidget instances have their own cleanup timers
+        // This timer just triggers a repaint to update time axes
+        if (m_velocityTimePlot) {
+            m_velocityTimePlot->update();
+        }
+        if (m_rangeTimePlot) {
+            m_rangeTimePlot->update();
+        }
+        if (m_rangeRatePlot) {
+            m_rangeRatePlot->update();
+        }
+    });
+    m_cleanupTimer->start(1000); // Update every second
 }
 
 TimeSeriesPlotsWidget::~TimeSeriesPlotsWidget()
 {
+    if (m_cleanupTimer) {
+        m_cleanupTimer->stop();
+    }
 }
 
 void TimeSeriesPlotsWidget::setupUI()
@@ -1427,6 +1471,33 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
             m_rangeRatePlot->clearData();
         }
         // Don't clear range-velocity plot as it accumulates data over time
+        
+        m_lastDataReceivedTime = 0;
+        return;
+    }
+    
+    // Check if the target data is stale (no new UDP packets received)
+    // Look at the most recent target's lastUpdateTime
+    bool dataIsStale = true;
+    for (size_t i = 0; i < targets.numTracks && i < targets.targets.size(); ++i) {
+        qint64 targetAge = currentTime - targets.targets[i].lastUpdateTime;
+        if (targetAge < 2000) {  // Data is fresh if updated within last 2 seconds
+            dataIsStale = false;
+            break;
+        }
+    }
+    
+    // If all target data is stale (no new UDP packets), clear the time series plots
+    if (dataIsStale) {
+        if (m_velocityTimePlot) {
+            m_velocityTimePlot->clearData();
+        }
+        if (m_rangeTimePlot) {
+            m_rangeTimePlot->clearData();
+        }
+        if (m_rangeRatePlot) {
+            m_rangeRatePlot->clearData();
+        }
         
         m_lastDataReceivedTime = 0;
         return;

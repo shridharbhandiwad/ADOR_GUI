@@ -34,6 +34,7 @@ class TimeSeriesPlotWidget : public QWidget
 
 public:
     explicit TimeSeriesPlotWidget(QWidget *parent = nullptr);
+    ~TimeSeriesPlotWidget();
     
     void setDarkTheme(bool isDark);
     bool isDarkTheme() const { return m_isDarkTheme; }
@@ -46,6 +47,9 @@ public:
     
     // Add data point
     void addDataPoint(qint64 timestamp, float value);
+    
+    // Clean up old data points outside the time window
+    void cleanupOldData();
     
     // Get current settings
     float getMinY() const { return m_minY; }
@@ -120,6 +124,9 @@ private:
     int m_hoveredPointIndex;
     QPoint m_mousePos;
     bool m_showTooltip;
+    
+    // Cleanup timer
+    QTimer* m_cleanupTimer;
     
     // Maximum data points to keep
     static constexpr int MAX_DATA_POINTS = 100000;
@@ -343,6 +350,9 @@ private:
     
     // Track last data received time to detect when no data is coming in
     qint64 m_lastDataReceivedTime;
+    
+    // Cleanup timer to periodically remove old data
+    QTimer* m_cleanupTimer;
 };
 
 #endif // TIMESERIESPLOTSWIDGET_H
