@@ -48,8 +48,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_fftWidget(nullptr)
     , m_speedMeasurementWidget(nullptr)
     , m_timeSeriesPlotsWidget(nullptr)
-    , m_loggingWidget(nullptr)
-    , m_loggingWindow(nullptr)
     , m_mainTabWidget(nullptr)
     , m_trackTable(nullptr)
     , m_loggingControlGroup(nullptr)
@@ -905,10 +903,6 @@ void MainWindow::setupUI()
     m_speedMeasurementWidget = new SpeedMeasurementWidget(this);
     m_mainTabWidget->addTab(m_speedMeasurementWidget, "Speed Measurement");
     
-    // Create Logging widget (will be shown in separate window, not as tab)
-    m_loggingWidget = nullptr;
-    m_loggingWindow = nullptr;
-    
     // Add the tab widget to the main layout with stretch
     mainLayout->addWidget(m_mainTabWidget, 1);
 
@@ -970,11 +964,6 @@ void MainWindow::updateDisplay()
     // Update time series plots widget with target data
     if (m_timeSeriesPlotsWidget) {
         m_timeSeriesPlotsWidget->updateFromTargets(m_currentTargets);
-    }
-    
-    // Update logging widget with target data
-    if (m_loggingWidget) {
-        m_loggingWidget->updateFromTargets(m_currentTargets);
     }
     
     updateTrackTable();
@@ -2647,9 +2636,6 @@ void MainWindow::applyTheme(bool isDark)
     if (m_timeSeriesPlotsWidget) {
         m_timeSeriesPlotsWidget->setDarkTheme(isDark);
     }
-    if (m_loggingWidget) {
-        m_loggingWidget->setDarkTheme(isDark);
-    }
     
     // Apply theme to DSP Settings panel
     applyDspSettingsTheme(isDark);
@@ -3009,10 +2995,7 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
     }
     
     // Update logging status display with theme-aware colors
-    if (m_loggingWidget && m_loggingWidget->isLogging()) {
-        if (m_loggingStatusLabel) {
-            if (isDark) {
-                m_loggingStatusLabel->setStyleSheet(R"(
+    updateLoggingStatus();
                     QLabel {
                         font-size: 13px;
                         font-weight: 600;
@@ -3346,77 +3329,36 @@ void MainWindow::onSaveToFile()
 
 void MainWindow::onOpenLoggingWindow()
 {
-    // Check if a logging widget exists and has a saved export directory
-    bool hasExportDirectory = false;
-    QString exportDirectory;
+    // Open D:/ drive where log files are saved
+    QString logDirectory = "D:/";
     
-    if (m_loggingWidget) {
-        exportDirectory = m_loggingWidget->getLastExportDirectory();
-        hasExportDirectory = !exportDirectory.isEmpty();
-    }
-    
-    // If we have an export directory, open it in the system file explorer
-    if (hasExportDirectory) {
-        QUrl dirUrl = QUrl::fromLocalFile(exportDirectory);
-        if (!QDesktopServices::openUrl(dirUrl)) {
-            QMessageBox::warning(this, "Error", 
-                QString("Could not open directory:\n%1").arg(exportDirectory));
-        }
-    }
-    
-    // If window already exists, just show and raise it
-    if (m_loggingWindow && m_loggingWidget) {
-        m_loggingWindow->show();
-        m_loggingWindow->raise();
-        m_loggingWindow->activateWindow();
+    // Check if D:/ drive exists
+    QDir dDrive(logDirectory);
+    if (!dDrive.exists()) {
+        QMessageBox::warning(this, "Error", 
+            QString("D:/ drive not accessible.\n\nLog files are saved to: %1").arg(logDirectory));
         return;
     }
     
-    // Create new window
-    m_loggingWindow = new QWidget(nullptr, Qt::Window);
-    m_loggingWindow->setWindowTitle("Logging");
-    m_loggingWindow->setAttribute(Qt::WA_DeleteOnClose);
-    m_loggingWindow->resize(1200, 800);
-    
-    // Create layout for the window
-    QVBoxLayout* windowLayout = new QVBoxLayout(m_loggingWindow);
-    windowLayout->setContentsMargins(0, 0, 0, 0);
-    
-    // Create logging widget
-    m_loggingWidget = new LoggingWidget(m_loggingWindow);
-    windowLayout->addWidget(m_loggingWidget);
-    
-    // Apply current theme to logging widget
-    m_loggingWidget->setDarkTheme(m_isDarkTheme);
-    
-    // Connect to clean up when window is closed
-    connect(m_loggingWindow, &QWidget::destroyed, this, [this]() {
-        m_loggingWindow = nullptr;
-        m_loggingWidget = nullptr;
-    });
-    
-    // Show the window
-    m_loggingWindow->show();
-    
-    // If logging widget exists, sync the status
-    updateLoggingStatus();
+    // Open the D:/ drive in the system file explorer
+    QUrl dirUrl = QUrl::fromLocalFile(logDirectory);
+    if (!QDesktopServices::openUrl(dirUrl)) {
+        QMessageBox::warning(this, "Error", 
+            QString("Could not open directory:\n%1").arg(logDirectory));
+    }
 }
 
 void MainWindow::onStartLoggingClicked()
 {
-    // Create logging widget if it doesn't exist yet
-    if (!m_loggingWidget) {
-        // Create a hidden logging widget for background logging
-        m_loggingWidget = new LoggingWidget(this);
-        m_loggingWidget->setDarkTheme(m_isDarkTheme);
-        m_loggingWidget->hide();  // Keep it hidden unless details window is opened
-        
-        // Connect to clean up when this MainWindow is destroyed
-        connect(this, &QObject::destroyed, m_loggingWidget, &QObject::deleteLater);
+    // Close existing log file if open
+    if (m_trackDataFile) {
+        m_trackDataFile->close();
+        delete m_trackDataFile;
+        m_trackDataFile = nullptr;
     }
     
-    // Start logging
-    m_loggingWidget->startLogging();
+    // Create new log file (will be created on first track data write)
+    m_currentLogFilename = "";
     
     // Update UI
     updateLoggingStatus();
@@ -3424,8 +3366,13 @@ void MainWindow::onStartLoggingClicked()
 
 void MainWindow::onStopLoggingClicked()
 {
-    if (m_loggingWidget) {
-        m_loggingWidget->stopLogging();
+    // Close and finalize the current log file
+    if (m_trackDataFile) {
+        m_trackDataFile->close();
+        delete m_trackDataFile;
+        m_trackDataFile = nullptr;
+        
+        qDebug() << "Logging stopped. Log file saved:" << m_currentLogFilename;
     }
     
     // Update UI
@@ -3434,7 +3381,8 @@ void MainWindow::onStopLoggingClicked()
 
 void MainWindow::updateLoggingStatus()
 {
-    bool isLogging = m_loggingWidget && m_loggingWidget->isLogging();
+    // Check if logging is active (track data file is open)
+    bool isLogging = (m_trackDataFile != nullptr && m_trackDataFile->isOpen());
     
     if (m_loggingStatusLabel) {
         if (isLogging) {
