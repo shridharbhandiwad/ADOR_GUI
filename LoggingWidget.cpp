@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QDialog>
 #include <QHeaderView>
+#include <QFileInfo>
 #include <algorithm>
 
 // ==================== LoggingPlotWidget Implementation ====================
@@ -849,6 +850,7 @@ LoggingWidget::LoggingWidget(QWidget *parent)
     , m_plotRefreshTimer(nullptr)
     , m_algorithmWindow(5)
     , m_smoothingWindow(3)
+    , m_lastExportDirectory("")
 {
     setupUI();
     
@@ -1344,6 +1346,10 @@ void LoggingWidget::exportToCSV(const QString& filename)
     }
     
     file.close();
+    
+    // Store the directory where the file was saved
+    QFileInfo fileInfo(filename);
+    m_lastExportDirectory = fileInfo.absolutePath();
 }
 
 void LoggingWidget::importFromCSV(const QString& filename)

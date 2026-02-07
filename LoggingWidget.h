@@ -359,8 +359,15 @@ private:
     int m_algorithmWindow;      // Number of detections to associate (window)
     int m_smoothingWindow;      // Number of previous cycles for smoothing
     
+    // Last export directory
+    QString m_lastExportDirectory;
+    
     // Maximum data points per track
     static constexpr int MAX_DATA_POINTS_PER_TRACK = 50000;
+    
+public:
+    // Get last export directory
+    QString getLastExportDirectory() const { return m_lastExportDirectory; }
 };
 
 #endif // LOGGINGWIDGET_H
