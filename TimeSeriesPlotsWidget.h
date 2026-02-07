@@ -17,6 +17,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QToolTip>
+#include <QMap>
 #include "DataStructures.h"
 
 // Structure to hold time series data point
@@ -234,6 +235,12 @@ private:
     static constexpr int MAX_DATA_POINTS = 500;
 };
 
+// Structure to store previous track data for range rate calculation
+struct TrackHistory {
+    qint64 timestamp;
+    float range;
+};
+
 // Main TimeSeries Plots Widget
 class TimeSeriesPlotsWidget : public QWidget
 {
@@ -265,6 +272,12 @@ public slots:
     void onRVVelocityMaxChanged(double value);
     void onSaveSettings();
     void onLoadSettings();
+    
+    // Filter control slots
+    void onFilterMinRangeChanged(double value);
+    void onFilterMinVelocityChanged(double value);
+    void onFilterMovingAvgChanged(int value);
+    void onFilterDirectionChanged();
 
 private slots:
     void onShowHistogramToggled(bool checked);
@@ -276,15 +289,20 @@ private slots:
 private:
     void setupUI();
     void setupSettingsPanel();
+    void setupFilterControls();
     void applyTheme();
     void updatePlotSettings();
     void saveSettings();
     void loadSettings();
+    bool passesFilters(const TargetTrack& track, float velocityKmh) const;
+    float applyMovingAverage(uint32_t trackId, float value);
+    float calculateRangeRate(uint32_t trackId, float currentRange, qint64 timestamp);
     
     // UI Components
     RangeVelocityPlotWidget* m_rangeVelocityPlot;
     TimeSeriesPlotWidget* m_velocityTimePlot;
     TimeSeriesPlotWidget* m_rangeTimePlot;
+    TimeSeriesPlotWidget* m_rangeRatePlot;  // New: Range Rate plot
     
     // Settings panel
     QWidget* m_settingsPanel;
@@ -297,12 +315,31 @@ private:
     QDoubleSpinBox* m_rvRangeMaxSpinBox;
     QDoubleSpinBox* m_rvVelocityMaxSpinBox;
     
+    // Filter controls panel
+    QWidget* m_filterPanel;
+    QDoubleSpinBox* m_filterMinRangeSpinBox;
+    QDoubleSpinBox* m_filterMinVelocitySpinBox;
+    QSpinBox* m_filterMovingAvgSpinBox;
+    QCheckBox* m_filterRecedingCheckBox;
+    QCheckBox* m_filterApproachingCheckBox;
+    
     // Theme
     bool m_isDarkTheme;
     
     // Configuration
     float m_maxRange;
     float m_maxVelocity;
+    
+    // Track filtering parameters
+    float m_filterMinRange;
+    float m_filterMinVelocity;
+    int m_filterMovingAvgSize;
+    bool m_filterReceding;
+    bool m_filterApproaching;
+    
+    // Track history for range rate calculation and moving average
+    QMap<uint32_t, QVector<TrackHistory>> m_trackHistory;
+    QMap<uint32_t, QVector<float>> m_movingAvgBuffer;
 };
 
 #endif // TIMESERIESPLOTSWIDGET_H
