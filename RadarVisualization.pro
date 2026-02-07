@@ -22,7 +22,6 @@ SOURCES += \
     FFTWidget.cpp \
     SpeedMeasurementWidget.cpp \
     TimeSeriesPlotsWidget.cpp \
-    LoggingWidget.cpp \
     dialogs.cpp \
     udphandler.cpp
 
@@ -33,7 +32,6 @@ HEADERS += \
     FFTWidget.h \
     SpeedMeasurementWidget.h \
     TimeSeriesPlotsWidget.h \
-    LoggingWidget.h \
     dialogs.h \
     udphandler.h \
     structures.h
