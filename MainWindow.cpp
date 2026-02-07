@@ -2996,6 +2996,12 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
     
     // Update logging status display with theme-aware colors
     updateLoggingStatus();
+    
+    // Apply theme to logging status label based on logging state
+    if (m_isLogging) {
+        if (m_loggingStatusLabel) {
+            if (isDark) {
+                m_loggingStatusLabel->setStyleSheet(R"(
                     QLabel {
                         font-size: 13px;
                         font-weight: 600;
