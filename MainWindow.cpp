@@ -37,6 +37,8 @@
 #include <QScreen>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QDesktopServices>
+#include <QUrl>
 #include <cmath>
 #include <cstring>
 
@@ -3344,6 +3346,24 @@ void MainWindow::onSaveToFile()
 
 void MainWindow::onOpenLoggingWindow()
 {
+    // Check if a logging widget exists and has a saved export directory
+    bool hasExportDirectory = false;
+    QString exportDirectory;
+    
+    if (m_loggingWidget) {
+        exportDirectory = m_loggingWidget->getLastExportDirectory();
+        hasExportDirectory = !exportDirectory.isEmpty();
+    }
+    
+    // If we have an export directory, open it in the system file explorer
+    if (hasExportDirectory) {
+        QUrl dirUrl = QUrl::fromLocalFile(exportDirectory);
+        if (!QDesktopServices::openUrl(dirUrl)) {
+            QMessageBox::warning(this, "Error", 
+                QString("Could not open directory:\n%1").arg(exportDirectory));
+        }
+    }
+    
     // If window already exists, just show and raise it
     if (m_loggingWindow && m_loggingWidget) {
         m_loggingWindow->show();
