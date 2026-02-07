@@ -189,7 +189,8 @@ private:
     void addSyntheticTarget(float range, float magnitude_db, float rcs_m2);
 
     // NEW: Radar-specific functions for Infineon-style display
-    void addSyntheticRadarPeaks();
+    // DISABLED: addSyntheticRadarPeaks() was creating phantom targets - function has been removed
+    // void addSyntheticRadarPeaks();
     void drawPeakMarkers(QPainter& painter, const QVector<QPointF>& spectrumPoints);
 
     // Utility functions
