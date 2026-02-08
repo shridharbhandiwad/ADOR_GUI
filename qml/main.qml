@@ -56,6 +56,47 @@ ApplicationWindow {
                     samples: 17
                     color: shadowColor
                 }
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+                
+                Behavior on border.color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
+            
+            delegate: MenuItem {
+                id: fileMenuItem
+                implicitWidth: 200
+                implicitHeight: 36
+                
+                contentItem: Text {
+                    text: fileMenuItem.text
+                    font.pixelSize: 14
+                    font.family: root.fontFamily
+                    color: fileMenuItem.highlighted ? primaryColor : textPrimary
+                    horizontalAlignment: Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    leftPadding: 12
+                    rightPadding: 12
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+                
+                background: Rectangle {
+                    implicitWidth: 200
+                    implicitHeight: 36
+                    color: fileMenuItem.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    radius: 6
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
             }
 
             Action {
@@ -142,6 +183,47 @@ ApplicationWindow {
                     samples: 17
                     color: shadowColor
                 }
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+                
+                Behavior on border.color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
+            
+            delegate: MenuItem {
+                id: viewMenuItem
+                implicitWidth: 220
+                implicitHeight: 36
+                
+                contentItem: Text {
+                    text: viewMenuItem.text
+                    font.pixelSize: 14
+                    font.family: root.fontFamily
+                    color: viewMenuItem.highlighted ? primaryColor : textPrimary
+                    horizontalAlignment: Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    leftPadding: 12
+                    rightPadding: 12
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+                
+                background: Rectangle {
+                    implicitWidth: 220
+                    implicitHeight: 36
+                    color: viewMenuItem.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    radius: 6
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
             }
 
             Action {
@@ -196,6 +278,47 @@ ApplicationWindow {
                     samples: 17
                     color: shadowColor
                 }
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+                
+                Behavior on border.color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
+            
+            delegate: MenuItem {
+                id: connectionMenuItem
+                implicitWidth: 200
+                implicitHeight: 36
+                
+                contentItem: Text {
+                    text: connectionMenuItem.text
+                    font.pixelSize: 14
+                    font.family: root.fontFamily
+                    color: connectionMenuItem.highlighted ? primaryColor : textPrimary
+                    horizontalAlignment: Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    leftPadding: 12
+                    rightPadding: 12
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+                
+                background: Rectangle {
+                    implicitWidth: 200
+                    implicitHeight: 36
+                    color: connectionMenuItem.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    radius: 6
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
             }
 
             Action {
@@ -249,6 +372,80 @@ ApplicationWindow {
                     radius: 12
                     samples: 17
                     color: shadowColor
+                }
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+                
+                Behavior on border.color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
+            
+            delegate: MenuItem {
+                id: themeMenuItem
+                implicitWidth: 220
+                implicitHeight: 36
+                checkable: themeMenuItem.action ? themeMenuItem.action.checkable : false
+                checked: themeMenuItem.action ? themeMenuItem.action.checked : false
+                
+                contentItem: RowLayout {
+                    spacing: 12
+                    
+                    // Checkmark indicator for checked items
+                    Rectangle {
+                        width: 16
+                        height: 16
+                        radius: 3
+                        color: themeMenuItem.checked ? primaryColor : "transparent"
+                        border.color: themeMenuItem.checked ? primaryColor : borderColor
+                        border.width: 2
+                        visible: themeMenuItem.checkable
+                        
+                        Text {
+                            anchors.centerIn: parent
+                            text: "✓"
+                            font.pixelSize: 11
+                            font.weight: Font.Bold
+                            color: ThemeManager.buttonTextColor
+                            visible: themeMenuItem.checked
+                        }
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                    
+                    Text {
+                        text: themeMenuItem.text
+                        font.pixelSize: 14
+                        font.family: root.fontFamily
+                        color: themeMenuItem.highlighted ? primaryColor : textPrimary
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                }
+                
+                background: Rectangle {
+                    implicitWidth: 220
+                    implicitHeight: 36
+                    color: themeMenuItem.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    radius: 6
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
                 }
             }
 
@@ -339,6 +536,47 @@ ApplicationWindow {
                     radius: 12
                     samples: 17
                     color: shadowColor
+                }
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+                
+                Behavior on border.color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
+            
+            delegate: MenuItem {
+                id: toolsMenuItem
+                implicitWidth: 200
+                implicitHeight: 36
+                
+                contentItem: Text {
+                    text: toolsMenuItem.text
+                    font.pixelSize: 14
+                    font.family: root.fontFamily
+                    color: toolsMenuItem.highlighted ? primaryColor : textPrimary
+                    horizontalAlignment: Text.AlignLeft
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    leftPadding: 12
+                    rightPadding: 12
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                }
+                
+                background: Rectangle {
+                    implicitWidth: 200
+                    implicitHeight: 36
+                    color: toolsMenuItem.highlighted ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1) : "transparent"
+                    radius: 6
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
                 }
             }
 
@@ -950,6 +1188,14 @@ ApplicationWindow {
                 samples: 25
                 color: shadowColor
             }
+            
+            Behavior on color {
+                ColorAnimation { duration: 200 }
+            }
+            
+            Behavior on border.color {
+                ColorAnimation { duration: 200 }
+            }
         }
 
         header: Rectangle {
@@ -978,6 +1224,10 @@ ApplicationWindow {
                             ColorAnimation { duration: 200 }
                         }
                     }
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 200 }
+                    }
                 }
 
                 Text {
@@ -988,6 +1238,10 @@ ApplicationWindow {
                     color: textPrimary
                     Layout.fillWidth: true
                     Layout.leftMargin: 12
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 200 }
+                    }
                 }
             }
         }
@@ -1002,6 +1256,10 @@ ApplicationWindow {
                 font.family: root.fontFamily
                 color: textPrimary
                 Layout.alignment: Qt.AlignHCenter
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
             }
 
             Text {
@@ -1010,6 +1268,10 @@ ApplicationWindow {
                 font.family: root.fontFamily
                 color: textSecondary
                 Layout.alignment: Qt.AlignHCenter
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
             }
 
             Rectangle {
@@ -1018,6 +1280,10 @@ ApplicationWindow {
                 color: borderColor
                 Layout.leftMargin: 20
                 Layout.rightMargin: 20
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
             }
 
             Text {
@@ -1028,6 +1294,10 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
                 Layout.alignment: Qt.AlignHCenter
                 lineHeight: 1.4
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
             }
 
             Item { Layout.fillHeight: true }
