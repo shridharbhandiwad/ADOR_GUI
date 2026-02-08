@@ -544,23 +544,11 @@ void MainWindow::setupUI()
     settingsMainLayout->setSpacing(8);
     settingsMainLayout->setContentsMargins(12, 20, 12, 12);
     
-    // Single vertical container for settings
+    // Single vertical container for settings with unified layout
     QWidget* settingsContainer = new QWidget(this);
-    QVBoxLayout* settingsVLayout = new QVBoxLayout(settingsContainer);
-    settingsVLayout->setSpacing(8);
-    settingsVLayout->setContentsMargins(0, 0, 0, 0);
-    
-    // Range & Speed section
-    m_dspLeftGroup = new QGroupBox("Range && Speed", this);
-    QGridLayout* leftLayout = new QGridLayout(m_dspLeftGroup);
-    leftLayout->setSpacing(6);
-    leftLayout->setContentsMargins(10, 16, 10, 10);
-    
-    // Filter & Tracking section
-    m_dspRightGroup = new QGroupBox("Filter && Tracking", this);
-    QGridLayout* rightLayout = new QGridLayout(m_dspRightGroup);
-    rightLayout->setSpacing(6);
-    rightLayout->setContentsMargins(10, 16, 10, 10);
+    QGridLayout* settingsGridLayout = new QGridLayout(settingsContainer);
+    settingsGridLayout->setSpacing(6);
+    settingsGridLayout->setContentsMargins(4, 4, 4, 4);
 
     // Clear labels vector before adding new ones
     m_dspLabels.clear();
@@ -581,34 +569,35 @@ void MainWindow::setupUI()
         layout->addWidget(edit, row, 1);
     };
 
+    int row = 0;
+    
     // Range & Speed fields
-    addField(leftLayout, 0, "Range Avg",        m_rangeAvgEdit,        "1");
-    addField(leftLayout, 1, "Min Range (cm)",   m_minRangeEdit,        "0");
-    addField(leftLayout, 2, "Max Range (cm)",   m_maxRangeEdit,        "5000");
-    addField(leftLayout, 3, "Min Speed (km/h)", m_minSpeedEdit,        "-100");
-    addField(leftLayout, 4, "Max Speed (km/h)", m_maxSpeedEdit,        "100");
-    addField(leftLayout, 5, "Range Thresh",     m_rangeThresholdEdit,  "0");
+    addField(settingsGridLayout, row++, "Range Avg",        m_rangeAvgEdit,        "1");
+    addField(settingsGridLayout, row++, "Min Range (cm)",   m_minRangeEdit,        "0");
+    addField(settingsGridLayout, row++, "Max Range (cm)",   m_maxRangeEdit,        "5000");
+    addField(settingsGridLayout, row++, "Min Speed (km/h)", m_minSpeedEdit,        "-100");
+    addField(settingsGridLayout, row++, "Max Speed (km/h)", m_maxSpeedEdit,        "100");
+    addField(settingsGridLayout, row++, "Range Thresh",     m_rangeThresholdEdit,  "0");
+    
+    // Add separator space between sections
+    settingsGridLayout->setRowMinimumHeight(row++, 16);
     
     // Filter & Tracking fields
-    addField(rightLayout, 0, "Min Angle (deg)",  m_minAngleEdit,        "0");
-    addField(rightLayout, 1, "Max Angle (deg)",  m_maxAngleEdit,        "0");
-    addField(rightLayout, 2, "Speed Thresh",     m_speedThresholdEdit,  "0");
-    addField(rightLayout, 3, "Num Tracks",       m_numTracksEdit,       "50");
-    addField(rightLayout, 4, "Median Filter",    m_medianFilterEdit,    "1");
-    addField(rightLayout, 5, "MTI Length",       m_mtiLengthEdit,       "2");
+    addField(settingsGridLayout, row++, "Min Angle (deg)",  m_minAngleEdit,        "0");
+    addField(settingsGridLayout, row++, "Max Angle (deg)",  m_maxAngleEdit,        "0");
+    addField(settingsGridLayout, row++, "Speed Thresh",     m_speedThresholdEdit,  "0");
+    addField(settingsGridLayout, row++, "Num Tracks",       m_numTracksEdit,       "50");
+    addField(settingsGridLayout, row++, "Median Filter",    m_medianFilterEdit,    "1");
+    addField(settingsGridLayout, row++, "MTI Length",       m_mtiLengthEdit,       "2");
 
     // Set column widths for narrower panel - responsive based on DPI
     int labelColWidth = static_cast<int>(90 * dpiScale);
     int editColWidth = static_cast<int>(60 * dpiScale);
-    leftLayout->setColumnMinimumWidth(0, labelColWidth);
-    leftLayout->setColumnMinimumWidth(1, editColWidth);
-    rightLayout->setColumnMinimumWidth(0, labelColWidth);
-    rightLayout->setColumnMinimumWidth(1, editColWidth);
+    settingsGridLayout->setColumnMinimumWidth(0, labelColWidth);
+    settingsGridLayout->setColumnMinimumWidth(1, editColWidth);
     
-    // Stack the two sections vertically
-    settingsVLayout->addWidget(m_dspLeftGroup);
-    settingsVLayout->addWidget(m_dspRightGroup);
-    settingsVLayout->addStretch();
+    // Push content to top
+    settingsGridLayout->setRowStretch(row, 1);
     
     settingsMainLayout->addWidget(settingsContainer, 1);
     
@@ -2769,59 +2758,6 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
             )");
         }
         
-        if (m_dspLeftGroup) {
-            m_dspLeftGroup->setStyleSheet(R"(
-                QGroupBox {
-                    font-size: 14px;
-                    font-weight: 600;
-                    padding: 16px 12px 12px 12px;
-                    margin-top: 14px;
-                    background-color: #0a0a0a;
-                    border: 1px solid #262626;
-                    border-radius: 12px;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    subcontrol-position: top left;
-                    left: 12px;
-                    top: 2px;
-                    padding: 4px 12px;
-                    background-color: #fafafa;
-                    color: #0a0a0a;
-                    font-weight: 600;
-                    font-size: 13px;
-                    border-radius: 6px;
-                    letter-spacing: 0.5px;
-                }
-            )");
-        }
-        
-        if (m_dspRightGroup) {
-            m_dspRightGroup->setStyleSheet(R"(
-                QGroupBox {
-                    font-size: 14px;
-                    font-weight: 600;
-                    padding: 16px 12px 12px 12px;
-                    margin-top: 14px;
-                    background-color: #0a0a0a;
-                    border: 1px solid #262626;
-                    border-radius: 12px;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    subcontrol-position: top left;
-                    left: 12px;
-                    top: 2px;
-                    padding: 4px 12px;
-                    background-color: #a3a3a3;
-                    color: #0a0a0a;
-                    font-weight: 600;
-                    font-size: 13px;
-                    border-radius: 6px;
-                    letter-spacing: 0.5px;
-                }
-            )");
-        }
         
         // Apply dark theme to labels - Monochrome
         const QString darkLabelStyle = R"(
@@ -2938,59 +2874,6 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
             )");
         }
         
-        if (m_dspLeftGroup) {
-            m_dspLeftGroup->setStyleSheet(R"(
-                QGroupBox {
-                    font-size: 14px;
-                    font-weight: 600;
-                    padding: 16px 12px 12px 12px;
-                    margin-top: 14px;
-                    background-color: #fafafa;
-                    border: 1px solid #e5e5e5;
-                    border-radius: 12px;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    subcontrol-position: top left;
-                    left: 12px;
-                    top: 2px;
-                    padding: 4px 12px;
-                    background-color: #1a1a1a;
-                    color: #ffffff;
-                    font-weight: 600;
-                    font-size: 13px;
-                    border-radius: 6px;
-                    letter-spacing: 0.5px;
-                }
-            )");
-        }
-        
-        if (m_dspRightGroup) {
-            m_dspRightGroup->setStyleSheet(R"(
-                QGroupBox {
-                    font-size: 14px;
-                    font-weight: 600;
-                    padding: 16px 12px 12px 12px;
-                    margin-top: 14px;
-                    background-color: #fafafa;
-                    border: 1px solid #e5e5e5;
-                    border-radius: 12px;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    subcontrol-position: top left;
-                    left: 12px;
-                    top: 2px;
-                    padding: 4px 12px;
-                    background-color: #525252;
-                    color: #ffffff;
-                    font-weight: 600;
-                    font-size: 13px;
-                    border-radius: 6px;
-                    letter-spacing: 0.5px;
-                }
-            )");
-        }
         
         // Apply light theme to labels - Monochrome
         const QString lightLabelStyle = R"(
