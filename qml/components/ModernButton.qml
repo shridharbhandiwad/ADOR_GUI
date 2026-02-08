@@ -35,7 +35,7 @@ Button {
         radius: 10
         
         // Enhanced gradient for filled buttons
-        gradient: !outline ? Gradient {
+        gradient: outline ? null : Gradient {
             GradientStop { 
                 position: 0.0
                 color: {
@@ -52,7 +52,7 @@ Button {
                     return Qt.darker(primaryColor, 1.12)
                 }
             }
-        } : null
+        }
         
         // Solid color for outline buttons
         color: {
