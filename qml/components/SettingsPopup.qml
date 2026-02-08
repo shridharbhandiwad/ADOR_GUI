@@ -553,6 +553,397 @@ Popup {
                     }
                 }
             }
+            }
+            
+            // Divider
+            Rectangle {
+                Layout.fillWidth: true
+                height: 1
+                color: dividerColor
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
+            
+            // Design Mode Section
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 16
+                
+                // Section Title
+                Text {
+                    text: "COLOR THEME"
+                    font.pixelSize: 13
+                    font.weight: Font.DemiBold
+                    font.family: fontFamily
+                    font.letterSpacing: 1
+                    color: textSecondary
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 200 }
+                    }
+                }
+                
+                // Design Mode Toggle
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 72
+                    radius: 12
+                    color: designModeMouseArea.containsMouse ? hoverBackground : "transparent"
+                    border.color: borderColor
+                    border.width: 1
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 150 }
+                    }
+                    
+                    MouseArea {
+                        id: designModeMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: ThemeManager.toggleDesignMode()
+                    }
+                    
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 16
+                        
+                        // Design mode icon - color palette
+                        Rectangle {
+                            width: 40
+                            height: 40
+                            radius: 10
+                            color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
+                            border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.2)
+                            border.width: 1
+                            
+                            // Color palette icon
+                            Canvas {
+                                anchors.centerIn: parent
+                                width: 20
+                                height: 20
+                                
+                                property bool colorMode: ThemeManager.isColorMode
+                                
+                                onColorModeChanged: requestPaint()
+                                Component.onCompleted: requestPaint()
+                                
+                                onPaint: {
+                                    var ctx = getContext("2d");
+                                    ctx.reset();
+                                    var cx = width / 2;
+                                    var cy = height / 2;
+                                    var r = 7;
+                                    
+                                    if (colorMode) {
+                                        // Draw colorful quadrants
+                                        var colors = ["#4c51bf", "#059669", "#d97706", "#dc2626"];
+                                        for (var i = 0; i < 4; i++) {
+                                            ctx.fillStyle = colors[i];
+                                            ctx.beginPath();
+                                            ctx.arc(cx, cy, r, (i * Math.PI / 2) - Math.PI / 4, ((i + 1) * Math.PI / 2) - Math.PI / 4);
+                                            ctx.lineTo(cx, cy);
+                                            ctx.closePath();
+                                            ctx.fill();
+                                        }
+                                    } else {
+                                        // Draw monochrome quadrants
+                                        var grays = ["#1a1a1a", "#525252", "#a3a3a3", "#d4d4d4"];
+                                        for (var j = 0; j < 4; j++) {
+                                            ctx.fillStyle = grays[j];
+                                            ctx.beginPath();
+                                            ctx.arc(cx, cy, r, (j * Math.PI / 2) - Math.PI / 4, ((j + 1) * Math.PI / 2) - Math.PI / 4);
+                                            ctx.lineTo(cx, cy);
+                                            ctx.closePath();
+                                            ctx.fill();
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
+                            
+                            Behavior on border.color {
+                                ColorAnimation { duration: 200 }
+                            }
+                        }
+                        
+                        Column {
+                            Layout.fillWidth: true
+                            spacing: 4
+                            
+                            Text {
+                                text: "Design Mode"
+                                font.pixelSize: 16
+                                font.weight: Font.Medium
+                                font.family: fontFamily
+                                color: textPrimary
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 200 }
+                                }
+                            }
+                            
+                            Text {
+                                text: ThemeManager.isColorMode ? "Colored mode enabled" : "Monochrome mode enabled"
+                                font.pixelSize: 14
+                                font.family: fontFamily
+                                color: textSecondary
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 200 }
+                                }
+                            }
+                        }
+                        
+                        // Toggle Switch
+                        Rectangle {
+                            width: 52
+                            height: 28
+                            radius: 14
+                            color: ThemeManager.isColorMode ? primaryColor : ThemeManager.trackOffColor
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
+                            
+                            Rectangle {
+                                x: ThemeManager.isColorMode ? parent.width - width - 4 : 4
+                                y: 4
+                                width: 20
+                                height: 20
+                                radius: 10
+                                color: ThemeManager.switchKnobColor
+                                
+                                layer.enabled: true
+                                layer.effect: DropShadow {
+                                    transparentBorder: true
+                                    horizontalOffset: 0
+                                    verticalOffset: 1
+                                    radius: 4
+                                    samples: 9
+                                    color: "#0000002a"
+                                }
+                                
+                                Behavior on x {
+                                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                }
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 200 }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Design Mode Preview Cards
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+                    
+                    // Colored mode preview
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 100
+                        radius: 10
+                        color: cardBackground
+                        border.color: ThemeManager.isColorMode ? primaryColor : borderColor
+                        border.width: ThemeManager.isColorMode ? 2 : 1
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: ThemeManager.setDesignMode(true)
+                        }
+                        
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 10
+                            
+                            // Color palette preview
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 4
+                                
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 4
+                                    color: "#4c51bf"
+                                }
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 4
+                                    color: "#059669"
+                                }
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 4
+                                    color: "#d97706"
+                                }
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 4
+                                    color: "#dc2626"
+                                }
+                            }
+                            
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Colored"
+                                font.pixelSize: 13
+                                font.weight: ThemeManager.isColorMode ? Font.DemiBold : Font.Normal
+                                font.family: fontFamily
+                                font.letterSpacing: 0.5
+                                color: textPrimary
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 200 }
+                                }
+                            }
+                        }
+                        
+                        // Checkmark for selected
+                        Rectangle {
+                            visible: ThemeManager.isColorMode
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.margins: 6
+                            width: 18
+                            height: 18
+                            radius: 9
+                            color: primaryColor
+                            
+                            Text {
+                                anchors.centerIn: parent
+                                text: "✓"
+                                font.pixelSize: 11
+                                font.weight: Font.Bold
+                                color: ThemeManager.buttonTextColor
+                            }
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
+                        }
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
+                        }
+                        
+                        Behavior on border.color {
+                            ColorAnimation { duration: 200 }
+                        }
+                    }
+                    
+                    // Monochrome mode preview
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 100
+                        radius: 10
+                        color: cardBackground
+                        border.color: !ThemeManager.isColorMode ? primaryColor : borderColor
+                        border.width: !ThemeManager.isColorMode ? 2 : 1
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: ThemeManager.setDesignMode(false)
+                        }
+                        
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 10
+                            
+                            // Grayscale palette preview
+                            Row {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 4
+                                
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 4
+                                    color: "#1a1a1a"
+                                }
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 4
+                                    color: "#525252"
+                                }
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 4
+                                    color: "#a3a3a3"
+                                }
+                                Rectangle {
+                                    width: 16
+                                    height: 16
+                                    radius: 4
+                                    color: "#d4d4d4"
+                                }
+                            }
+                            
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Monochrome"
+                                font.pixelSize: 13
+                                font.weight: !ThemeManager.isColorMode ? Font.DemiBold : Font.Normal
+                                font.family: fontFamily
+                                font.letterSpacing: 0.5
+                                color: textPrimary
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 200 }
+                                }
+                            }
+                        }
+                        
+                        // Checkmark for selected
+                        Rectangle {
+                            visible: !ThemeManager.isColorMode
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.margins: 6
+                            width: 18
+                            height: 18
+                            radius: 9
+                            color: primaryColor
+                            
+                            Text {
+                                anchors.centerIn: parent
+                                text: "✓"
+                                font.pixelSize: 11
+                                font.weight: Font.Bold
+                                color: ThemeManager.buttonTextColor
+                            }
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
+                        }
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
+                        }
+                        
+                        Behavior on border.color {
+                            ColorAnimation { duration: 200 }
+                        }
+                    }
+                }
+            }
         }
         }  // Close ColumnLayout (contentColumn)
     }  // Close Flickable
