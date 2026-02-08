@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtGraphicalEffects 1.15
 
 Item {
     id: modernSpinBox
@@ -30,13 +31,14 @@ Item {
         anchors.fill: parent
         spacing: 8
         
-        // Label
+        // Label - Enhanced styling
         Text {
             text: modernSpinBox.label
-            font.pixelSize: 15
+            font.pixelSize: 13
             font.weight: Font.Medium
             font.family: modernSpinBox.fontFamily
-            color: textSecondary
+            font.letterSpacing: 0.3
+            color: spinBox.activeFocus ? primaryColor : textSecondary
             visible: modernSpinBox.label.length > 0
             
             Behavior on color { ColorAnimation { duration: 200 } }
@@ -54,7 +56,7 @@ Item {
                 z: 2
                 text: spinBox.textFromValue(spinBox.value, spinBox.locale) + modernSpinBox.suffix
                 
-                font.pixelSize: 16
+                font.pixelSize: 15
                 font.family: modernSpinBox.fontFamily
                 color: textPrimary
                 selectionColor: primaryColor
@@ -73,42 +75,44 @@ Item {
             up.indicator: Rectangle {
                 x: spinBox.mirrored ? 0 : parent.width - width
                 height: parent.height
-                width: 36
+                width: 38
                 radius: 10
                 color: spinBox.up.pressed ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15) :
-                       spinBox.up.hovered ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08) : "transparent"
+                       spinBox.up.hovered ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.10) : "transparent"
                 
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: 200 } }
                 
                 Text {
                     text: "+"
-                    font.pixelSize: 20
+                    font.pixelSize: 18
                     font.weight: Font.Medium
-                    color: spinBox.up.pressed ? primaryColor : textSecondary
+                    color: spinBox.up.pressed ? primaryColor : 
+                           spinBox.up.hovered ? primaryColor : textSecondary
                     anchors.centerIn: parent
                     
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: 200 } }
                 }
             }
             
             down.indicator: Rectangle {
                 x: spinBox.mirrored ? parent.width - width : 0
                 height: parent.height
-                width: 36
+                width: 38
                 radius: 10
                 color: spinBox.down.pressed ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15) :
-                       spinBox.down.hovered ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08) : "transparent"
+                       spinBox.down.hovered ? Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.10) : "transparent"
                 
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: 200 } }
                 
                 Text {
                     text: "-"
-                    font.pixelSize: 20
+                    font.pixelSize: 18
                     font.weight: Font.Medium
-                    color: spinBox.down.pressed ? primaryColor : textSecondary
+                    color: spinBox.down.pressed ? primaryColor : 
+                           spinBox.down.hovered ? primaryColor : textSecondary
                     anchors.centerIn: parent
                     
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: 200 } }
                 }
             }
             
@@ -119,11 +123,22 @@ Item {
                 border.width: spinBox.activeFocus ? 2 : 1
                 
                 Behavior on border.color {
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: 200 }
                 }
                 
                 Behavior on color {
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: 200 }
+                }
+                
+                // Subtle shadow on focus
+                layer.enabled: spinBox.activeFocus
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 2
+                    radius: 8
+                    samples: 17
+                    color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
                 }
             }
         }

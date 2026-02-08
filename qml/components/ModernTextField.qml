@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtGraphicalEffects 1.15
 
 Item {
     id: modernTextField
@@ -31,25 +32,26 @@ Item {
         anchors.fill: parent
         spacing: 8
         
-        // Label
+        // Label - Enhanced styling
         Text {
             text: modernTextField.label
-            font.pixelSize: 15
+            font.pixelSize: 13
             font.weight: Font.Medium
             font.family: modernTextField.fontFamily
-            color: textSecondary
+            font.letterSpacing: 0.3
+            color: textField.activeFocus ? primaryColor : textSecondary
             visible: modernTextField.label.length > 0
             
             Behavior on color { ColorAnimation { duration: 200 } }
         }
         
-        // Text field
+        // Text field - Premium enterprise styling
         TextField {
             id: textField
             Layout.fillWidth: true
             Layout.preferredHeight: 44
             
-            font.pixelSize: 16
+            font.pixelSize: 15
             font.family: modernTextField.fontFamily
             color: textPrimary
             placeholderText: modernTextField.placeholderText
@@ -58,15 +60,26 @@ Item {
             background: Rectangle {
                 radius: 10
                 color: textField.activeFocus ? cardBackground : backgroundColor
-                border.color: textField.activeFocus ? borderFocus : borderColor
+                border.color: textField.activeFocus ? borderFocus : (textField.hovered ? Qt.rgba(borderColor.r, borderColor.g, borderColor.b, 1.5) : borderColor)
                 border.width: textField.activeFocus ? 2 : 1
                 
                 Behavior on border.color {
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: 200 }
                 }
                 
                 Behavior on color {
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: 200 }
+                }
+                
+                // Subtle shadow on focus
+                layer.enabled: textField.activeFocus
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 2
+                    radius: 8
+                    samples: 17
+                    color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
                 }
             }
             

@@ -30,16 +30,16 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 16
+        spacing: 20
 
-        // 2x2 Grid Layout for panels
+        // 2x2 Grid Layout for panels with enhanced spacing
         GridLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             columns: 2
             rows: 2
-            columnSpacing: 16
-            rowSpacing: 16
+            columnSpacing: 24
+            rowSpacing: 24
 
             // Top Left: UDP Configuration
             UdpConfigPanel {
@@ -129,16 +129,16 @@ Item {
             }
         }
 
-        // Independent Apply and Reset buttons - centered below both divisions
+        // Independent Apply and Reset buttons - Enhanced enterprise styling
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 8
+            Layout.topMargin: 12
             spacing: 16
 
             ModernButton {
-                text: "Apply"
-                Layout.preferredWidth: 120
-                Layout.preferredHeight: 44
+                text: "Apply Changes"
+                Layout.preferredWidth: 160
+                Layout.preferredHeight: 48
 
                 primaryColor: mainView.primaryColor
                 primaryHover: mainView.primaryHover
@@ -151,9 +151,9 @@ Item {
             }
 
             ModernButton {
-                text: "Reset"
-                Layout.preferredWidth: 120
-                Layout.preferredHeight: 44
+                text: "Reset to Default"
+                Layout.preferredWidth: 160
+                Layout.preferredHeight: 48
                 outline: true
 
                 primaryColor: mainView.primaryColor

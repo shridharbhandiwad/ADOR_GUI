@@ -694,13 +694,13 @@ ApplicationWindow {
         ColorAnimation { duration: 200 }
     }
 
-    // Header
+    // Header - Enhanced enterprise design
     header: ToolBar {
-        height: 64
+        height: 72
         background: Rectangle {
             color: cardBackground
             border.color: borderColor
-            border.width: 1
+            border.width: 0
 
             Behavior on color {
                 ColorAnimation { duration: 200 }
@@ -710,15 +710,27 @@ ApplicationWindow {
                 ColorAnimation { duration: 200 }
             }
 
-            // Subtle shadow
+            // Bottom border separator
+            Rectangle {
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: 1
+                color: borderColor
+                
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
+
+            // Enhanced shadow for depth
             layer.enabled: true
             layer.effect: DropShadow {
                 transparentBorder: true
                 horizontalOffset: 0
                 verticalOffset: 2
-                radius: 8
-                samples: 17
-                color: shadowColor
+                radius: 16
+                samples: 25
+                color: Qt.rgba(shadowColor.r, shadowColor.g, shadowColor.b, 0.08)
             }
         }
 
@@ -728,25 +740,42 @@ ApplicationWindow {
             anchors.rightMargin: 24
             spacing: 16
 
-            // Logo/Title
+            // Logo/Title - Enhanced enterprise branding
             Row {
-                spacing: 12
+                spacing: 16
 
+                // Premium logo with gradient
                 Rectangle {
-                    width: 40
-                    height: 40
-                    radius: 8
-                    color: primaryColor
+                    width: 48
+                    height: 48
+                    radius: 12
+                    
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: primaryColor }
+                        GradientStop { position: 1.0; color: Qt.darker(primaryColor, 1.15) }
+                    }
 
                     Behavior on color {
                         ColorAnimation { duration: 200 }
+                    }
+                    
+                    // Subtle inner shadow effect
+                    layer.enabled: true
+                    layer.effect: DropShadow {
+                        transparentBorder: true
+                        horizontalOffset: 0
+                        verticalOffset: 2
+                        radius: 8
+                        samples: 17
+                        color: Qt.rgba(0, 0, 0, 0.25)
                     }
 
                     Text {
                         anchors.centerIn: parent
                         text: "R"
-                        font.pixelSize: 20
+                        font.pixelSize: 24
                         font.weight: Font.Bold
+                        font.family: root.fontFamily
                         color: ThemeManager.buttonTextColor
                         
                         Behavior on color {
@@ -757,14 +786,15 @@ ApplicationWindow {
 
                 Column {
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: 2
+                    spacing: 4
 
                     Text {
                         text: "Radar Visualization"
-                        font.pixelSize: 18
+                        font.pixelSize: 19
                         font.weight: Font.DemiBold
                         font.family: root.fontFamily
                         color: textPrimary
+                        font.letterSpacing: -0.5
 
                         Behavior on color {
                             ColorAnimation { duration: 200 }
@@ -773,7 +803,8 @@ ApplicationWindow {
 
                     Text {
                         text: "Configuration Dashboard"
-                        font.pixelSize: 12
+                        font.pixelSize: 13
+                        font.weight: Font.Normal
                         font.family: root.fontFamily
                         color: textSecondary
 
@@ -790,57 +821,81 @@ ApplicationWindow {
             Row {
                 spacing: 24
 
-                // Connection status - Adaptive design (monochrome/color)
-                Row {
-                    spacing: 8
+                // Connection status - Enhanced enterprise badge
+                Rectangle {
+                    height: 32
+                    width: connectionStatusRow.width + 24
+                    radius: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: udpPanel.isConnected ? 
+                           Qt.rgba(ThemeManager.statusConnected.r, ThemeManager.statusConnected.g, ThemeManager.statusConnected.b, 0.08) :
+                           Qt.rgba(ThemeManager.statusDisconnected.r, ThemeManager.statusDisconnected.g, ThemeManager.statusDisconnected.b, 0.08)
+                    border.color: udpPanel.isConnected ? 
+                                 Qt.rgba(ThemeManager.statusConnected.r, ThemeManager.statusConnected.g, ThemeManager.statusConnected.b, 0.2) :
+                                 Qt.rgba(ThemeManager.statusDisconnected.r, ThemeManager.statusDisconnected.g, ThemeManager.statusDisconnected.b, 0.2)
+                    border.width: 1
 
-                    // Status indicator with ring design
-                    Rectangle {
-                        width: 12
-                        height: 12
-                        radius: 6
-                        anchors.verticalCenter: parent.verticalCenter
-                        color: "transparent"
-                        border.color: udpPanel.isConnected ? ThemeManager.statusConnected : ThemeManager.statusDisconnected
-                        border.width: 2
+                    Behavior on color {
+                        ColorAnimation { duration: 200 }
+                    }
 
-                        Behavior on border.color {
-                            ColorAnimation { duration: 200 }
-                        }
+                    Behavior on border.color {
+                        ColorAnimation { duration: 200 }
+                    }
 
-                        // Inner filled circle when connected
+                    Row {
+                        id: connectionStatusRow
+                        anchors.centerIn: parent
+                        spacing: 8
+
+                        // Status indicator with ring design
                         Rectangle {
-                            anchors.centerIn: parent
-                            width: 6
-                            height: 6
-                            radius: 3
-                            color: ThemeManager.statusConnected
-                            visible: udpPanel.isConnected
-                            
-                            Behavior on color {
+                            width: 10
+                            height: 10
+                            radius: 5
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: "transparent"
+                            border.color: udpPanel.isConnected ? ThemeManager.statusConnected : ThemeManager.statusDisconnected
+                            border.width: 2
+
+                            Behavior on border.color {
                                 ColorAnimation { duration: 200 }
+                            }
+
+                            // Inner filled circle when connected
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 5
+                                height: 5
+                                radius: 2.5
+                                color: ThemeManager.statusConnected
+                                visible: udpPanel.isConnected
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 200 }
+                                }
+                            }
+
+                            // Pulsing animation only when disconnected
+                            SequentialAnimation on opacity {
+                                running: !udpPanel.isConnected
+                                loops: Animation.Infinite
+                                NumberAnimation { to: 0.4; duration: 1000; easing.type: Easing.InOutSine }
+                                NumberAnimation { to: 1.0; duration: 1000; easing.type: Easing.InOutSine }
                             }
                         }
 
-                        // Pulsing animation only when disconnected
-                        SequentialAnimation on opacity {
-                            running: !udpPanel.isConnected
-                            loops: Animation.Infinite
-                            NumberAnimation { to: 0.4; duration: 1000; easing.type: Easing.InOutSine }
-                            NumberAnimation { to: 1.0; duration: 1000; easing.type: Easing.InOutSine }
-                        }
-                    }
+                        Text {
+                            text: udpPanel.isConnected ? "Connected" : "Disconnected"
+                            font.pixelSize: 13
+                            font.weight: Font.Medium
+                            font.family: root.fontFamily
+                            color: udpPanel.isConnected ? ThemeManager.statusConnected : ThemeManager.statusDisconnected
+                            anchors.verticalCenter: parent.verticalCenter
 
-                    Text {
-                        text: udpPanel.isConnected ? "Connected" : "Disconnected"
-                        font.pixelSize: 13
-                        font.weight: udpPanel.isConnected ? Font.Medium : Font.Normal
-                        font.family: root.fontFamily
-                        color: udpPanel.isConnected ? (ThemeManager.isColorMode ? ThemeManager.statusConnected : textPrimary) : ThemeManager.statusDisconnected
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        Behavior on color {
-                            ColorAnimation { duration: 200 }
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
                         }
                     }
                 }
@@ -962,23 +1017,34 @@ ApplicationWindow {
                     }
                 }
 
-                // Settings button
+                // Settings button - Enhanced premium design
                 Rectangle {
                     id: settingsButton
-                    width: 40
-                    height: 40
-                    radius: 10
-                    color: settingsMouseArea.containsMouse ? hoverBackground : Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
-                    border.color: settingsMouseArea.containsMouse ? primaryColor : borderColor
+                    width: 44
+                    height: 44
+                    radius: 12
+                    color: settingsMouseArea.containsMouse ? 
+                           Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12) : 
+                           Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.06)
+                    border.color: settingsMouseArea.containsMouse ? 
+                                 Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.3) : 
+                                 Qt.rgba(borderColor.r, borderColor.g, borderColor.b, 0.5)
                     border.width: 1
                     visible: true
 
                     Behavior on color {
-                        ColorAnimation { duration: 150 }
+                        ColorAnimation { duration: 200 }
                     }
 
                     Behavior on border.color {
-                        ColorAnimation { duration: 150 }
+                        ColorAnimation { duration: 200 }
+                    }
+                    
+                    // Subtle scale animation on hover
+                    scale: settingsMouseArea.containsMouse ? 1.05 : 1.0
+                    
+                    Behavior on scale {
+                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                     }
 
                     // Gear icon using Canvas for reliable rendering
@@ -1079,11 +1145,13 @@ ApplicationWindow {
         }
     }
 
-    // Main content - 2x2 Grid Layout
+    // Main content - 2x2 Grid Layout with enhanced spacing
     MainView {
         id: mainView
         anchors.fill: parent
-        anchors.margins: 24
+        anchors.margins: 32
+        anchors.topMargin: 28
+        anchors.bottomMargin: 28
 
         backgroundColor: root.backgroundColor
         cardBackground: root.cardBackground

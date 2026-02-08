@@ -34,7 +34,7 @@ Item {
             
             Text {
                 text: modernSwitch.label
-                font.pixelSize: 16
+                font.pixelSize: 15
                 font.weight: Font.Medium
                 font.family: modernSwitch.fontFamily
                 color: textPrimary
@@ -45,12 +45,13 @@ Item {
             
             Text {
                 text: modernSwitch.description
-                font.pixelSize: 14
+                font.pixelSize: 13
                 font.family: modernSwitch.fontFamily
                 color: textSecondary
                 visible: modernSwitch.description.length > 0
                 width: parent.width
                 wrapMode: Text.WordWrap
+                lineHeight: 1.4
                 
                 Behavior on color { ColorAnimation { duration: 200 } }
             }
@@ -60,34 +61,43 @@ Item {
             id: switchControl
             
             indicator: Rectangle {
-                implicitWidth: 52
-                implicitHeight: 28
+                implicitWidth: 54
+                implicitHeight: 30
                 x: switchControl.leftPadding
                 y: parent.height / 2 - height / 2
-                radius: 14
-                // Uses primary color for classic unified look
+                radius: 15
+                // Uses primary color with subtle gradient
                 color: switchControl.checked ? primaryColor : trackOffColor
+                border.color: switchControl.checked ? 
+                             Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.3) : 
+                             Qt.rgba(trackOffColor.r, trackOffColor.g, trackOffColor.b, 0.5)
+                border.width: 1
                 
                 Behavior on color {
                     ColorAnimation { duration: 200 }
                 }
                 
+                Behavior on border.color {
+                    ColorAnimation { duration: 200 }
+                }
+                
                 Rectangle {
-                    x: switchControl.checked ? parent.width - width - 4 : 4
-                    y: 4
-                    width: 20
-                    height: 20
-                    radius: 10
+                    x: switchControl.checked ? parent.width - width - 3 : 3
+                    y: 3
+                    width: 24
+                    height: 24
+                    radius: 12
                     color: ThemeManager.switchKnobColor
                     
                     layer.enabled: true
                     layer.effect: DropShadow {
                         transparentBorder: true
                         horizontalOffset: 0
-                        verticalOffset: 1
-                        radius: 4
-                        samples: 9
-                        color: "#0000002a"
+                        verticalOffset: 2
+                        radius: 6
+                        samples: 13
+                        color: "#00000035"
+                        spread: 0.1
                     }
                     
                     Behavior on x {
