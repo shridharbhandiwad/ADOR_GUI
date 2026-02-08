@@ -41,9 +41,10 @@ TimeSeriesPlotWidget::TimeSeriesPlotWidget(QWidget *parent)
     setMouseTracking(true);  // Enable mouse tracking for hover effects
     
     // Setup cleanup timer to remove old data points every second
+    // DISABLED: Don't automatically clear data - only clear when user clicks "Clear All Data" button
     m_cleanupTimer = new QTimer(this);
-    connect(m_cleanupTimer, &QTimer::timeout, this, &TimeSeriesPlotWidget::cleanupOldData);
-    m_cleanupTimer->start(1000); // Check every 1 second
+    // connect(m_cleanupTimer, &QTimer::timeout, this, &TimeSeriesPlotWidget::cleanupOldData);
+    // m_cleanupTimer->start(1000); // Check every 1 second
 }
 
 TimeSeriesPlotWidget::~TimeSeriesPlotWidget()
@@ -102,8 +103,8 @@ void TimeSeriesPlotWidget::addDataPoint(qint64 timestamp, float value)
 {
     m_dataPoints.append(qMakePair(timestamp, value));
     
-    // Remove old data points beyond the time window
-    cleanupOldData();
+    // DISABLED: Don't automatically clear old data - retain all data until user clicks "Clear All Data" button
+    // cleanupOldData();
     
     update();
 }
@@ -1460,16 +1461,16 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
     
     // Check if no tracks are received at all
     if (targets.numTracks == 0) {
-        // Clear all time series plots when no data is received
-        if (m_velocityTimePlot) {
-            m_velocityTimePlot->clearData();
-        }
-        if (m_rangeTimePlot) {
-            m_rangeTimePlot->clearData();
-        }
-        if (m_rangeRatePlot) {
-            m_rangeRatePlot->clearData();
-        }
+        // DISABLED: Don't automatically clear data - retain all data until user clicks "Clear All Data" button
+        // if (m_velocityTimePlot) {
+        //     m_velocityTimePlot->clearData();
+        // }
+        // if (m_rangeTimePlot) {
+        //     m_rangeTimePlot->clearData();
+        // }
+        // if (m_rangeRatePlot) {
+        //     m_rangeRatePlot->clearData();
+        // }
         // Don't clear range-velocity plot as it accumulates data over time
         
         m_lastDataReceivedTime = 0;
@@ -1487,21 +1488,21 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         }
     }
     
-    // If all target data is stale (no new UDP packets), clear the time series plots
-    if (dataIsStale) {
-        if (m_velocityTimePlot) {
-            m_velocityTimePlot->clearData();
-        }
-        if (m_rangeTimePlot) {
-            m_rangeTimePlot->clearData();
-        }
-        if (m_rangeRatePlot) {
-            m_rangeRatePlot->clearData();
-        }
-        
-        m_lastDataReceivedTime = 0;
-        return;
-    }
+    // DISABLED: Don't automatically clear data when stale - retain all data until user clicks "Clear All Data" button
+    // if (dataIsStale) {
+    //     if (m_velocityTimePlot) {
+    //         m_velocityTimePlot->clearData();
+    //     }
+    //     if (m_rangeTimePlot) {
+    //         m_rangeTimePlot->clearData();
+    //     }
+    //     if (m_rangeRatePlot) {
+    //         m_rangeRatePlot->clearData();
+    //     }
+    //     
+    //     m_lastDataReceivedTime = 0;
+    //     return;
+    // }
     
     bool anyTrackPassed = false;
     
@@ -1542,21 +1543,21 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         }
     }
     
-    // If tracks exist but none pass the filter, check if we should clear the plots
+    // If tracks exist but none pass the filter, don't clear - just update display
     if (!anyTrackPassed) {
-        // If we haven't received valid data for more than 2 seconds, clear the time series plots
-        if (m_lastDataReceivedTime > 0 && (currentTime - m_lastDataReceivedTime) > 2000) {
-            if (m_velocityTimePlot) {
-                m_velocityTimePlot->clearData();
-            }
-            if (m_rangeTimePlot) {
-                m_rangeTimePlot->clearData();
-            }
-            if (m_rangeRatePlot) {
-                m_rangeRatePlot->clearData();
-            }
-            m_lastDataReceivedTime = 0;
-        }
+        // DISABLED: Don't automatically clear data - retain all data until user clicks "Clear All Data" button
+        // if (m_lastDataReceivedTime > 0 && (currentTime - m_lastDataReceivedTime) > 2000) {
+        //     if (m_velocityTimePlot) {
+        //         m_velocityTimePlot->clearData();
+        //     }
+        //     if (m_rangeTimePlot) {
+        //         m_rangeTimePlot->clearData();
+        //     }
+        //     if (m_rangeRatePlot) {
+        //         m_rangeRatePlot->clearData();
+        //     }
+        //     m_lastDataReceivedTime = 0;
+        // }
         
         // Trigger a repaint to update the time axis
         if (m_velocityTimePlot) {
