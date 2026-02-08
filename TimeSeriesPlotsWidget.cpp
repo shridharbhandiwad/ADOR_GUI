@@ -236,6 +236,16 @@ void TimeSeriesPlotWidget::drawAxes(QPainter& painter)
     
     // Y axis
     painter.drawLine(m_plotRect.topLeft(), m_plotRect.bottomLeft());
+    
+    // Draw zero reference line if 0 is within the y-axis range
+    if (m_minY <= 0.0f && m_maxY >= 0.0f) {
+        float valueRatio = (0.0f - m_minY) / (m_maxY - m_minY);
+        int y = m_plotRect.bottom() - int(valueRatio * m_plotRect.height());
+        
+        // Draw a dashed line at y=0 with a distinct color
+        painter.setPen(QPen(m_isDarkTheme ? QColor(148, 163, 184) : QColor(71, 85, 105), 2, Qt::DashLine));
+        painter.drawLine(m_plotRect.left(), y, m_plotRect.right(), y);
+    }
 }
 
 void TimeSeriesPlotWidget::drawData(QPainter& painter)
@@ -247,7 +257,6 @@ void TimeSeriesPlotWidget::drawData(QPainter& painter)
     
     // Draw as scatter plot (point cloud) with filled circles
     painter.setPen(Qt::NoPen);
-    painter.setBrush(getDataLineColor());
     
     for (int i = 0; i < m_dataPoints.size(); ++i) {
         const auto& point = m_dataPoints[i];
@@ -263,13 +272,22 @@ void TimeSeriesPlotWidget::drawData(QPainter& painter)
         valueRatio = qBound(0.0f, valueRatio, 1.0f);
         int y = m_plotRect.bottom() - int(valueRatio * m_plotRect.height());
         
+        // Use different colors for positive and negative values
+        QColor pointColor;
+        if (point.second >= 0) {
+            // Positive values: Green (approaching/positive rate)
+            pointColor = m_isDarkTheme ? QColor(34, 197, 94) : QColor(22, 163, 74);
+        } else {
+            // Negative values: Red (receding/negative rate)
+            pointColor = m_isDarkTheme ? QColor(239, 68, 68) : QColor(220, 38, 38);
+        }
+        
         // Highlight hovered point
         if (i == m_hoveredPointIndex) {
             painter.setBrush(QColor(255, 200, 0));  // Yellow highlight
             painter.drawEllipse(QPoint(x, y), m_pointSize + 2, m_pointSize + 2);
-            painter.setBrush(getDataLineColor());
         } else {
-            // Draw filled circle
+            painter.setBrush(pointColor);
             painter.drawEllipse(QPoint(x, y), m_pointSize, m_pointSize);
         }
     }
@@ -1195,15 +1213,15 @@ void TimeSeriesPlotsWidget::setupUI()
     
     gridLayout->addWidget(rangeGroup, 0, 1);
     
-    // Bottom-left: Range Rate vs Time plot
+    // Bottom-left: Range Rate vs Time plot (shares same limits as velocity)
     QGroupBox* rangeRateGroup = new QGroupBox("Range Rate plot", this);
     QVBoxLayout* rangeRateGroupLayout = new QVBoxLayout(rangeRateGroup);
     rangeRateGroupLayout->setContentsMargins(5, 5, 5, 5);
     
     m_rangeRatePlot = new TimeSeriesPlotWidget(this);
     m_rangeRatePlot->setYAxisLabel("Range Rate");
-    m_rangeRatePlot->setYAxisUnit("kph");
-    m_rangeRatePlot->setYAxisRange(-100, 100);  // Default range: -100 to +100 kph
+    m_rangeRatePlot->setYAxisUnit("km/h");
+    m_rangeRatePlot->setYAxisRange(-40, 40);  // Default range: same as velocity (-40 to +40 km/h)
     m_rangeRatePlot->setTimeWindowSeconds(60);
     rangeRateGroupLayout->addWidget(m_rangeRatePlot);
     
@@ -1677,6 +1695,10 @@ void TimeSeriesPlotsWidget::onVelocityMinChanged(double value)
     if (m_velocityTimePlot && value < m_velocityMaxSpinBox->value()) {
         m_velocityTimePlot->setYAxisRange(value, m_velocityMaxSpinBox->value());
     }
+    // Range rate plot shares the same limits as velocity plot
+    if (m_rangeRatePlot && value < m_velocityMaxSpinBox->value()) {
+        m_rangeRatePlot->setYAxisRange(value, m_velocityMaxSpinBox->value());
+    }
     if (m_rangeVelocityPlot) {
         // For RV plot, use the same signed values as time series
         double minVel = m_velocityMinSpinBox->value();
@@ -1691,6 +1713,10 @@ void TimeSeriesPlotsWidget::onVelocityMaxChanged(double value)
 {
     if (m_velocityTimePlot && value > m_velocityMinSpinBox->value()) {
         m_velocityTimePlot->setYAxisRange(m_velocityMinSpinBox->value(), value);
+    }
+    // Range rate plot shares the same limits as velocity plot
+    if (m_rangeRatePlot && value > m_velocityMinSpinBox->value()) {
+        m_rangeRatePlot->setYAxisRange(m_velocityMinSpinBox->value(), value);
     }
     if (m_rangeVelocityPlot) {
         // For RV plot, use the same signed values as time series
