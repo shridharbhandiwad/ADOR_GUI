@@ -951,21 +951,21 @@ void MainWindow::updateDisplay()
     if (m_simulationEnabled) {
         generateSimulatedTargetData();
         generateSimulatedADCData();
+        
+        // For simulation mode, process data here since it's not coming from UDP
+        if (m_speedMeasurementWidget) {
+            m_speedMeasurementWidget->updateFromTargets(m_currentTargets);
+        }
+        if (m_timeSeriesPlotsWidget) {
+            m_timeSeriesPlotsWidget->updateFromTargets(m_currentTargets);
+        }
     }
 
+    // CRITICAL FIX: Display update only refreshes UI, not data processing
+    // Range rate and filter processing now happens immediately in UDP reception
     m_ppiWidget->updateTargets(m_currentTargets);
     m_fftWidget->updateData(m_currentADCFrame);
     m_fftWidget->updateTargets(m_currentTargets);
-    
-    // Update speed measurement widget with target data
-    if (m_speedMeasurementWidget) {
-        m_speedMeasurementWidget->updateFromTargets(m_currentTargets);
-    }
-    
-    // Update time series plots widget with target data
-    if (m_timeSeriesPlotsWidget) {
-        m_timeSeriesPlotsWidget->updateFromTargets(m_currentTargets);
-    }
     
     updateTrackTable();
 
@@ -1207,6 +1207,15 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
     if (m_receivedTargetCount >= m_expectedNumTargets) {
         // Apply the frame - replace current targets entirely (ephemeral sync)
         applyFrameTargets();
+        
+        // CRITICAL FIX: Process data immediately upon UDP reception
+        // Compute range rate and apply filters as soon as frame is complete
+        if (m_timeSeriesPlotsWidget) {
+            m_timeSeriesPlotsWidget->updateFromTargets(m_currentTargets);
+        }
+        if (m_speedMeasurementWidget) {
+            m_speedMeasurementWidget->updateFromTargets(m_currentTargets);
+        }
     }
 
     // Disable simulation when receiving real data
@@ -1284,6 +1293,15 @@ void MainWindow::parseTrackMessage(const QString& message)
     }
 
     m_currentTargets.numTracks = m_currentTargets.targets.size();
+    
+    // CRITICAL FIX: Process data immediately upon UDP reception
+    // Compute range rate and apply filters as soon as text data is parsed
+    if (m_timeSeriesPlotsWidget) {
+        m_timeSeriesPlotsWidget->updateFromTargets(m_currentTargets);
+    }
+    if (m_speedMeasurementWidget) {
+        m_speedMeasurementWidget->updateFromTargets(m_currentTargets);
+    }
 }
 
 void MainWindow::parseADCMessage(const QString& message)
