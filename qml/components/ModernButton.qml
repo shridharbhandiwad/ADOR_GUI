@@ -31,58 +31,69 @@ Button {
         Behavior on color { ColorAnimation { duration: 200 } }
     }
     
-    background: Rectangle {
-        radius: 10
-        
-        // Enhanced gradient for filled buttons
-        gradient: outline ? null : Gradient {
-            GradientStop { 
-                position: 0.0
-                color: {
-                    if (modernButton.down) return Qt.darker(primaryPressed, 1.05)
-                    if (modernButton.hovered) return primaryHover
-                    return primaryColor
+    background: Item {
+        // Filled button with gradient
+        Rectangle {
+            id: filledBackground
+            anchors.fill: parent
+            radius: 10
+            visible: !outline
+            
+            gradient: Gradient {
+                GradientStop { 
+                    position: 0.0
+                    color: {
+                        if (modernButton.down) return Qt.darker(primaryPressed, 1.05)
+                        if (modernButton.hovered) return primaryHover
+                        return primaryColor
+                    }
+                }
+                GradientStop { 
+                    position: 1.0
+                    color: {
+                        if (modernButton.down) return primaryPressed
+                        if (modernButton.hovered) return Qt.darker(primaryHover, 1.08)
+                        return Qt.darker(primaryColor, 1.12)
+                    }
                 }
             }
-            GradientStop { 
-                position: 1.0
-                color: {
-                    if (modernButton.down) return primaryPressed
-                    if (modernButton.hovered) return Qt.darker(primaryHover, 1.08)
-                    return Qt.darker(primaryColor, 1.12)
-                }
+            
+            // Premium shadow for filled buttons
+            layer.enabled: modernButton.enabled
+            layer.effect: DropShadow {
+                transparentBorder: true
+                horizontalOffset: 0
+                verticalOffset: modernButton.down ? 2 : 4
+                radius: modernButton.down ? 8 : 16
+                samples: 25
+                color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, modernButton.down ? 0.35 : 0.45)
+                spread: 0.1
             }
         }
         
-        // Solid color for outline buttons
-        color: {
-            if (!outline) return "transparent"  // Gradient handles filled buttons
-            if (modernButton.down) return Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12)
-            if (modernButton.hovered) return Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08)
-            return "transparent"
-        }
-        
-        border.color: outline ? (modernButton.hovered ? primaryHover : primaryColor) : "transparent"
-        border.width: outline ? 1.5 : 0
-        
-        Behavior on color {
-            ColorAnimation { duration: 200 }
-        }
-        
-        Behavior on border.color {
-            ColorAnimation { duration: 200 }
-        }
-        
-        // Premium shadow for filled buttons
-        layer.enabled: !outline && modernButton.enabled
-        layer.effect: DropShadow {
-            transparentBorder: true
-            horizontalOffset: 0
-            verticalOffset: modernButton.down ? 2 : 4
-            radius: modernButton.down ? 8 : 16
-            samples: 25
-            color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, modernButton.down ? 0.35 : 0.45)
-            spread: 0.1
+        // Outline button
+        Rectangle {
+            id: outlineBackground
+            anchors.fill: parent
+            radius: 10
+            visible: outline
+            
+            color: {
+                if (modernButton.down) return Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12)
+                if (modernButton.hovered) return Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.08)
+                return "transparent"
+            }
+            
+            border.color: modernButton.hovered ? primaryHover : primaryColor
+            border.width: 1.5
+            
+            Behavior on color {
+                ColorAnimation { duration: 200 }
+            }
+            
+            Behavior on border.color {
+                ColorAnimation { duration: 200 }
+            }
         }
     }
     
