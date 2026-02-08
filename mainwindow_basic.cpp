@@ -411,6 +411,9 @@ void MainWindow::showUdpConfigDialog()
         }
     }
     
+    // Apply current theme to the dialog
+    udpConfigDialog->setDarkTheme(m_isDarkTheme);
+    
     udpConfigDialog->exec();
 }
 
@@ -419,6 +422,10 @@ void MainWindow::showOutputConfigDialog()
     if (!outputConfigDialog) {
         outputConfigDialog = std::make_unique<OutputConfigDialog>(this);
     }
+    
+    // Apply current theme to the dialog
+    outputConfigDialog->setDarkTheme(m_isDarkTheme);
+    
     outputConfigDialog->exec();
 }
 
@@ -427,6 +434,10 @@ void MainWindow::showAngleCorrectionDialog()
     if (!angleDialog) {
         angleDialog = std::make_unique<AngleCorrectionDialog>(this);
     }
+    
+    // Apply current theme to the dialog
+    angleDialog->setDarkTheme(m_isDarkTheme);
+    
     angleDialog->exec();
 }
 
@@ -437,6 +448,10 @@ void MainWindow::showAmplificationDialog()
         connect(amplificationDialog.get(), &AmplificationDialog::amplificationChanged,
                 this, &MainWindow::onAmplificationChanged);
     }
+    
+    // Apply current theme to the dialog
+    amplificationDialog->setDarkTheme(m_isDarkTheme);
+    
     amplificationDialog->exec();
 }
 
@@ -449,6 +464,10 @@ void MainWindow::showDSPSettingsDialog()
         connect(dspSettingsDialog.get(), &DSPSettingsDialog::sendSettingsRequested,
                 this, &MainWindow::onSendDSPSettings);
     }
+    
+    // Apply current theme to the dialog
+    dspSettingsDialog->setDarkTheme(m_isDarkTheme);
+    
     dspSettingsDialog->exec();
 }
 

@@ -40,6 +40,10 @@ public:
 
     UdpHandler* getUdpHandler() const { return udpHandler.get(); }
     bool isConnected() const;
+    
+    // Theme support
+    void setDarkTheme(bool isDark);
+    bool isDarkTheme() const { return m_isDarkTheme; }
 
 signals:
     void connectionStatusChanged(bool connected);
@@ -64,8 +68,11 @@ private:
     
     std::unique_ptr<UdpHandler> udpHandler;
     
+    bool m_isDarkTheme;
+    
     void setupUI();
     void updateUI();
+    void applyThemeStyleSheet();
 };
 
 // Output Configuration Dialog
@@ -102,15 +109,22 @@ public:
     
     OutputSettings getOutputSettings(int outputNumber) const;
     void setOutputSettings(int outputNumber, const OutputSettings& settings);
+    
+    // Theme support
+    void setDarkTheme(bool isDark);
+    bool isDarkTheme() const { return m_isDarkTheme; }
 
 private:
     QTabWidget* tabWidget;
     std::vector<QWidget*> outputTabs;
     
+    bool m_isDarkTheme;
+    
     void setupUI();
     QWidget* createOutputTab(int outputNum);
     void saveSettings();
     void loadSettings();
+    void applyThemeStyleSheet();
 };
 
 // Angle Correction Dialog
@@ -136,6 +150,10 @@ public:
     
     AngleCorrectionSettings getSettings() const;
     void setSettings(const AngleCorrectionSettings& settings);
+    
+    // Theme support
+    void setDarkTheme(bool isDark);
+    bool isDarkTheme() const { return m_isDarkTheme; }
 
 private:
     QRadioButton* angleRadio;
@@ -143,8 +161,11 @@ private:
     QSpinBox* angleSpinBox;
     QDoubleSpinBox* heightSpinBox;
     
+    bool m_isDarkTheme;
+    
     void setupUI();
     void updateControls();
+    void applyThemeStyleSheet();
 };
 
 // Amplification Settings Dialog
@@ -167,6 +188,10 @@ public:
     
     AmplificationSettings getSettings() const;
     void setSettings(const AmplificationSettings& settings);
+    
+    // Theme support
+    void setDarkTheme(bool isDark);
+    bool isDarkTheme() const { return m_isDarkTheme; }
 
 signals:
     void amplificationChanged(int amplification);
@@ -185,8 +210,11 @@ private:
     QSpinBox* outerThresholdSpinBox;
     QPushButton* storeButton;
     
+    bool m_isDarkTheme;
+    
     void setupUI();
     void updateControls();
+    void applyThemeStyleSheet();
 };
 
 // Filter Configuration Dialog
@@ -232,6 +260,10 @@ public:
     
     FilterSettings getSettings() const;
     void setSettings(const FilterSettings& settings);
+    
+    // Theme support
+    void setDarkTheme(bool isDark);
+    bool isDarkTheme() const { return m_isDarkTheme; }
 
 private:
     QComboBox* filterTypeCombo;
@@ -245,7 +277,10 @@ private:
     QSpinBox* singleTargetSpinBox;
     QCheckBox* showHistogramCheckBox;
     
+    bool m_isDarkTheme;
+    
     void setupUI();
+    void applyThemeStyleSheet();
 };
 
 // Forward declaration for DSP Settings
