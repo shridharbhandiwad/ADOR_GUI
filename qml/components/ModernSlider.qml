@@ -37,9 +37,10 @@ Item {
             
             Text {
                 text: modernSlider.label
-                font.pixelSize: 15
+                font.pixelSize: 13
                 font.weight: Font.Medium
                 font.family: modernSlider.fontFamily
+                font.letterSpacing: 0.3
                 color: textSecondary
                 
                 Behavior on color { ColorAnimation { duration: 200 } }
@@ -49,7 +50,7 @@ Item {
             
             Text {
                 text: Math.round(slider.value) + modernSlider.suffix
-                font.pixelSize: 16
+                font.pixelSize: 15
                 font.weight: Font.DemiBold
                 font.family: modernSlider.fontFamily
                 color: primaryColor

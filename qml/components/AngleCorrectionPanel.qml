@@ -35,28 +35,30 @@ Rectangle {
     Behavior on color { ColorAnimation { duration: 200 } }
     Behavior on border.color { ColorAnimation { duration: 200 } }
     
-    // Shadow
+    // Enhanced shadow for depth
     layer.enabled: true
     layer.effect: DropShadow {
         transparentBorder: true
         horizontalOffset: 0
-        verticalOffset: 4
-        radius: 12
-        samples: 25
+        verticalOffset: 6
+        radius: 20
+        samples: 32
         color: ThemeManager.shadowColor
+        spread: 0.1
     }
     
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 16
-        spacing: 12
+        anchors.margins: 20
+        spacing: 16
         
-        // Compact header
+        // Enhanced header
         Text {
             text: "Angle Correction"
-            font.pixelSize: 14
+            font.pixelSize: 15
             font.weight: Font.DemiBold
             font.family: fontFamily
+            font.letterSpacing: -0.2
             color: textPrimary
             
             Behavior on color { ColorAnimation { duration: 200 } }

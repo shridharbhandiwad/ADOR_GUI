@@ -43,145 +43,147 @@ QtObject {
     
     // ============================================
     // LIGHT THEME COLORS - Classic Monochrome
-    // Primary accent: Dark charcoal grey
+    // Primary accent: Deep charcoal with refined grays
+    // Enterprise-grade professional aesthetic
     // ============================================
-    readonly property color monoLightBackgroundColor: "#fafafa"
+    readonly property color monoLightBackgroundColor: "#f5f7fa"
     readonly property color monoLightCardBackground: "#ffffff"
-    // Primary - Dark charcoal for elegant contrast
-    readonly property color monoLightPrimaryColor: "#1a1a1a"
-    readonly property color monoLightPrimaryHover: "#333333"
-    readonly property color monoLightPrimaryPressed: "#0a0a0a"
-    // All semantic colors unified as shades of grey
-    readonly property color monoLightAccentColor: "#1a1a1a"
-    readonly property color monoLightSuccessColor: "#1a1a1a"     // Active/On state - solid dark
-    readonly property color monoLightWarningColor: "#525252"     // Attention - medium grey
-    readonly property color monoLightErrorColor: "#737373"       // Inactive/Off - lighter grey
-    readonly property color monoLightInfoColor: "#404040"        // Info - dark grey
-    // Text hierarchy using neutral grays
-    readonly property color monoLightTextPrimary: "#0a0a0a"
-    readonly property color monoLightTextSecondary: "#525252"
-    readonly property color monoLightTextMuted: "#a3a3a3"
+    // Primary - Deep charcoal for sophisticated contrast
+    readonly property color monoLightPrimaryColor: "#1c1e21"
+    readonly property color monoLightPrimaryHover: "#2d3137"
+    readonly property color monoLightPrimaryPressed: "#0f1113"
+    // All semantic colors unified as refined shades of grey
+    readonly property color monoLightAccentColor: "#1c1e21"
+    readonly property color monoLightSuccessColor: "#1c1e21"     // Active/On state - solid dark
+    readonly property color monoLightWarningColor: "#4a5568"     // Attention - medium grey
+    readonly property color monoLightErrorColor: "#6b7280"       // Inactive/Off - lighter grey
+    readonly property color monoLightInfoColor: "#374151"        // Info - dark grey
+    // Text hierarchy using sophisticated grays
+    readonly property color monoLightTextPrimary: "#0f1419"
+    readonly property color monoLightTextSecondary: "#4a5568"
+    readonly property color monoLightTextMuted: "#9ca3af"
     // Borders and UI elements
-    readonly property color monoLightBorderColor: "#e5e5e5"
-    readonly property color monoLightBorderFocus: "#1a1a1a"
-    readonly property color monoLightShadowColor: "#00000012"
-    readonly property color monoLightInputBackground: "#fafafa"
-    readonly property color monoLightTrackOffColor: "#d4d4d4"
-    readonly property color monoLightTrackColor: "#e5e5e5"
-    readonly property color monoLightHoverBackground: "#f5f5f5"
-    readonly property color monoLightDividerColor: "#e5e5e5"
+    readonly property color monoLightBorderColor: "#e5e7eb"
+    readonly property color monoLightBorderFocus: "#1c1e21"
+    readonly property color monoLightShadowColor: "#0f141918"
+    readonly property color monoLightInputBackground: "#f9fafb"
+    readonly property color monoLightTrackOffColor: "#d1d5db"
+    readonly property color monoLightTrackColor: "#e5e7eb"
+    readonly property color monoLightHoverBackground: "#f3f4f6"
+    readonly property color monoLightDividerColor: "#e5e7eb"
     // Gradient colors for monochrome
-    readonly property color monoLightGradientStart: "#1a1a1a"
-    readonly property color monoLightGradientEnd: "#404040"
+    readonly property color monoLightGradientStart: "#1c1e21"
+    readonly property color monoLightGradientEnd: "#374151"
     
     // ============================================
     // DARK THEME COLORS - Classic Monochrome
-    // Primary accent: Pure white/off-white
+    // Primary accent: Refined white with sophisticated grays
+    // Enterprise-grade dark mode aesthetic
     // ============================================
-    readonly property color monoDarkBackgroundColor: "#0a0a0a"
-    readonly property color monoDarkCardBackground: "#171717"
-    // Primary - Clean white for dark theme
-    readonly property color monoDarkPrimaryColor: "#fafafa"
-    readonly property color monoDarkPrimaryHover: "#e5e5e5"
+    readonly property color monoDarkBackgroundColor: "#0d1117"
+    readonly property color monoDarkCardBackground: "#161b22"
+    // Primary - Refined white for dark theme
+    readonly property color monoDarkPrimaryColor: "#f6f8fa"
+    readonly property color monoDarkPrimaryHover: "#e6eaee"
     readonly property color monoDarkPrimaryPressed: "#ffffff"
-    // All semantic colors unified as shades of white/grey
-    readonly property color monoDarkAccentColor: "#fafafa"
-    readonly property color monoDarkSuccessColor: "#fafafa"      // Active/On state - bright white
-    readonly property color monoDarkWarningColor: "#a3a3a3"      // Attention - medium grey
-    readonly property color monoDarkErrorColor: "#737373"        // Inactive/Off - dimmer grey
-    readonly property color monoDarkInfoColor: "#d4d4d4"         // Info - light grey
-    // Text hierarchy using light grays
-    readonly property color monoDarkTextPrimary: "#fafafa"
-    readonly property color monoDarkTextSecondary: "#a3a3a3"
-    readonly property color monoDarkTextMuted: "#525252"
+    // All semantic colors unified as refined shades of white/grey
+    readonly property color monoDarkAccentColor: "#f6f8fa"
+    readonly property color monoDarkSuccessColor: "#f6f8fa"      // Active/On state - bright white
+    readonly property color monoDarkWarningColor: "#9ca3af"      // Attention - medium grey
+    readonly property color monoDarkErrorColor: "#6b7280"        // Inactive/Off - dimmer grey
+    readonly property color monoDarkInfoColor: "#d1d5db"         // Info - light grey
+    // Text hierarchy using refined light grays
+    readonly property color monoDarkTextPrimary: "#f6f8fa"
+    readonly property color monoDarkTextSecondary: "#9ca3af"
+    readonly property color monoDarkTextMuted: "#4a5568"
     // Borders and UI elements
-    readonly property color monoDarkBorderColor: "#262626"
-    readonly property color monoDarkBorderFocus: "#fafafa"
-    readonly property color monoDarkShadowColor: "#00000060"
-    readonly property color monoDarkInputBackground: "#0a0a0a"
-    readonly property color monoDarkTrackOffColor: "#404040"
-    readonly property color monoDarkTrackColor: "#262626"
-    readonly property color monoDarkHoverBackground: "#262626"
-    readonly property color monoDarkDividerColor: "#262626"
+    readonly property color monoDarkBorderColor: "#21262d"
+    readonly property color monoDarkBorderFocus: "#f6f8fa"
+    readonly property color monoDarkShadowColor: "#00000070"
+    readonly property color monoDarkInputBackground: "#0d1117"
+    readonly property color monoDarkTrackOffColor: "#374151"
+    readonly property color monoDarkTrackColor: "#21262d"
+    readonly property color monoDarkHoverBackground: "#21262d"
+    readonly property color monoDarkDividerColor: "#21262d"
     // Gradient colors for monochrome dark
-    readonly property color monoDarkGradientStart: "#fafafa"
-    readonly property color monoDarkGradientEnd: "#a3a3a3"
+    readonly property color monoDarkGradientStart: "#f6f8fa"
+    readonly property color monoDarkGradientEnd: "#9ca3af"
     
     // ============================================
-    // VIBRANT COLOR PALETTE - LIGHT THEME
-    // Modern, rich colors with beautiful aesthetics
-    // Inspired by premium design systems
+    // PREMIUM COLOR PALETTE - LIGHT THEME
+    // Sophisticated colors inspired by enterprise design systems
+    // Professional, refined, and accessible
     // ============================================
-    readonly property color colorLightBackgroundColor: "#f8fafc"
+    readonly property color colorLightBackgroundColor: "#f6f8fc"
     readonly property color colorLightCardBackground: "#ffffff"
-    // Primary - Vibrant Indigo Blue
-    readonly property color colorLightPrimaryColor: "#4f46e5"
-    readonly property color colorLightPrimaryHover: "#4338ca"
+    // Primary - Premium Indigo Blue (refined for enterprise)
+    readonly property color colorLightPrimaryColor: "#4c51bf"
+    readonly property color colorLightPrimaryHover: "#434190"
     readonly property color colorLightPrimaryPressed: "#3730a3"
-    // Semantic colors - rich and distinctive
-    readonly property color colorLightAccentColor: "#8b5cf6"      // Purple accent
-    readonly property color colorLightSuccessColor: "#10b981"     // Emerald green
-    readonly property color colorLightWarningColor: "#f59e0b"     // Amber warning
-    readonly property color colorLightErrorColor: "#ef4444"       // Red error
-    readonly property color colorLightInfoColor: "#0ea5e9"        // Sky blue info
-    // Text hierarchy
-    readonly property color colorLightTextPrimary: "#0f172a"
-    readonly property color colorLightTextSecondary: "#475569"
-    readonly property color colorLightTextMuted: "#94a3b8"
+    // Semantic colors - refined and professional
+    readonly property color colorLightAccentColor: "#7c3aed"      // Deep purple accent
+    readonly property color colorLightSuccessColor: "#059669"     // Professional emerald green
+    readonly property color colorLightWarningColor: "#d97706"     // Refined amber warning
+    readonly property color colorLightErrorColor: "#dc2626"       // Professional red error
+    readonly property color colorLightInfoColor: "#0284c7"        // Deep sky blue info
+    // Text hierarchy - refined for readability
+    readonly property color colorLightTextPrimary: "#0f1419"
+    readonly property color colorLightTextSecondary: "#4a5568"
+    readonly property color colorLightTextMuted: "#9ca3af"
     // Borders and UI elements
-    readonly property color colorLightBorderColor: "#e2e8f0"
-    readonly property color colorLightBorderFocus: "#4f46e5"
-    readonly property color colorLightShadowColor: "#0f172a15"
-    readonly property color colorLightInputBackground: "#f8fafc"
+    readonly property color colorLightBorderColor: "#e5e7eb"
+    readonly property color colorLightBorderFocus: "#4c51bf"
+    readonly property color colorLightShadowColor: "#0f141918"
+    readonly property color colorLightInputBackground: "#f9fafb"
     readonly property color colorLightTrackOffColor: "#cbd5e1"
-    readonly property color colorLightTrackColor: "#e2e8f0"
-    readonly property color colorLightHoverBackground: "#f1f5f9"
-    readonly property color colorLightDividerColor: "#e2e8f0"
-    // Gradient colors for color mode
-    readonly property color colorLightGradientStart: "#4f46e5"
+    readonly property color colorLightTrackColor: "#e5e7eb"
+    readonly property color colorLightHoverBackground: "#f3f4f6"
+    readonly property color colorLightDividerColor: "#e5e7eb"
+    // Gradient colors for color mode - sophisticated blend
+    readonly property color colorLightGradientStart: "#4c51bf"
     readonly property color colorLightGradientEnd: "#7c3aed"
     // Additional accent colors for visual richness
-    readonly property color colorLightAccent2: "#06b6d4"          // Cyan
-    readonly property color colorLightAccent3: "#ec4899"          // Pink
-    readonly property color colorLightAccent4: "#f97316"          // Orange
+    readonly property color colorLightAccent2: "#0891b2"          // Refined cyan
+    readonly property color colorLightAccent3: "#db2777"          // Deep pink
+    readonly property color colorLightAccent4: "#ea580c"          // Deep orange
     
     // ============================================
-    // VIBRANT COLOR PALETTE - DARK THEME
-    // Rich, luminous colors on dark backgrounds
-    // High contrast and accessibility focused
+    // PREMIUM COLOR PALETTE - DARK THEME
+    // Refined, luminous colors on dark backgrounds
+    // Enterprise-grade with excellent contrast and accessibility
     // ============================================
-    readonly property color colorDarkBackgroundColor: "#0f172a"
-    readonly property color colorDarkCardBackground: "#1e293b"
-    // Primary - Bright Indigo for dark backgrounds
-    readonly property color colorDarkPrimaryColor: "#818cf8"
-    readonly property color colorDarkPrimaryHover: "#a5b4fc"
+    readonly property color colorDarkBackgroundColor: "#0d1117"
+    readonly property color colorDarkCardBackground: "#161b22"
+    // Primary - Refined Indigo for dark backgrounds
+    readonly property color colorDarkPrimaryColor: "#8b92ff"
+    readonly property color colorDarkPrimaryHover: "#a5acff"
     readonly property color colorDarkPrimaryPressed: "#6366f1"
-    // Semantic colors - luminous on dark
-    readonly property color colorDarkAccentColor: "#a78bfa"       // Bright purple
-    readonly property color colorDarkSuccessColor: "#34d399"      // Bright emerald
-    readonly property color colorDarkWarningColor: "#fbbf24"      // Bright amber
-    readonly property color colorDarkErrorColor: "#f87171"        // Bright red
-    readonly property color colorDarkInfoColor: "#38bdf8"         // Bright sky blue
-    // Text hierarchy
-    readonly property color colorDarkTextPrimary: "#f8fafc"
-    readonly property color colorDarkTextSecondary: "#94a3b8"
-    readonly property color colorDarkTextMuted: "#475569"
+    // Semantic colors - luminous yet refined on dark
+    readonly property color colorDarkAccentColor: "#a78bfa"       // Elegant purple
+    readonly property color colorDarkSuccessColor: "#10b981"      // Professional emerald
+    readonly property color colorDarkWarningColor: "#f59e0b"      // Refined amber
+    readonly property color colorDarkErrorColor: "#f87171"        // Clear red
+    readonly property color colorDarkInfoColor: "#38bdf8"         // Clear sky blue
+    // Text hierarchy - refined for dark mode readability
+    readonly property color colorDarkTextPrimary: "#f6f8fa"
+    readonly property color colorDarkTextSecondary: "#9ca3af"
+    readonly property color colorDarkTextMuted: "#4a5568"
     // Borders and UI elements
-    readonly property color colorDarkBorderColor: "#334155"
-    readonly property color colorDarkBorderFocus: "#818cf8"
-    readonly property color colorDarkShadowColor: "#00000040"
-    readonly property color colorDarkInputBackground: "#0f172a"
-    readonly property color colorDarkTrackOffColor: "#475569"
-    readonly property color colorDarkTrackColor: "#334155"
-    readonly property color colorDarkHoverBackground: "#334155"
-    readonly property color colorDarkDividerColor: "#334155"
+    readonly property color colorDarkBorderColor: "#21262d"
+    readonly property color colorDarkBorderFocus: "#8b92ff"
+    readonly property color colorDarkShadowColor: "#00000070"
+    readonly property color colorDarkInputBackground: "#0d1117"
+    readonly property color colorDarkTrackOffColor: "#4a5568"
+    readonly property color colorDarkTrackColor: "#21262d"
+    readonly property color colorDarkHoverBackground: "#21262d"
+    readonly property color colorDarkDividerColor: "#21262d"
     // Gradient colors for color mode dark
-    readonly property color colorDarkGradientStart: "#818cf8"
-    readonly property color colorDarkGradientEnd: "#c084fc"
+    readonly property color colorDarkGradientStart: "#8b92ff"
+    readonly property color colorDarkGradientEnd: "#a78bfa"
     // Additional accent colors for visual richness
     readonly property color colorDarkAccent2: "#22d3ee"           // Bright cyan
-    readonly property color colorDarkAccent3: "#f472b6"           // Bright pink
-    readonly property color colorDarkAccent4: "#fb923c"           // Bright orange
+    readonly property color colorDarkAccent3: "#ec4899"           // Elegant pink
+    readonly property color colorDarkAccent4: "#fb923c"           // Warm orange
     
     // ============================================
     // COMPUTED LIGHT THEME COLORS (based on design mode)
@@ -293,39 +295,55 @@ QtObject {
     readonly property color statusInfo: isColorMode ? infoColor : textSecondary
     
     // ============================================
-    // TYPOGRAPHY
+    // TYPOGRAPHY - Enterprise-grade font system
     // ============================================
-    readonly property string fontFamily: "Segoe UI, Inter, -apple-system, BlinkMacSystemFont, sans-serif"
-    readonly property int fontSizeXs: 13
-    readonly property int fontSizeSm: 14
-    readonly property int fontSizeMd: 16
-    readonly property int fontSizeLg: 18
+    readonly property string fontFamily: "Inter, 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif"
+    readonly property int fontSizeXs: 11
+    readonly property int fontSizeSm: 13
+    readonly property int fontSizeMd: 15
+    readonly property int fontSizeLg: 17
     readonly property int fontSizeXl: 20
     readonly property int fontSize2Xl: 28
+    readonly property int fontSize3Xl: 36
+    
+    // Font weights for precise typography
+    readonly property int fontWeightLight: Font.Light
+    readonly property int fontWeightRegular: Font.Normal
+    readonly property int fontWeightMedium: Font.Medium
+    readonly property int fontWeightSemiBold: Font.DemiBold
+    readonly property int fontWeightBold: Font.Bold
     
     // ============================================
-    // SPACING
+    // SPACING - Refined spacing scale
     // ============================================
     readonly property int spacingXs: 4
     readonly property int spacingSm: 8
     readonly property int spacingMd: 16
     readonly property int spacingLg: 24
     readonly property int spacingXl: 32
+    readonly property int spacing2Xl: 48
     
     // ============================================
-    // BORDER RADIUS
+    // BORDER RADIUS - Softer, more refined corners
     // ============================================
-    readonly property int radiusSm: 6
-    readonly property int radiusMd: 10
+    readonly property int radiusSm: 8
+    readonly property int radiusMd: 12
     readonly property int radiusLg: 16
     readonly property int radiusXl: 24
     
     // ============================================
-    // ANIMATION DURATIONS
+    // SHADOWS - Multi-layered depth system
     // ============================================
-    readonly property int animationFast: 100
+    readonly property string shadowSmall: isDarkTheme ? "#00000050" : "#00000010"
+    readonly property string shadowMedium: isDarkTheme ? "#00000070" : "#00000018"
+    readonly property string shadowLarge: isDarkTheme ? "#00000090" : "#00000020"
+    
+    // ============================================
+    // ANIMATION DURATIONS - Smooth micro-interactions
+    // ============================================
+    readonly property int animationFast: 120
     readonly property int animationNormal: 200
-    readonly property int animationSlow: 300
+    readonly property int animationSlow: 350
     
     // Theme name for display
     readonly property string themeName: isDarkTheme ? "Dark" : "Light"

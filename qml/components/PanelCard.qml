@@ -29,40 +29,49 @@ Rectangle {
     Behavior on color { ColorAnimation { duration: 200 } }
     Behavior on border.color { ColorAnimation { duration: 200 } }
     
-    // Shadow effect
+    // Enhanced shadow with subtle depth
     layer.enabled: true
     layer.effect: DropShadow {
         transparentBorder: true
         horizontalOffset: 0
-        verticalOffset: 4
-        radius: 12
-        samples: 25
+        verticalOffset: 6
+        radius: 20
+        samples: 32
         color: ThemeManager.shadowColor
+        spread: 0.1
     }
     
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 24
-        spacing: 20
+        anchors.margins: 28
+        spacing: 24
         
-        // Header
+        // Header - Enhanced premium design
         RowLayout {
             Layout.fillWidth: true
             spacing: 16
             
-            // Icon
+            // Icon with refined gradient background
             Rectangle {
-                width: 48
-                height: 48
-                radius: 12
-                color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.1)
+                width: 52
+                height: 52
+                radius: 14
+                
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12) }
+                    GradientStop { position: 1.0; color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.06) }
+                }
+                
+                border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.15)
+                border.width: 1
                 
                 Behavior on color { ColorAnimation { duration: 200 } }
+                Behavior on border.color { ColorAnimation { duration: 200 } }
                 
                 Text {
                     anchors.centerIn: parent
                     text: panelCard.iconText
-                    font.pixelSize: 26
+                    font.pixelSize: 28
                     color: primaryColor
                     
                     Behavior on color { ColorAnimation { duration: 200 } }
@@ -71,13 +80,14 @@ Rectangle {
             
             Column {
                 Layout.fillWidth: true
-                spacing: 4
+                spacing: 6
                 
                 Text {
                     text: panelCard.title
-                    font.pixelSize: 20
+                    font.pixelSize: 19
                     font.weight: Font.DemiBold
                     font.family: panelCard.fontFamily
+                    font.letterSpacing: -0.3
                     color: textPrimary
                     
                     Behavior on color { ColorAnimation { duration: 200 } }
@@ -85,7 +95,8 @@ Rectangle {
                 
                 Text {
                     text: panelCard.subtitle
-                    font.pixelSize: 15
+                    font.pixelSize: 14
+                    font.weight: Font.Normal
                     font.family: panelCard.fontFamily
                     color: textSecondary
                     visible: panelCard.subtitle.length > 0
@@ -95,11 +106,18 @@ Rectangle {
             }
         }
         
-        // Separator
+        // Refined separator with gradient fade
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: borderColor
+            
+            gradient: Gradient {
+                orientation: Gradient.Horizontal
+                GradientStop { position: 0.0; color: "transparent" }
+                GradientStop { position: 0.1; color: borderColor }
+                GradientStop { position: 0.9; color: borderColor }
+                GradientStop { position: 1.0; color: "transparent" }
+            }
             
             Behavior on color { ColorAnimation { duration: 200 } }
         }
