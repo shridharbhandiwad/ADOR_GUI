@@ -8,6 +8,7 @@
 UdpConfigDialog::UdpConfigDialog(QWidget* parent)
     : QDialog(parent)
     , udpHandler(std::make_unique<UdpHandler>(this))
+    , m_isDarkTheme(false)
 {
     setWindowTitle("UDP Configuration");
     setModal(true);
@@ -22,6 +23,7 @@ UdpConfigDialog::UdpConfigDialog(QWidget* parent)
     }
     
     setupUI();
+    applyThemeStyleSheet();
     
     // Connect UDP handler signals
     connect(udpHandler.get(), &UdpHandler::connectionStatusChanged, 
@@ -156,9 +158,91 @@ void UdpConfigDialog::onStatisticsUpdated(int received, int dropped, double rate
                             .arg(rate, 0, 'f', 1));
 }
 
+void UdpConfigDialog::setDarkTheme(bool isDark)
+{
+    if (m_isDarkTheme != isDark) {
+        m_isDarkTheme = isDark;
+        applyThemeStyleSheet();
+    }
+}
+
+void UdpConfigDialog::applyThemeStyleSheet()
+{
+    if (m_isDarkTheme) {
+        setStyleSheet(R"(
+            QDialog {
+                background-color: #171717;
+                color: #fafafa;
+            }
+            QLabel {
+                color: #a3a3a3;
+            }
+            QLineEdit, QSpinBox {
+                background-color: #0a0a0a;
+                border: 1px solid #262626;
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #fafafa;
+            }
+            QLineEdit:focus, QSpinBox:focus {
+                border-color: #fafafa;
+            }
+            QPushButton {
+                background-color: #262626;
+                color: #fafafa;
+                border: 1px solid #404040;
+                border-radius: 6px;
+                padding: 8px 16px;
+                min-width: 80px;
+            }
+            QPushButton:hover {
+                background-color: #404040;
+            }
+            QPushButton:pressed {
+                background-color: #171717;
+            }
+        )");
+    } else {
+        setStyleSheet(R"(
+            QDialog {
+                background-color: #fafafa;
+                color: #1a1a1a;
+            }
+            QLabel {
+                color: #525252;
+            }
+            QLineEdit, QSpinBox {
+                background-color: #ffffff;
+                border: 1px solid #d4d4d4;
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: #1a1a1a;
+            }
+            QLineEdit:focus, QSpinBox:focus {
+                border-color: #1a1a1a;
+            }
+            QPushButton {
+                background-color: #e5e5e5;
+                color: #1a1a1a;
+                border: 1px solid #a3a3a3;
+                border-radius: 6px;
+                padding: 8px 16px;
+                min-width: 80px;
+            }
+            QPushButton:hover {
+                background-color: #d4d4d4;
+            }
+            QPushButton:pressed {
+                background-color: #fafafa;
+            }
+        )");
+    }
+}
+
 // Output Configuration Dialog Implementation
 OutputConfigDialog::OutputConfigDialog(QWidget* parent)
     : QDialog(parent)
+    , m_isDarkTheme(false)
 {
     setWindowTitle("Output Configuration");
     setModal(true);
@@ -173,6 +257,7 @@ OutputConfigDialog::OutputConfigDialog(QWidget* parent)
     }
     
     setupUI();
+    applyThemeStyleSheet();
     loadSettings();
 }
 
@@ -375,14 +460,54 @@ void OutputConfigDialog::loadSettings()
     }
 }
 
+void OutputConfigDialog::setDarkTheme(bool isDark)
+{
+    if (m_isDarkTheme != isDark) {
+        m_isDarkTheme = isDark;
+        applyThemeStyleSheet();
+    }
+}
+
+void OutputConfigDialog::applyThemeStyleSheet()
+{
+    QString styleSheet = m_isDarkTheme ? R"(
+        QDialog { background-color: #171717; color: #fafafa; }
+        QGroupBox { color: #fafafa; border: 1px solid #262626; border-radius: 6px; margin-top: 12px; background-color: #0a0a0a; }
+        QGroupBox::title { color: #fafafa; }
+        QLabel { color: #a3a3a3; }
+        QRadioButton, QCheckBox { color: #a3a3a3; }
+        QComboBox, QSpinBox { background-color: #0a0a0a; border: 1px solid #262626; color: #fafafa; padding: 4px; }
+        QPushButton { background-color: #262626; color: #fafafa; border: 1px solid #404040; border-radius: 6px; padding: 8px 16px; }
+        QPushButton:hover { background-color: #404040; }
+        QTabWidget::pane { border: 1px solid #262626; background-color: #171717; }
+        QTabBar::tab { background-color: #262626; color: #a3a3a3; border: 1px solid #404040; padding: 8px 16px; }
+        QTabBar::tab:selected { background-color: #171717; color: #fafafa; }
+    )" : R"(
+        QDialog { background-color: #fafafa; color: #1a1a1a; }
+        QGroupBox { color: #1a1a1a; border: 1px solid #d4d4d4; border-radius: 6px; margin-top: 12px; background-color: #ffffff; }
+        QGroupBox::title { color: #1a1a1a; }
+        QLabel { color: #525252; }
+        QRadioButton, QCheckBox { color: #525252; }
+        QComboBox, QSpinBox { background-color: #ffffff; border: 1px solid #d4d4d4; color: #1a1a1a; padding: 4px; }
+        QPushButton { background-color: #e5e5e5; color: #1a1a1a; border: 1px solid #a3a3a3; border-radius: 6px; padding: 8px 16px; }
+        QPushButton:hover { background-color: #d4d4d4; }
+        QTabWidget::pane { border: 1px solid #d4d4d4; background-color: #fafafa; }
+        QTabBar::tab { background-color: #e5e5e5; color: #525252; border: 1px solid #a3a3a3; padding: 8px 16px; }
+        QTabBar::tab:selected { background-color: #fafafa; color: #1a1a1a; }
+    )";
+    setStyleSheet(styleSheet);
+}
+
 // Angle Correction Dialog Implementation
 AngleCorrectionDialog::AngleCorrectionDialog(QWidget* parent)
     : QDialog(parent)
+    , m_isDarkTheme(false)
 {
     setWindowTitle("Angle Correction");
     setModal(true);
     
     setupUI();
+    applyThemeStyleSheet();
     updateControls();
 }
 
@@ -467,14 +592,46 @@ void AngleCorrectionDialog::setSettings(const AngleCorrectionSettings& settings)
     updateControls();
 }
 
+void AngleCorrectionDialog::setDarkTheme(bool isDark)
+{
+    if (m_isDarkTheme != isDark) {
+        m_isDarkTheme = isDark;
+        applyThemeStyleSheet();
+    }
+}
+
+void AngleCorrectionDialog::applyThemeStyleSheet()
+{
+    QString styleSheet = m_isDarkTheme ? R"(
+        QDialog { background-color: #171717; color: #fafafa; }
+        QGroupBox { color: #fafafa; border: 1px solid #262626; border-radius: 6px; margin-top: 12px; background-color: #0a0a0a; }
+        QLabel { color: #a3a3a3; }
+        QRadioButton { color: #a3a3a3; }
+        QSpinBox, QDoubleSpinBox { background-color: #0a0a0a; border: 1px solid #262626; color: #fafafa; padding: 4px; }
+        QPushButton { background-color: #262626; color: #fafafa; border: 1px solid #404040; border-radius: 6px; padding: 8px 16px; }
+        QPushButton:hover { background-color: #404040; }
+    )" : R"(
+        QDialog { background-color: #fafafa; color: #1a1a1a; }
+        QGroupBox { color: #1a1a1a; border: 1px solid #d4d4d4; border-radius: 6px; margin-top: 12px; background-color: #ffffff; }
+        QLabel { color: #525252; }
+        QRadioButton { color: #525252; }
+        QSpinBox, QDoubleSpinBox { background-color: #ffffff; border: 1px solid #d4d4d4; color: #1a1a1a; padding: 4px; }
+        QPushButton { background-color: #e5e5e5; color: #1a1a1a; border: 1px solid #a3a3a3; border-radius: 6px; padding: 8px 16px; }
+        QPushButton:hover { background-color: #d4d4d4; }
+    )";
+    setStyleSheet(styleSheet);
+}
+
 // Amplification Dialog Implementation
 AmplificationDialog::AmplificationDialog(QWidget* parent)
     : QDialog(parent)
+    , m_isDarkTheme(false)
 {
     setWindowTitle("Amplification Settings");
     setModal(true);
     
     setupUI();
+    applyThemeStyleSheet();
     updateControls();
 }
 
@@ -602,14 +759,52 @@ void AmplificationDialog::setSettings(const AmplificationSettings& settings)
     updateControls();
 }
 
+void AmplificationDialog::setDarkTheme(bool isDark)
+{
+    if (m_isDarkTheme != isDark) {
+        m_isDarkTheme = isDark;
+        applyThemeStyleSheet();
+    }
+}
+
+void AmplificationDialog::applyThemeStyleSheet()
+{
+    QString styleSheet = m_isDarkTheme ? R"(
+        QDialog { background-color: #171717; color: #fafafa; }
+        QGroupBox { color: #fafafa; border: 1px solid #262626; border-radius: 6px; margin-top: 12px; background-color: #0a0a0a; }
+        QLabel { color: #a3a3a3; }
+        QCheckBox { color: #a3a3a3; }
+        QSpinBox { background-color: #0a0a0a; border: 1px solid #262626; color: #fafafa; padding: 4px; }
+        QSlider::groove:horizontal { background: #0a0a0a; border: 1px solid #262626; height: 8px; }
+        QSlider::handle:horizontal { background: #fafafa; width: 18px; margin: -5px 0; border-radius: 9px; }
+        QSlider::sub-page:horizontal { background: #fafafa; }
+        QPushButton { background-color: #262626; color: #fafafa; border: 1px solid #404040; border-radius: 6px; padding: 8px 16px; }
+        QPushButton:hover { background-color: #404040; }
+    )" : R"(
+        QDialog { background-color: #fafafa; color: #1a1a1a; }
+        QGroupBox { color: #1a1a1a; border: 1px solid #d4d4d4; border-radius: 6px; margin-top: 12px; background-color: #ffffff; }
+        QLabel { color: #525252; }
+        QCheckBox { color: #525252; }
+        QSpinBox { background-color: #ffffff; border: 1px solid #d4d4d4; color: #1a1a1a; padding: 4px; }
+        QSlider::groove:horizontal { background: #ffffff; border: 1px solid #d4d4d4; height: 8px; }
+        QSlider::handle:horizontal { background: #1a1a1a; width: 18px; margin: -5px 0; border-radius: 9px; }
+        QSlider::sub-page:horizontal { background: #1a1a1a; }
+        QPushButton { background-color: #e5e5e5; color: #1a1a1a; border: 1px solid #a3a3a3; border-radius: 6px; padding: 8px 16px; }
+        QPushButton:hover { background-color: #d4d4d4; }
+    )";
+    setStyleSheet(styleSheet);
+}
+
 // Filter Configuration Dialog Implementation
 FilterConfigDialog::FilterConfigDialog(QWidget* parent)
     : QDialog(parent)
+    , m_isDarkTheme(false)
 {
     setWindowTitle("Filter Configuration");
     setModal(true);
     
     setupUI();
+    applyThemeStyleSheet();
 }
 
 void FilterConfigDialog::setupUI()
@@ -745,6 +940,36 @@ void FilterConfigDialog::setSettings(const FilterSettings& settings)
     directionCombo->setCurrentIndex(settings.direction);
     singleTargetSpinBox->setValue(settings.singleTargetFilter);
     showHistogramCheckBox->setChecked(settings.showHistogram);
+}
+
+void FilterConfigDialog::setDarkTheme(bool isDark)
+{
+    if (m_isDarkTheme != isDark) {
+        m_isDarkTheme = isDark;
+        applyThemeStyleSheet();
+    }
+}
+
+void FilterConfigDialog::applyThemeStyleSheet()
+{
+    QString styleSheet = m_isDarkTheme ? R"(
+        QDialog { background-color: #171717; color: #fafafa; }
+        QGroupBox { color: #fafafa; border: 1px solid #262626; border-radius: 6px; margin-top: 12px; background-color: #0a0a0a; }
+        QLabel { color: #a3a3a3; }
+        QCheckBox { color: #a3a3a3; }
+        QComboBox, QSpinBox { background-color: #0a0a0a; border: 1px solid #262626; color: #fafafa; padding: 4px; }
+        QPushButton { background-color: #262626; color: #fafafa; border: 1px solid #404040; border-radius: 6px; padding: 8px 16px; }
+        QPushButton:hover { background-color: #404040; }
+    )" : R"(
+        QDialog { background-color: #fafafa; color: #1a1a1a; }
+        QGroupBox { color: #1a1a1a; border: 1px solid #d4d4d4; border-radius: 6px; margin-top: 12px; background-color: #ffffff; }
+        QLabel { color: #525252; }
+        QCheckBox { color: #525252; }
+        QComboBox, QSpinBox { background-color: #ffffff; border: 1px solid #d4d4d4; color: #1a1a1a; padding: 4px; }
+        QPushButton { background-color: #e5e5e5; color: #1a1a1a; border: 1px solid #a3a3a3; border-radius: 6px; padding: 8px 16px; }
+        QPushButton:hover { background-color: #d4d4d4; }
+    )";
+    setStyleSheet(styleSheet);
 }
 
 // DSP Settings Dialog Implementation
