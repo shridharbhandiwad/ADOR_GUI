@@ -1473,70 +1473,75 @@ void DSPSettingsDialog::setupUI()
 QWidget* DSPSettingsDialog::createDetectionTab()
 {
     QWidget* tab = new QWidget();
-    QVBoxLayout* layout = new QVBoxLayout(tab);
+    QGridLayout* layout = new QGridLayout(tab);
+    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setSpacing(12);
+    
+    int row = 0;
     
     // Threshold settings
-    QGroupBox* thresholdGroup = new QGroupBox("Threshold Settings");
-    QGridLayout* thresholdLayout = new QGridLayout(thresholdGroup);
-    
-    thresholdLayout->addWidget(new QLabel("Detection Threshold (dB):"), 0, 0);
+    layout->addWidget(new QLabel("Detection Threshold (dB):"), row, 0);
     detectionThresholdSpinBox = new QSpinBox();
     detectionThresholdSpinBox->setRange(-50, 50);
     detectionThresholdSpinBox->setValue(0);
-    thresholdLayout->addWidget(detectionThresholdSpinBox, 0, 1);
+    layout->addWidget(detectionThresholdSpinBox, row, 1);
+    row++;
     
-    thresholdLayout->addWidget(new QLabel("CFAR Threshold (dB):"), 1, 0);
+    layout->addWidget(new QLabel("CFAR Threshold (dB):"), row, 0);
     cfarThresholdSpinBox = new QSpinBox();
     cfarThresholdSpinBox->setRange(0, 30);
     cfarThresholdSpinBox->setValue(10);
-    thresholdLayout->addWidget(cfarThresholdSpinBox, 1, 1);
+    layout->addWidget(cfarThresholdSpinBox, row, 1);
+    row++;
     
-    layout->addWidget(thresholdGroup);
+    // Add separator space
+    layout->setRowMinimumHeight(row, 20);
+    row++;
     
     // Range settings
-    QGroupBox* rangeGroup = new QGroupBox("Range Settings");
-    QGridLayout* rangeLayout = new QGridLayout(rangeGroup);
-    
-    rangeLayout->addWidget(new QLabel("Min Range (m):"), 0, 0);
+    layout->addWidget(new QLabel("Min Range (m):"), row, 0);
     rangeMinSpinBox = new QDoubleSpinBox();
     rangeMinSpinBox->setRange(0.0, 100.0);
     rangeMinSpinBox->setValue(0.5);
     rangeMinSpinBox->setSingleStep(0.1);
     rangeMinSpinBox->setDecimals(1);
-    rangeLayout->addWidget(rangeMinSpinBox, 0, 1);
+    layout->addWidget(rangeMinSpinBox, row, 1);
+    row++;
     
-    rangeLayout->addWidget(new QLabel("Max Range (m):"), 1, 0);
+    layout->addWidget(new QLabel("Max Range (m):"), row, 0);
     rangeMaxSpinBox = new QDoubleSpinBox();
     rangeMaxSpinBox->setRange(1.0, 150.0);
     rangeMaxSpinBox->setValue(50.0);
     rangeMaxSpinBox->setSingleStep(1.0);
     rangeMaxSpinBox->setDecimals(1);
-    rangeLayout->addWidget(rangeMaxSpinBox, 1, 1);
+    layout->addWidget(rangeMaxSpinBox, row, 1);
+    row++;
     
-    layout->addWidget(rangeGroup);
+    // Add separator space
+    layout->setRowMinimumHeight(row, 20);
+    row++;
     
     // Speed settings
-    QGroupBox* speedGroup = new QGroupBox("Speed Settings");
-    QGridLayout* speedLayout = new QGridLayout(speedGroup);
-    
-    speedLayout->addWidget(new QLabel("Min Speed (m/s):"), 0, 0);
+    layout->addWidget(new QLabel("Min Speed (m/s):"), row, 0);
     speedMinSpinBox = new QDoubleSpinBox();
     speedMinSpinBox->setRange(0.0, 50.0);
     speedMinSpinBox->setValue(0.0);
     speedMinSpinBox->setSingleStep(0.5);
     speedMinSpinBox->setDecimals(1);
-    speedLayout->addWidget(speedMinSpinBox, 0, 1);
+    layout->addWidget(speedMinSpinBox, row, 1);
+    row++;
     
-    speedLayout->addWidget(new QLabel("Max Speed (m/s):"), 1, 0);
+    layout->addWidget(new QLabel("Max Speed (m/s):"), row, 0);
     speedMaxSpinBox = new QDoubleSpinBox();
     speedMaxSpinBox->setRange(1.0, 100.0);
     speedMaxSpinBox->setValue(50.0);
     speedMaxSpinBox->setSingleStep(1.0);
     speedMaxSpinBox->setDecimals(1);
-    speedLayout->addWidget(speedMaxSpinBox, 1, 1);
+    layout->addWidget(speedMaxSpinBox, row, 1);
+    row++;
     
-    layout->addWidget(speedGroup);
-    layout->addStretch();
+    // Push content to top
+    layout->setRowStretch(row, 1);
     
     return tab;
 }
@@ -1544,31 +1549,35 @@ QWidget* DSPSettingsDialog::createDetectionTab()
 QWidget* DSPSettingsDialog::createFFTTab()
 {
     QWidget* tab = new QWidget();
-    QVBoxLayout* layout = new QVBoxLayout(tab);
+    QGridLayout* layout = new QGridLayout(tab);
+    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setSpacing(12);
     
-    QGroupBox* fftGroup = new QGroupBox("FFT Configuration");
-    QGridLayout* fftLayout = new QGridLayout(fftGroup);
+    int row = 0;
     
-    fftLayout->addWidget(new QLabel("FFT Size:"), 0, 0);
+    layout->addWidget(new QLabel("FFT Size:"), row, 0);
     fftSizeCombo = new QComboBox();
     fftSizeCombo->addItems({"64", "128", "256", "512", "1024"});
     fftSizeCombo->setCurrentIndex(2); // Default to 256
-    fftLayout->addWidget(fftSizeCombo, 0, 1);
+    layout->addWidget(fftSizeCombo, row, 1);
+    row++;
     
-    fftLayout->addWidget(new QLabel("Window Type:"), 1, 0);
+    layout->addWidget(new QLabel("Window Type:"), row, 0);
     fftWindowTypeCombo = new QComboBox();
     fftWindowTypeCombo->addItems({"None", "Hann", "Hamming", "Blackman"});
     fftWindowTypeCombo->setCurrentIndex(1); // Default to Hann
-    fftLayout->addWidget(fftWindowTypeCombo, 1, 1);
+    layout->addWidget(fftWindowTypeCombo, row, 1);
+    row++;
     
-    fftLayout->addWidget(new QLabel("FFT Averaging:"), 2, 0);
+    layout->addWidget(new QLabel("FFT Averaging:"), row, 0);
     fftAveragingSpinBox = new QSpinBox();
     fftAveragingSpinBox->setRange(1, 16);
     fftAveragingSpinBox->setValue(4);
-    fftLayout->addWidget(fftAveragingSpinBox, 2, 1);
+    layout->addWidget(fftAveragingSpinBox, row, 1);
+    row++;
     
-    layout->addWidget(fftGroup);
-    layout->addStretch();
+    // Push content to top
+    layout->setRowStretch(row, 1);
     
     return tab;
 }
@@ -1577,14 +1586,13 @@ QWidget* DSPSettingsDialog::createFilterTab()
 {
     QWidget* tab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setSpacing(12);
     
     // General filter settings
-    QGroupBox* generalFilterGroup = new QGroupBox("General Filter Settings");
-    QVBoxLayout* generalLayout = new QVBoxLayout(generalFilterGroup);
-    
     filterEnabledCheckBox = new QCheckBox("Enable Filters");
     filterEnabledCheckBox->setChecked(true);
-    generalLayout->addWidget(filterEnabledCheckBox);
+    layout->addWidget(filterEnabledCheckBox);
     
     QHBoxLayout* movingAvgLayout = new QHBoxLayout();
     movingAvgEnabledCheckBox = new QCheckBox("Moving Average Filter");
@@ -1595,38 +1603,34 @@ QWidget* DSPSettingsDialog::createFilterTab()
     movingAvgWindowSpinBox->setValue(4);
     movingAvgLayout->addWidget(movingAvgWindowSpinBox);
     movingAvgLayout->addStretch();
-    generalLayout->addLayout(movingAvgLayout);
+    layout->addLayout(movingAvgLayout);
     
-    layout->addWidget(generalFilterGroup);
+    // Add separator space
+    layout->addSpacing(20);
     
     // Line filter settings
-    QGroupBox* lineFilterGroup = new QGroupBox("Line Filter Settings");
-    QVBoxLayout* lineLayout = new QVBoxLayout(lineFilterGroup);
-    
     lineFilter50HzCheckBox = new QCheckBox("50 Hz Line Filter");
     lineFilter100HzCheckBox = new QCheckBox("100 Hz Line Filter");
     lineFilter150HzCheckBox = new QCheckBox("150 Hz Line Filter");
     
-    lineLayout->addWidget(lineFilter50HzCheckBox);
-    lineLayout->addWidget(lineFilter100HzCheckBox);
-    lineLayout->addWidget(lineFilter150HzCheckBox);
+    layout->addWidget(lineFilter50HzCheckBox);
+    layout->addWidget(lineFilter100HzCheckBox);
+    layout->addWidget(lineFilter150HzCheckBox);
     
-    layout->addWidget(lineFilterGroup);
+    // Add separator space
+    layout->addSpacing(20);
     
     // Signal processing settings
-    QGroupBox* signalProcessingGroup = new QGroupBox("Signal Processing");
-    QVBoxLayout* signalLayout = new QVBoxLayout(signalProcessingGroup);
-    
     noiseFloorTrackingCheckBox = new QCheckBox("Noise Floor Tracking");
     noiseFloorTrackingCheckBox->setChecked(true);
     clutterRemovalCheckBox = new QCheckBox("Clutter Removal");
     dopplerCompensationCheckBox = new QCheckBox("Doppler Compensation");
     
-    signalLayout->addWidget(noiseFloorTrackingCheckBox);
-    signalLayout->addWidget(clutterRemovalCheckBox);
-    signalLayout->addWidget(dopplerCompensationCheckBox);
+    layout->addWidget(noiseFloorTrackingCheckBox);
+    layout->addWidget(clutterRemovalCheckBox);
+    layout->addWidget(dopplerCompensationCheckBox);
     
-    layout->addWidget(signalProcessingGroup);
+    // Push content to top
     layout->addStretch();
     
     return tab;
@@ -1636,11 +1640,10 @@ QWidget* DSPSettingsDialog::createAmplificationTab()
 {
     QWidget* tab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(tab);
+    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setSpacing(12);
     
     // Manual amplification
-    QGroupBox* manualGroup = new QGroupBox("Manual Amplification");
-    QVBoxLayout* manualLayout = new QVBoxLayout(manualGroup);
-    
     QHBoxLayout* sliderLayout = new QHBoxLayout();
     sliderLayout->addWidget(new QLabel("Amplification:"));
     amplificationSlider = new QSlider(Qt::Horizontal);
@@ -1650,18 +1653,18 @@ QWidget* DSPSettingsDialog::createAmplificationTab()
     amplificationLabel->setMinimumWidth(50);
     sliderLayout->addWidget(amplificationSlider);
     sliderLayout->addWidget(amplificationLabel);
-    manualLayout->addLayout(sliderLayout);
+    layout->addLayout(sliderLayout);
     
-    layout->addWidget(manualGroup);
+    // Add separator space
+    layout->addSpacing(20);
     
     // Auto amplification
-    QGroupBox* autoGroup = new QGroupBox("Automatic Amplification");
-    QVBoxLayout* autoLayout = new QVBoxLayout(autoGroup);
-    
     autoAmplificationCheckBox = new QCheckBox("Enable Automatic Amplification");
-    autoLayout->addWidget(autoAmplificationCheckBox);
+    layout->addWidget(autoAmplificationCheckBox);
     
     QGridLayout* thresholdLayout = new QGridLayout();
+    thresholdLayout->setContentsMargins(0, 8, 0, 0);
+    thresholdLayout->setSpacing(12);
     thresholdLayout->addWidget(new QLabel("Inner Threshold (dB):"), 0, 0);
     autoAmpInnerThresholdSpinBox = new QSpinBox();
     autoAmpInnerThresholdSpinBox->setRange(0, 100);
@@ -1674,8 +1677,9 @@ QWidget* DSPSettingsDialog::createAmplificationTab()
     autoAmpOuterThresholdSpinBox->setValue(70);
     thresholdLayout->addWidget(autoAmpOuterThresholdSpinBox, 1, 1);
     
-    autoLayout->addLayout(thresholdLayout);
-    layout->addWidget(autoGroup);
+    layout->addLayout(thresholdLayout);
+    
+    // Push content to top
     layout->addStretch();
     
     return tab;
@@ -1684,29 +1688,33 @@ QWidget* DSPSettingsDialog::createAmplificationTab()
 QWidget* DSPSettingsDialog::createTargetTab()
 {
     QWidget* tab = new QWidget();
-    QVBoxLayout* layout = new QVBoxLayout(tab);
+    QGridLayout* layout = new QGridLayout(tab);
+    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setSpacing(12);
     
-    QGroupBox* targetGroup = new QGroupBox("Target Selection Settings");
-    QGridLayout* targetLayout = new QGridLayout(targetGroup);
+    int row = 0;
     
-    targetLayout->addWidget(new QLabel("Selection Mode:"), 0, 0);
+    layout->addWidget(new QLabel("Selection Mode:"), row, 0);
     targetSelectionModeCombo = new QComboBox();
     targetSelectionModeCombo->addItems({"All Targets", "Nearest Target", "Fastest Target", "Strongest Target"});
-    targetLayout->addWidget(targetSelectionModeCombo, 0, 1);
+    layout->addWidget(targetSelectionModeCombo, row, 1);
+    row++;
     
-    targetLayout->addWidget(new QLabel("Max Targets:"), 1, 0);
+    layout->addWidget(new QLabel("Max Targets:"), row, 0);
     maxTargetsSpinBox = new QSpinBox();
     maxTargetsSpinBox->setRange(1, 10);
     maxTargetsSpinBox->setValue(5);
-    targetLayout->addWidget(maxTargetsSpinBox, 1, 1);
+    layout->addWidget(maxTargetsSpinBox, row, 1);
+    row++;
     
-    targetLayout->addWidget(new QLabel("Direction Filter:"), 2, 0);
+    layout->addWidget(new QLabel("Direction Filter:"), row, 0);
     directionFilterCombo = new QComboBox();
     directionFilterCombo->addItems({"Both Directions", "Approaching Only", "Receding Only"});
-    targetLayout->addWidget(directionFilterCombo, 2, 1);
+    layout->addWidget(directionFilterCombo, row, 1);
+    row++;
     
-    layout->addWidget(targetGroup);
-    layout->addStretch();
+    // Push content to top
+    layout->setRowStretch(row, 1);
     
     return tab;
 }
@@ -1714,37 +1722,41 @@ QWidget* DSPSettingsDialog::createTargetTab()
 QWidget* DSPSettingsDialog::createAzimuthTab()
 {
     QWidget* tab = new QWidget();
-    QVBoxLayout* layout = new QVBoxLayout(tab);
+    QGridLayout* layout = new QGridLayout(tab);
+    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setSpacing(12);
     
-    QGroupBox* azimuthGroup = new QGroupBox("Azimuth Settings");
-    QGridLayout* azimuthLayout = new QGridLayout(azimuthGroup);
+    int row = 0;
     
-    azimuthLayout->addWidget(new QLabel("Azimuth Offset (deg):"), 0, 0);
+    layout->addWidget(new QLabel("Azimuth Offset (deg):"), row, 0);
     azimuthOffsetSpinBox = new QDoubleSpinBox();
     azimuthOffsetSpinBox->setRange(-45.0, 45.0);
     azimuthOffsetSpinBox->setValue(0.0);
     azimuthOffsetSpinBox->setSingleStep(0.5);
     azimuthOffsetSpinBox->setDecimals(1);
-    azimuthLayout->addWidget(azimuthOffsetSpinBox, 0, 1);
+    layout->addWidget(azimuthOffsetSpinBox, row, 1);
+    row++;
     
-    azimuthLayout->addWidget(new QLabel("Min Azimuth (deg):"), 1, 0);
+    layout->addWidget(new QLabel("Min Azimuth (deg):"), row, 0);
     azimuthMinSpinBox = new QDoubleSpinBox();
     azimuthMinSpinBox->setRange(-60.0, 60.0);
     azimuthMinSpinBox->setValue(-45.0);
     azimuthMinSpinBox->setSingleStep(1.0);
     azimuthMinSpinBox->setDecimals(1);
-    azimuthLayout->addWidget(azimuthMinSpinBox, 1, 1);
+    layout->addWidget(azimuthMinSpinBox, row, 1);
+    row++;
     
-    azimuthLayout->addWidget(new QLabel("Max Azimuth (deg):"), 2, 0);
+    layout->addWidget(new QLabel("Max Azimuth (deg):"), row, 0);
     azimuthMaxSpinBox = new QDoubleSpinBox();
     azimuthMaxSpinBox->setRange(-60.0, 60.0);
     azimuthMaxSpinBox->setValue(45.0);
     azimuthMaxSpinBox->setSingleStep(1.0);
     azimuthMaxSpinBox->setDecimals(1);
-    azimuthLayout->addWidget(azimuthMaxSpinBox, 2, 1);
+    layout->addWidget(azimuthMaxSpinBox, row, 1);
+    row++;
     
-    layout->addWidget(azimuthGroup);
-    layout->addStretch();
+    // Push content to top
+    layout->setRowStretch(row, 1);
     
     return tab;
 }
