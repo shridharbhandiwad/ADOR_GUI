@@ -2028,34 +2028,6 @@ void MainWindow::createMenuBar()
                 .arg(m_isDarkTheme ? "Dark" : "Light"));
         });
 
-    // Design Mode Menu (NEW - beside Theme)
-    QMenu* designModeMenu = menuBar->addMenu(tr("&Design Mode"));
-    
-    QAction* enableDesignModeAction = designModeMenu->addAction(tr("&Enable Design Mode"));
-    enableDesignModeAction->setCheckable(true);
-    enableDesignModeAction->setChecked(false);
-    enableDesignModeAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
-    connect(enableDesignModeAction, &QAction::triggered, this, [this](bool checked) {
-        m_statusLabel->setText(QString("Status: Design Mode %1").arg(checked ? "enabled" : "disabled"));
-    });
-    
-    designModeMenu->addSeparator();
-    
-    QAction* editLayoutAction = designModeMenu->addAction(tr("&Edit Layout"));
-    connect(editLayoutAction, &QAction::triggered, this, [this]() {
-        m_statusLabel->setText("Status: Layout editing mode");
-    });
-    
-    QAction* customizeWidgetsAction = designModeMenu->addAction(tr("&Customize Widgets"));
-    connect(customizeWidgetsAction, &QAction::triggered, this, [this]() {
-        m_statusLabel->setText("Status: Widget customization");
-    });
-    
-    QAction* resetLayoutAction = designModeMenu->addAction(tr("&Reset to Default Layout"));
-    connect(resetLayoutAction, &QAction::triggered, this, [this]() {
-        m_statusLabel->setText("Status: Layout reset to default");
-    });
-
     // Add Zoppler Systems branding to the right side of the menubar
     QWidget* brandingWidget = new QWidget(menuBar);
     QHBoxLayout* brandingLayout = new QHBoxLayout(brandingWidget);
