@@ -198,10 +198,13 @@ private:
     bool m_isLogging;
 
     bool m_isDarkTheme;
+    QString m_colorTheme;  // Current color theme: "none", "blue", "green", "red", "purple"
     void applyTheme(bool isDark);
+    void applyColorTheme(const QString& colorName);
     void applyDspSettingsTheme(bool isDark);  // Apply theme to DSP Settings panel
     QString getLightThemeStyleSheet() const;
     QString getDarkThemeStyleSheet() const;
+    QString getColorThemeStyleSheet(const QString& colorName, bool isDark) const;
 };
 
 #endif // MAINWINDOW_H
