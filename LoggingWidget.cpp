@@ -1456,8 +1456,8 @@ void LoggingWidget::onComputeRangeRate()
             totalIntervals++;
         }
         
-        // Also compute using traditional method
-        computeRangeRateForTrack(trackId);
+        // Note: Traditional method (computeRangeRateForTrack) is not called here
+        // to avoid duplicate computation and overwriting interval-based results
     }
     
     if (m_algorithmOutputText) {
@@ -1553,9 +1553,24 @@ void LoggingWidget::processSecondIntervalData(uint32_t trackId, qint64 secondTim
         if (trackLog.secondIntervals.contains(previousSecond)) {
             const SecondIntervalData& previousInterval = trackLog.secondIntervals[previousSecond];
             currentInterval.computedRangeRate = computeRangeRateFromInterval(currentInterval, previousInterval);
+            
+            if (m_algorithmOutputText) {
+                m_algorithmOutputText->append(
+                    QString("  -> Computed from interval: deltaRange = %1 m, deltaTime = %2 s")
+                    .arg(currentInterval.avgRange - previousInterval.avgRange, 0, 'f', 2)
+                    .arg((currentInterval.intervalStart - previousInterval.intervalStart) / 1000.0f, 0, 'f', 3)
+                );
+            }
         } else {
             // No previous interval, use the average speed from current interval
             currentInterval.computedRangeRate = currentInterval.avgSpeed;
+            
+            if (m_algorithmOutputText) {
+                m_algorithmOutputText->append(
+                    QString("  -> First interval: using avgSpeed = %1 m/s (no previous interval)")
+                    .arg(currentInterval.avgSpeed, 0, 'f', 2)
+                );
+            }
         }
         
         // Update all data points in this interval with the computed range rate
@@ -1573,9 +1588,9 @@ void LoggingWidget::processSecondIntervalData(uint32_t trackId, qint64 secondTim
             }
         }
         
-        if (m_algorithmOutputText && currentInterval.points.size() > 1) {
+        if (m_algorithmOutputText) {
             m_algorithmOutputText->append(
-                QString("Track %1: Second %2 - Collected %3 points, Avg Range: %4 m, Computed Range Rate: %5 m/s")
+                QString("Track %1: Second %2 - %3 points, Avg Range: %4 m, Range Rate: %5 m/s")
                 .arg(trackId)
                 .arg(QDateTime::fromMSecsSinceEpoch(secondTimestamp).toString("hh:mm:ss"))
                 .arg(currentInterval.points.size())
