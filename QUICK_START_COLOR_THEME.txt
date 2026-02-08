@@ -1,0 +1,78 @@
+================================================================================
+                    QUICK START: See the Color Theme
+================================================================================
+
+IMPORTANT: The color theme is in the QML Configuration Panel, NOT the default
+           visualization window!
+
+--------------------------------------------------------------------------------
+STEP 1: Rebuild the Application
+--------------------------------------------------------------------------------
+
+Windows:
+    qmake RadarVisualization.pro
+    nmake
+
+Linux/Mac:
+    qmake RadarVisualization.pro
+    make
+
+--------------------------------------------------------------------------------
+STEP 2: Run with --config Flag
+--------------------------------------------------------------------------------
+
+Windows:
+    RadarVisualization.exe --config
+    
+    OR use the helper script:
+    run_config_panel.bat
+
+Linux/Mac:
+    ./RadarVisualization --config
+    
+    OR use the helper script:
+    ./run_config_panel.sh
+
+--------------------------------------------------------------------------------
+STEP 3: Verify Colors
+--------------------------------------------------------------------------------
+
+You should see:
+  ✓ Indigo BLUE buttons and primary colors
+  ✓ GREEN success indicators  
+  ✓ RED error indicators
+  ✓ PURPLE accent colors
+  ✓ Gradient effects on buttons
+  ✓ Top-right says "Light · Colored"
+
+Console should show:
+  "Color Mode: ENABLED ✓"
+  "Primary Color: #4c51bf"
+
+--------------------------------------------------------------------------------
+What You're Looking For
+--------------------------------------------------------------------------------
+
+RIGHT:  Indigo blue buttons, green/red status, colorful UI
+WRONG:  All grey/black buttons and indicators
+
+If you see only grey/black, you're either:
+  1. Running without --config flag (wrong window)
+  2. Application wasn't rebuilt
+  3. QML cache issue (clear ~/.cache/QtQuick)
+
+--------------------------------------------------------------------------------
+Quick Commands
+--------------------------------------------------------------------------------
+
+See color theme:       ./RadarVisualization --config
+See both windows:      ./RadarVisualization --both
+Help:                  ./RadarVisualization --help
+
+--------------------------------------------------------------------------------
+
+For detailed troubleshooting, see:
+  - COLOR_THEME_GUIDE.md (comprehensive guide)
+  - BUILD_AND_RUN.md (build instructions)
+
+================================================================================

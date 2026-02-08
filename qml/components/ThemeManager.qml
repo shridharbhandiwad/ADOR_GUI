@@ -8,7 +8,19 @@ QtObject {
     property bool isDarkTheme: false
     
     // Design mode state: false = Monochrome, true = Color
+    // COLOR MODE IS ENABLED BY DEFAULT - You should see rich colors!
     property bool isColorMode: true
+    
+    // Debug: Log theme status on startup
+    Component.onCompleted: {
+        console.log("===========================================")
+        console.log("ThemeManager Initialized")
+        console.log("Color Mode: " + (isColorMode ? "ENABLED ✓" : "DISABLED"))
+        console.log("Theme: " + (isDarkTheme ? "Dark" : "Light"))
+        console.log("Primary Color: " + primaryColor)
+        console.log("Expected Primary: " + (isColorMode ? "#4c51bf (Indigo)" : "#1c1e21 (Grey)"))
+        console.log("===========================================")
+    }
     
     // Function to toggle theme
     function toggleTheme() {
