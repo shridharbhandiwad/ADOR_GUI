@@ -229,6 +229,96 @@ ApplicationWindow {
             }
         }
 
+        // Theme Menu
+        Menu {
+            id: themeMenu
+            title: qsTr("T&heme")
+
+            background: Rectangle {
+                implicitWidth: 220
+                color: cardBackground
+                border.color: borderColor
+                border.width: 1
+                radius: 8
+
+                layer.enabled: true
+                layer.effect: DropShadow {
+                    transparentBorder: true
+                    horizontalOffset: 0
+                    verticalOffset: 4
+                    radius: 12
+                    samples: 17
+                    color: shadowColor
+                }
+            }
+
+            // Light Theme Action
+            Action {
+                text: qsTr("&Light Theme")
+                shortcut: "Ctrl+Shift+L"
+                checkable: true
+                checked: !ThemeManager.isDarkTheme
+                onTriggered: ThemeManager.setTheme(false)
+            }
+
+            // Dark Theme Action
+            Action {
+                text: qsTr("&Dark Theme")
+                shortcut: "Ctrl+Shift+D"
+                checkable: true
+                checked: ThemeManager.isDarkTheme
+                onTriggered: ThemeManager.setTheme(true)
+            }
+
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 200
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+
+            // Color Mode Action
+            Action {
+                text: qsTr("&Colored Mode")
+                shortcut: "Ctrl+Shift+C"
+                checkable: true
+                checked: ThemeManager.isColorMode
+                onTriggered: ThemeManager.setDesignMode(true)
+            }
+
+            // Monochrome Mode Action
+            Action {
+                text: qsTr("&Monochrome Mode")
+                shortcut: "Ctrl+Shift+M"
+                checkable: true
+                checked: !ThemeManager.isColorMode
+                onTriggered: ThemeManager.setDesignMode(false)
+            }
+
+            MenuSeparator {
+                contentItem: Rectangle {
+                    implicitWidth: 200
+                    implicitHeight: 1
+                    color: borderColor
+                }
+            }
+
+            // Quick Toggle Theme Action
+            Action {
+                text: qsTr("Toggle &Theme")
+                shortcut: "Ctrl+T"
+                onTriggered: ThemeManager.toggleTheme()
+            }
+
+            // Quick Toggle Design Mode Action
+            Action {
+                text: qsTr("Toggle &Design Mode")
+                shortcut: "Ctrl+D"
+                onTriggered: ThemeManager.toggleDesignMode()
+            }
+        }
+
         // Tools Menu
         Menu {
             id: toolsMenu
