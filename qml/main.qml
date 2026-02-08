@@ -337,6 +337,16 @@ ApplicationWindow {
     Behavior on color {
         ColorAnimation { duration: 200 }
     }
+    
+    // Debug: Log color theme status on startup
+    Component.onCompleted: {
+        console.log("===========================================")
+        console.log("Main Window Loaded")
+        console.log("Background Color: " + backgroundColor)
+        console.log("Primary Color: " + primaryColor)
+        console.log("Color Mode Active: " + ThemeManager.isColorMode)
+        console.log("===========================================")
+    }
 
     // Header - Enhanced enterprise design
     header: ToolBar {
