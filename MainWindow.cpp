@@ -74,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_isLogging(false)
     , m_dsp{}  // Zero-initialize the DSP settings struct
     , m_isDarkTheme(false)
+    , m_colorTheme("none")
     , m_expectedNumTargets(0)
     , m_receivedTargetCount(0)
 {
@@ -1972,55 +1973,158 @@ void MainWindow::createMenuBar()
     // Theme Menu (NEW - Replaces Help Menu)
         QMenu* themeMenu = menuBar->addMenu(tr("&Theme"));
 
-        // Declare actions first for cross-referencing
-        QAction* lightThemeAction = new QAction(tr("☀️  &Light Theme"), this);
-        QAction* darkThemeAction = new QAction(tr("🌙  &Dark Theme"), this);
+        // Toggle Theme Action (at the top)
+        QAction* toggleThemeAction = themeMenu->addAction(tr("&Toggle Theme"));
+        toggleThemeAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+        
+        themeMenu->addSeparator();
+
+        // ========== Color Theme Submenu ==========
+        QMenu* colorThemeMenu = themeMenu->addMenu(tr("&Color Theme"));
+        
+        QAction* blueThemeAction = new QAction(tr("Blue Theme"), this);
+        QAction* greenThemeAction = new QAction(tr("Green Theme"), this);
+        QAction* redThemeAction = new QAction(tr("Red Theme"), this);
+        QAction* purpleThemeAction = new QAction(tr("Purple Theme"), this);
+        
+        blueThemeAction->setCheckable(true);
+        greenThemeAction->setCheckable(true);
+        redThemeAction->setCheckable(true);
+        purpleThemeAction->setCheckable(true);
+        
+        blueThemeAction->setChecked(m_colorTheme == "blue");
+        greenThemeAction->setChecked(m_colorTheme == "green");
+        redThemeAction->setChecked(m_colorTheme == "red");
+        purpleThemeAction->setChecked(m_colorTheme == "purple");
+        
+        colorThemeMenu->addAction(blueThemeAction);
+        colorThemeMenu->addAction(greenThemeAction);
+        colorThemeMenu->addAction(redThemeAction);
+        colorThemeMenu->addAction(purpleThemeAction);
+        
+        connect(blueThemeAction, &QAction::triggered, this, [this, blueThemeAction, greenThemeAction, redThemeAction, purpleThemeAction]() {
+            m_colorTheme = "blue";
+            applyColorTheme("blue");
+            blueThemeAction->setChecked(true);
+            greenThemeAction->setChecked(false);
+            redThemeAction->setChecked(false);
+            purpleThemeAction->setChecked(false);
+            
+            QSettings settings(getSettingsFilePath(), QSettings::IniFormat);
+            settings.setValue("UI/colorTheme", "blue");
+            m_statusLabel->setText("Status: Blue color theme applied");
+        });
+        
+        connect(greenThemeAction, &QAction::triggered, this, [this, blueThemeAction, greenThemeAction, redThemeAction, purpleThemeAction]() {
+            m_colorTheme = "green";
+            applyColorTheme("green");
+            blueThemeAction->setChecked(false);
+            greenThemeAction->setChecked(true);
+            redThemeAction->setChecked(false);
+            purpleThemeAction->setChecked(false);
+            
+            QSettings settings(getSettingsFilePath(), QSettings::IniFormat);
+            settings.setValue("UI/colorTheme", "green");
+            m_statusLabel->setText("Status: Green color theme applied");
+        });
+        
+        connect(redThemeAction, &QAction::triggered, this, [this, blueThemeAction, greenThemeAction, redThemeAction, purpleThemeAction]() {
+            m_colorTheme = "red";
+            applyColorTheme("red");
+            blueThemeAction->setChecked(false);
+            greenThemeAction->setChecked(false);
+            redThemeAction->setChecked(true);
+            purpleThemeAction->setChecked(false);
+            
+            QSettings settings(getSettingsFilePath(), QSettings::IniFormat);
+            settings.setValue("UI/colorTheme", "red");
+            m_statusLabel->setText("Status: Red color theme applied");
+        });
+        
+        connect(purpleThemeAction, &QAction::triggered, this, [this, blueThemeAction, greenThemeAction, redThemeAction, purpleThemeAction]() {
+            m_colorTheme = "purple";
+            applyColorTheme("purple");
+            blueThemeAction->setChecked(false);
+            greenThemeAction->setChecked(false);
+            redThemeAction->setChecked(false);
+            purpleThemeAction->setChecked(true);
+            
+            QSettings settings(getSettingsFilePath(), QSettings::IniFormat);
+            settings.setValue("UI/colorTheme", "purple");
+            m_statusLabel->setText("Status: Purple color theme applied");
+        });
+
+        // ========== Monochrome Theme Submenu ==========
+        QMenu* monochromeThemeMenu = themeMenu->addMenu(tr("&Monochrome Theme"));
+        
+        QAction* lightThemeAction = new QAction(tr("☀️  Light Theme"), this);
+        QAction* darkThemeAction = new QAction(tr("🌙  Dark Theme"), this);
 
         lightThemeAction->setCheckable(true);
-        lightThemeAction->setChecked(!m_isDarkTheme);
+        lightThemeAction->setChecked(!m_isDarkTheme && m_colorTheme == "none");
         darkThemeAction->setCheckable(true);
-        darkThemeAction->setChecked(m_isDarkTheme);
+        darkThemeAction->setChecked(m_isDarkTheme && m_colorTheme == "none");
 
-        themeMenu->addAction(lightThemeAction);
-        themeMenu->addAction(darkThemeAction);
+        monochromeThemeMenu->addAction(lightThemeAction);
+        monochromeThemeMenu->addAction(darkThemeAction);
 
-        connect(lightThemeAction, &QAction::triggered, this, [this, lightThemeAction, darkThemeAction]() {
+        connect(lightThemeAction, &QAction::triggered, this, [this, lightThemeAction, darkThemeAction, blueThemeAction, greenThemeAction, redThemeAction, purpleThemeAction]() {
             if (!lightThemeAction->isChecked()) {
                 lightThemeAction->setChecked(true);
                 return;
             }
             m_isDarkTheme = false;
+            m_colorTheme = "none";
             applyTheme(false);
             darkThemeAction->setChecked(false);
+            
+            // Uncheck all color themes
+            blueThemeAction->setChecked(false);
+            greenThemeAction->setChecked(false);
+            redThemeAction->setChecked(false);
+            purpleThemeAction->setChecked(false);
 
             QSettings settings(getSettingsFilePath(), QSettings::IniFormat);
             settings.setValue("UI/theme", "light");
+            settings.setValue("UI/colorTheme", "none");
             m_statusLabel->setText("Status: Light theme applied");
         });
 
-        connect(darkThemeAction, &QAction::triggered, this, [this, lightThemeAction, darkThemeAction]() {
+        connect(darkThemeAction, &QAction::triggered, this, [this, lightThemeAction, darkThemeAction, blueThemeAction, greenThemeAction, redThemeAction, purpleThemeAction]() {
             if (!darkThemeAction->isChecked()) {
                 darkThemeAction->setChecked(true);
                 return;
             }
             m_isDarkTheme = true;
+            m_colorTheme = "none";
             applyTheme(true);
             lightThemeAction->setChecked(false);
+            
+            // Uncheck all color themes
+            blueThemeAction->setChecked(false);
+            greenThemeAction->setChecked(false);
+            redThemeAction->setChecked(false);
+            purpleThemeAction->setChecked(false);
 
             QSettings settings(getSettingsFilePath(), QSettings::IniFormat);
             settings.setValue("UI/theme", "dark");
+            settings.setValue("UI/colorTheme", "none");
             m_statusLabel->setText("Status: Dark theme applied");
         });
 
-        themeMenu->addSeparator();
-
-        QAction* toggleThemeAction = themeMenu->addAction(tr("&Toggle Theme"));
-        toggleThemeAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
+        // Connect Toggle Theme Action
         connect(toggleThemeAction, &QAction::triggered, this, [this, lightThemeAction, darkThemeAction]() {
-            m_isDarkTheme = !m_isDarkTheme;
-            applyTheme(m_isDarkTheme);
-            lightThemeAction->setChecked(!m_isDarkTheme);
-            darkThemeAction->setChecked(m_isDarkTheme);
+            if (m_colorTheme != "none") {
+                // If a color theme is active, just toggle light/dark for the color theme
+                m_isDarkTheme = !m_isDarkTheme;
+                applyColorTheme(m_colorTheme);
+            } else {
+                // Toggle between monochrome light and dark
+                m_isDarkTheme = !m_isDarkTheme;
+                applyTheme(m_isDarkTheme);
+                lightThemeAction->setChecked(!m_isDarkTheme);
+                darkThemeAction->setChecked(m_isDarkTheme);
+            }
 
             QSettings settings(getSettingsFilePath(), QSettings::IniFormat);
             settings.setValue("UI/theme", m_isDarkTheme ? "dark" : "light");
@@ -3036,6 +3140,575 @@ void MainWindow::applyDspSettingsTheme(bool isDark)
     }
 }
 
+void MainWindow::applyColorTheme(const QString& colorName)
+{
+    QString themeStyleSheet = getColorThemeStyleSheet(colorName, m_isDarkTheme);
+    this->setStyleSheet(themeStyleSheet);
+    
+    // Propagate theme to widgets for their custom drawing
+    if (m_ppiWidget) {
+        m_ppiWidget->setDarkTheme(m_isDarkTheme);
+    }
+    if (m_fftWidget) {
+        m_fftWidget->setDarkTheme(m_isDarkTheme);
+    }
+    if (m_speedMeasurementWidget) {
+        m_speedMeasurementWidget->setDarkTheme(m_isDarkTheme);
+    }
+    if (m_timeSeriesPlotsWidget) {
+        m_timeSeriesPlotsWidget->setDarkTheme(m_isDarkTheme);
+    }
+    
+    // Apply themed DSP settings
+    applyDspSettingsTheme(m_isDarkTheme);
+    
+    // Force update of all widgets
+    update();
+    if (m_trackTable) m_trackTable->update();
+}
+
+QString MainWindow::getColorThemeStyleSheet(const QString& colorName, bool isDark) const
+{
+    // Color palette definitions
+    QMap<QString, QStringList> colorPalettes;
+    
+    // Blue theme
+    colorPalettes["blue"] = QStringList() 
+        << "#0ea5e9" << "#0284c7" << "#0369a1" << "#075985" << "#38bdf8" << "#7dd3fc";
+    
+    // Green theme
+    colorPalettes["green"] = QStringList() 
+        << "#10b981" << "#059669" << "#047857" << "#065f46" << "#34d399" << "#6ee7b7";
+    
+    // Red theme
+    colorPalettes["red"] = QStringList() 
+        << "#ef4444" << "#dc2626" << "#b91c1c" << "#991b1b" << "#f87171" << "#fca5a5";
+    
+    // Purple theme
+    colorPalettes["purple"] = QStringList() 
+        << "#a855f7" << "#9333ea" << "#7e22ce" << "#6b21a8" << "#c084fc" << "#d8b4fe";
+    
+    QStringList colors = colorPalettes.value(colorName, colorPalettes["blue"]);
+    QString primary = colors[0];
+    QString primaryDark = colors[1];
+    QString primaryDarker = colors[2];
+    QString primaryDarkest = colors[3];
+    QString primaryLight = colors[4];
+    QString primaryLighter = colors[5];
+    
+    if (isDark) {
+        return QString(R"(
+            /* ========== MAIN WINDOW - COLOR THEME DARK ========== */
+            QMainWindow {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #171717, stop:1 #0a0a0a);
+                color: #fafafa;
+            }
+            
+            /* ========== BASE WIDGET STYLING ========== */
+            QWidget {
+                background-color: transparent;
+                color: #fafafa;
+            }
+            
+            /* ========== MENU BAR ========== */
+            QMenuBar {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #171717, stop:1 #0a0a0a);
+                border: none;
+                border-bottom: 2px solid %1;
+                padding: 6px 12px;
+                spacing: 6px;
+                color: #fafafa;
+            }
+            QMenuBar::item {
+                background: transparent;
+                color: #fafafa;
+                font-size: 14px;
+                font-weight: 600;
+                padding: 8px 16px;
+                border-radius: 8px;
+                letter-spacing: 0.3px;
+            }
+            QMenuBar::item:selected {
+                background-color: %2;
+                color: #ffffff;
+            }
+            QMenuBar::item:pressed {
+                background-color: %3;
+            }
+            
+            /* ========== MENU (DROPDOWN) ========== */
+            QMenu {
+                background-color: #171717;
+                border: 2px solid %1;
+                border-radius: 10px;
+                padding: 8px;
+                color: #fafafa;
+            }
+            QMenu::item {
+                background-color: transparent;
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                color: #fafafa;
+                letter-spacing: 0.2px;
+            }
+            QMenu::item:selected {
+                background-color: %2;
+                color: #ffffff;
+            }
+            QMenu::separator {
+                height: 1px;
+                background-color: #404040;
+                margin: 6px 12px;
+            }
+            
+            /* ========== GROUP BOX ========== */
+            QGroupBox {
+                font-size: 15px;
+                font-weight: 700;
+                padding: 20px 14px 14px 14px;
+                margin-top: 14px;
+                background-color: #171717;
+                border: 2px solid %1;
+                border-radius: 14px;
+                color: #fafafa;
+                letter-spacing: 0.5px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                left: 14px;
+                top: 2px;
+                padding: 5px 14px;
+                background-color: %1;
+                color: #ffffff;
+                font-weight: 700;
+                font-size: 14px;
+                border-radius: 7px;
+                letter-spacing: 0.5px;
+            }
+            
+            /* ========== LABELS ========== */
+            QLabel {
+                font-size: 14px;
+                font-weight: 600;
+                color: #d4d4d4;
+                background-color: transparent;
+                letter-spacing: 0.2px;
+            }
+            
+            /* ========== LINE EDIT ========== */
+            QLineEdit {
+                font-size: 13px;
+                padding: 8px 12px;
+                font-weight: 500;
+                background-color: #0a0a0a;
+                border: 2px solid #404040;
+                border-radius: 8px;
+                color: #fafafa;
+            }
+            QLineEdit:focus {
+                border: 2px solid %1;
+                background-color: #171717;
+            }
+            QLineEdit:disabled {
+                background-color: #262626;
+                color: #737373;
+                border-color: #404040;
+            }
+            
+            /* ========== PUSH BUTTON ========== */
+            QPushButton {
+                font-size: 14px;
+                font-weight: 600;
+                padding: 10px 18px;
+                background-color: %1;
+                color: #ffffff;
+                border: none;
+                border-radius: 9px;
+                letter-spacing: 0.4px;
+            }
+            QPushButton:hover {
+                background-color: %4;
+            }
+            QPushButton:pressed {
+                background-color: %3;
+            }
+            QPushButton:disabled {
+                background-color: #404040;
+                color: #737373;
+            }
+            
+            /* ========== SPIN BOX ========== */
+            QSpinBox {
+                font-size: 13px;
+                padding: 8px 10px;
+                font-weight: 500;
+                background-color: #0a0a0a;
+                border: 2px solid #404040;
+                border-radius: 8px;
+                color: #fafafa;
+            }
+            QSpinBox:focus {
+                border: 2px solid %1;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                background-color: %2;
+                border-radius: 4px;
+                width: 18px;
+            }
+            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+                background-color: %1;
+            }
+            
+            /* ========== TABLE WIDGET ========== */
+            QTableWidget {
+                background-color: #0a0a0a;
+                alternate-background-color: #171717;
+                border: 2px solid %1;
+                border-radius: 12px;
+                gridline-color: #404040;
+                color: #fafafa;
+                font-size: 13px;
+            }
+            QTableWidget::item {
+                padding: 8px;
+                border: none;
+            }
+            QTableWidget::item:selected {
+                background-color: %2;
+                color: #ffffff;
+            }
+            QHeaderView::section {
+                background-color: %3;
+                color: #ffffff;
+                padding: 10px;
+                border: none;
+                font-size: 13px;
+                font-weight: 700;
+                letter-spacing: 0.3px;
+            }
+            
+            /* ========== TAB WIDGET ========== */
+            QTabWidget::pane {
+                border: 2px solid %1;
+                border-radius: 10px;
+                background-color: #0a0a0a;
+                padding: 8px;
+            }
+            QTabBar::tab {
+                background-color: #262626;
+                color: #d4d4d4;
+                padding: 10px 20px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                margin-right: 4px;
+                font-size: 13px;
+                font-weight: 600;
+                letter-spacing: 0.3px;
+            }
+            QTabBar::tab:selected {
+                background-color: %1;
+                color: #ffffff;
+            }
+            QTabBar::tab:hover {
+                background-color: %2;
+                color: #ffffff;
+            }
+            
+            /* ========== SCROLL BAR ========== */
+            QScrollBar:vertical {
+                background-color: #171717;
+                width: 14px;
+                border-radius: 7px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: %2;
+                border-radius: 7px;
+                min-height: 30px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: %1;
+            }
+            QScrollBar:horizontal {
+                background-color: #171717;
+                height: 14px;
+                border-radius: 7px;
+            }
+            QScrollBar::handle:horizontal {
+                background-color: %2;
+                border-radius: 7px;
+                min-width: 30px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background-color: %1;
+            }
+            QScrollBar::add-line, QScrollBar::sub-line {
+                background: none;
+                border: none;
+            }
+        )").arg(primary, primaryDark, primaryDarker, primaryLight);
+    } else {
+        return QString(R"(
+            /* ========== MAIN WINDOW - COLOR THEME LIGHT ========== */
+            QMainWindow {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #fafafa, stop:1 #f5f5f5);
+                color: #0a0a0a;
+            }
+            
+            /* ========== BASE WIDGET STYLING ========== */
+            QWidget {
+                background-color: transparent;
+                color: #0a0a0a;
+            }
+            
+            /* ========== MENU BAR ========== */
+            QMenuBar {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffffff, stop:1 #fafafa);
+                border: none;
+                border-bottom: 2px solid %1;
+                padding: 6px 12px;
+                spacing: 6px;
+                color: #0a0a0a;
+            }
+            QMenuBar::item {
+                background: transparent;
+                color: #0a0a0a;
+                font-size: 14px;
+                font-weight: 600;
+                padding: 8px 16px;
+                border-radius: 8px;
+                letter-spacing: 0.3px;
+            }
+            QMenuBar::item:selected {
+                background-color: %2;
+                color: #ffffff;
+            }
+            QMenuBar::item:pressed {
+                background-color: %3;
+            }
+            
+            /* ========== MENU (DROPDOWN) ========== */
+            QMenu {
+                background-color: #ffffff;
+                border: 2px solid %1;
+                border-radius: 10px;
+                padding: 8px;
+                color: #0a0a0a;
+            }
+            QMenu::item {
+                background-color: transparent;
+                padding: 10px 20px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                color: #0a0a0a;
+                letter-spacing: 0.2px;
+            }
+            QMenu::item:selected {
+                background-color: %2;
+                color: #ffffff;
+            }
+            QMenu::separator {
+                height: 1px;
+                background-color: #e5e5e5;
+                margin: 6px 12px;
+            }
+            
+            /* ========== GROUP BOX ========== */
+            QGroupBox {
+                font-size: 15px;
+                font-weight: 700;
+                padding: 20px 14px 14px 14px;
+                margin-top: 14px;
+                background-color: #ffffff;
+                border: 2px solid %1;
+                border-radius: 14px;
+                color: #0a0a0a;
+                letter-spacing: 0.5px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                left: 14px;
+                top: 2px;
+                padding: 5px 14px;
+                background-color: %1;
+                color: #ffffff;
+                font-weight: 700;
+                font-size: 14px;
+                border-radius: 7px;
+                letter-spacing: 0.5px;
+            }
+            
+            /* ========== LABELS ========== */
+            QLabel {
+                font-size: 14px;
+                font-weight: 600;
+                color: #525252;
+                background-color: transparent;
+                letter-spacing: 0.2px;
+            }
+            
+            /* ========== LINE EDIT ========== */
+            QLineEdit {
+                font-size: 13px;
+                padding: 8px 12px;
+                font-weight: 500;
+                background-color: #ffffff;
+                border: 2px solid #d4d4d4;
+                border-radius: 8px;
+                color: #0a0a0a;
+            }
+            QLineEdit:focus {
+                border: 2px solid %1;
+                background-color: #fafafa;
+            }
+            QLineEdit:disabled {
+                background-color: #f5f5f5;
+                color: #a3a3a3;
+                border-color: #e5e5e5;
+            }
+            
+            /* ========== PUSH BUTTON ========== */
+            QPushButton {
+                font-size: 14px;
+                font-weight: 600;
+                padding: 10px 18px;
+                background-color: %1;
+                color: #ffffff;
+                border: none;
+                border-radius: 9px;
+                letter-spacing: 0.4px;
+            }
+            QPushButton:hover {
+                background-color: %4;
+            }
+            QPushButton:pressed {
+                background-color: %3;
+            }
+            QPushButton:disabled {
+                background-color: #e5e5e5;
+                color: #a3a3a3;
+            }
+            
+            /* ========== SPIN BOX ========== */
+            QSpinBox {
+                font-size: 13px;
+                padding: 8px 10px;
+                font-weight: 500;
+                background-color: #ffffff;
+                border: 2px solid #d4d4d4;
+                border-radius: 8px;
+                color: #0a0a0a;
+            }
+            QSpinBox:focus {
+                border: 2px solid %1;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                background-color: %2;
+                border-radius: 4px;
+                width: 18px;
+            }
+            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+                background-color: %1;
+            }
+            
+            /* ========== TABLE WIDGET ========== */
+            QTableWidget {
+                background-color: #ffffff;
+                alternate-background-color: #fafafa;
+                border: 2px solid %1;
+                border-radius: 12px;
+                gridline-color: #e5e5e5;
+                color: #0a0a0a;
+                font-size: 13px;
+            }
+            QTableWidget::item {
+                padding: 8px;
+                border: none;
+            }
+            QTableWidget::item:selected {
+                background-color: %2;
+                color: #ffffff;
+            }
+            QHeaderView::section {
+                background-color: %3;
+                color: #ffffff;
+                padding: 10px;
+                border: none;
+                font-size: 13px;
+                font-weight: 700;
+                letter-spacing: 0.3px;
+            }
+            
+            /* ========== TAB WIDGET ========== */
+            QTabWidget::pane {
+                border: 2px solid %1;
+                border-radius: 10px;
+                background-color: #ffffff;
+                padding: 8px;
+            }
+            QTabBar::tab {
+                background-color: #e5e5e5;
+                color: #525252;
+                padding: 10px 20px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                margin-right: 4px;
+                font-size: 13px;
+                font-weight: 600;
+                letter-spacing: 0.3px;
+            }
+            QTabBar::tab:selected {
+                background-color: %1;
+                color: #ffffff;
+            }
+            QTabBar::tab:hover {
+                background-color: %2;
+                color: #ffffff;
+            }
+            
+            /* ========== SCROLL BAR ========== */
+            QScrollBar:vertical {
+                background-color: #f5f5f5;
+                width: 14px;
+                border-radius: 7px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: %2;
+                border-radius: 7px;
+                min-height: 30px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: %1;
+            }
+            QScrollBar:horizontal {
+                background-color: #f5f5f5;
+                height: 14px;
+                border-radius: 7px;
+            }
+            QScrollBar::handle:horizontal {
+                background-color: %2;
+                border-radius: 7px;
+                min-width: 30px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background-color: %1;
+            }
+            QScrollBar::add-line, QScrollBar::sub-line {
+                background: none;
+                border: none;
+            }
+        )").arg(primary, primaryDark, primaryDarker, primaryLight);
+    }
+}
+
 //==============================================================================
 // SETTINGS PERSISTENCE
 //==============================================================================
@@ -3163,9 +3836,18 @@ void MainWindow::loadSettings()
     // Load theme preference
     QString theme = settings.value("UI/theme", "light").toString();
     m_isDarkTheme = (theme == "dark");
-    applyTheme(m_isDarkTheme);
+    
+    // Load color theme preference
+    QString colorTheme = settings.value("UI/colorTheme", "none").toString();
+    m_colorTheme = colorTheme;
+    
+    if (m_colorTheme != "none") {
+        applyColorTheme(m_colorTheme);
+    } else {
+        applyTheme(m_isDarkTheme);
+    }
 
-    qDebug() << "Theme:" << theme;
+    qDebug() << "Theme:" << theme << ", Color Theme:" << colorTheme;
 }
 
 void MainWindow::onLoadFromFile()
