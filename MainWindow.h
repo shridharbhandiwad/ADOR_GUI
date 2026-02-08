@@ -142,8 +142,6 @@ private:
     
     // DSP Settings panel group boxes (for theme-aware styling)
     QGroupBox* m_dspSettingsGroup;
-    QGroupBox* m_dspLeftGroup;
-    QGroupBox* m_dspRightGroup;
     QVector<QLabel*> m_dspLabels;  // Store labels for theme updates
     
     // Logging Control Widgets (in DSP Settings panel)
