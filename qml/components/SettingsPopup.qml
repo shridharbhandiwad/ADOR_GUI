@@ -944,7 +944,6 @@ Popup {
                     }
                 }
             }
-        }
         }  // Close ColumnLayout (contentColumn)
     }  // Close Flickable
 }
