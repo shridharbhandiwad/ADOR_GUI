@@ -1809,6 +1809,9 @@ void TimeSeriesPlotsWidget::applyTheme()
     QString buttonTextColor = "#ffffff";
     QString buttonHoverColor = m_isDarkTheme ? "#2563eb" : "#1d4ed8";
     
+    QString buttonArrowColor = m_isDarkTheme ? "#94a3b8" : "#64748b";
+    QString buttonBgHoverColor = m_isDarkTheme ? "#1e293b" : "#f1f5f9";
+    
     QString panelStyle = QString(
         "QWidget {"
         "  background-color: %1;"
@@ -1823,11 +1826,52 @@ void TimeSeriesPlotsWidget::applyTheme()
         "  border: 1px solid %4;"
         "  border-radius: 4px;"
         "  padding: 5px;"
+        "  padding-right: 22px;"
         "  color: %2;"
         "}"
         "QSpinBox:focus, QDoubleSpinBox:focus {"
         "  border-color: %5;"
         "  border-width: 2px;"
+        "}"
+        "QSpinBox::up-button, QDoubleSpinBox::up-button {"
+        "  subcontrol-origin: border;"
+        "  subcontrol-position: top right;"
+        "  width: 20px;"
+        "  border-left: 1px solid %4;"
+        "  border-bottom: 1px solid %4;"
+        "  border-top-right-radius: 4px;"
+        "  background: %3;"
+        "}"
+        "QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {"
+        "  background: %9;"
+        "}"
+        "QSpinBox::down-button, QDoubleSpinBox::down-button {"
+        "  subcontrol-origin: border;"
+        "  subcontrol-position: bottom right;"
+        "  width: 20px;"
+        "  border-left: 1px solid %4;"
+        "  border-top: 1px solid %4;"
+        "  border-bottom-right-radius: 4px;"
+        "  background: %3;"
+        "}"
+        "QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {"
+        "  background: %9;"
+        "}"
+        "QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {"
+        "  image: none;"
+        "  border-left: 4px solid transparent;"
+        "  border-right: 4px solid transparent;"
+        "  border-bottom: 5px solid %10;"
+        "  width: 0px;"
+        "  height: 0px;"
+        "}"
+        "QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {"
+        "  image: none;"
+        "  border-left: 4px solid transparent;"
+        "  border-right: 4px solid transparent;"
+        "  border-top: 5px solid %10;"
+        "  width: 0px;"
+        "  height: 0px;"
         "}"
         "QCheckBox {"
         "  color: %2;"
@@ -1859,7 +1903,8 @@ void TimeSeriesPlotsWidget::applyTheme()
         "  background-color: %5;"
         "}"
     ).arg(bgColor, textColor, inputBgColor, borderColor, accentColor, 
-          buttonBgColor, buttonTextColor, buttonHoverColor);
+          buttonBgColor, buttonTextColor, buttonHoverColor, buttonBgHoverColor)
+     .arg(buttonArrowColor);
     
     // Style the filter panel
     if (m_filterPanel) {
