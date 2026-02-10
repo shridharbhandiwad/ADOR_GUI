@@ -264,6 +264,23 @@ public:
     // Configuration
     void setMaxRange(float maxRange);
     void setMaxVelocity(float maxVelocity);
+    
+    // Track filter getters (for use by MainWindow to filter PPI and Track Table)
+    float getFilterMinRange() const { return m_filterMinRange; }
+    float getFilterMinVelocity() const { return m_filterMinVelocity; }
+    bool getFilterReceding() const { return m_filterReceding; }
+    bool getFilterApproaching() const { return m_filterApproaching; }
+    
+    // Static helper: check if a track passes given filter criteria
+    static bool trackPassesFilters(const TargetTrack& track,
+                                   float filterMinRange,
+                                   float filterMinVelocityKph,
+                                   bool filterReceding,
+                                   bool filterApproaching);
+
+signals:
+    // Emitted when any track filter parameter changes
+    void trackFiltersChanged();
 
 public slots:
     void clearAllData();

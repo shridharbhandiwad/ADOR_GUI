@@ -2011,11 +2011,13 @@ void TimeSeriesPlotsWidget::onLoadSettings()
 void TimeSeriesPlotsWidget::onFilterMinRangeChanged(double value)
 {
     m_filterMinRange = value;
+    emit trackFiltersChanged();
 }
 
 void TimeSeriesPlotsWidget::onFilterMinVelocityChanged(double value)
 {
     m_filterMinVelocity = value;
+    emit trackFiltersChanged();
 }
 
 void TimeSeriesPlotsWidget::onFilterMovingAvgChanged(int value)
@@ -2023,15 +2025,55 @@ void TimeSeriesPlotsWidget::onFilterMovingAvgChanged(int value)
     m_filterMovingAvgSize = value;
     // Clear moving average buffers when size changes
     m_movingAvgBuffer.clear();
+    // Note: moving avg doesn't affect PPI/table filtering, but emit for consistency
 }
 
 void TimeSeriesPlotsWidget::onFilterDirectionChanged()
 {
     m_filterReceding = m_filterRecedingCheckBox->isChecked();
     m_filterApproaching = m_filterApproachingCheckBox->isChecked();
+    emit trackFiltersChanged();
 }
 
-// Check if a track passes all filters
+// Static helper: check if a track passes given filter criteria
+bool TimeSeriesPlotsWidget::trackPassesFilters(const TargetTrack& track,
+                                                float filterMinRange,
+                                                float filterMinVelocityKph,
+                                                bool filterReceding,
+                                                bool filterApproaching)
+{
+    // Filter by minimum range
+    if (track.radius < filterMinRange) {
+        return false;
+    }
+    
+    // Filter by minimum velocity (absolute value, convert m/s to kph)
+    float velocityKmh = std::abs(track.radial_speed * 3.6f);
+    if (velocityKmh < filterMinVelocityKph) {
+        return false;
+    }
+    
+    // Filter by direction (receding = negative velocity, approaching = positive velocity)
+    bool isReceding = (track.radial_speed < 0);
+    bool isApproaching = (track.radial_speed > 0);
+    
+    // If neither filter is checked, allow all
+    if (!filterReceding && !filterApproaching) {
+        return true;
+    }
+    
+    // Check direction filters
+    if (filterReceding && isReceding) {
+        return true;
+    }
+    if (filterApproaching && isApproaching) {
+        return true;
+    }
+    
+    return false;
+}
+
+// Check if a track passes all filters (instance method delegates to static)
 bool TimeSeriesPlotsWidget::passesFilters(const TargetTrack& track, float velocityKmh) const
 {
     // Filter by minimum range
