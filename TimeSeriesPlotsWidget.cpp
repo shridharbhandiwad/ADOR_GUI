@@ -1136,7 +1136,7 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_filterMinVelocity(30.0f)
     , m_filterMovingAvgSize(1)
     , m_filterReceding(true)
-    , m_filterApproaching(false)
+    , m_filterApproaching(true)
     , m_lastDataReceivedTime(0)
     , m_cleanupTimer(nullptr)
 {
@@ -1212,35 +1212,35 @@ void TimeSeriesPlotsWidget::setupUI()
     rangeGroupLayout->addWidget(m_rangeTimePlot);
     
     gridLayout->addWidget(rangeGroup, 0, 1);
-    
-    // Bottom-left: Range Rate vs Time plot (shares same limits as velocity)
-    QGroupBox* rangeRateGroup = new QGroupBox("Range Rate plot", this);
-    QVBoxLayout* rangeRateGroupLayout = new QVBoxLayout(rangeRateGroup);
-    rangeRateGroupLayout->setContentsMargins(5, 5, 5, 5);
-    
-    m_rangeRatePlot = new TimeSeriesPlotWidget(this);
-    m_rangeRatePlot->setYAxisLabel("Range Rate");
-    m_rangeRatePlot->setYAxisUnit("km/h");
-    m_rangeRatePlot->setYAxisRange(-40, 40);  // Default range: same as velocity (-40 to +40 km/h)
-    m_rangeRatePlot->setTimeWindowSeconds(60);
-    rangeRateGroupLayout->addWidget(m_rangeRatePlot);
-    
-    gridLayout->addWidget(rangeRateGroup, 1, 0);
-    
+
     // Bottom-right: Range vs Velocity plot
     QGroupBox* rvGroup = new QGroupBox(this);
     QVBoxLayout* rvGroupLayout = new QVBoxLayout(rvGroup);
     rvGroupLayout->setContentsMargins(5, 5, 5, 5);
-    
+
     m_rangeVelocityPlot = new RangeVelocityPlotWidget(this);
     m_rangeVelocityPlot->setMinRangeLimit(0.0f);  // Will be updated by spinbox
     m_rangeVelocityPlot->setRangeLimit(m_maxRange);
     m_rangeVelocityPlot->setMinVelocityLimit(-40.0f);  // Will be updated by spinbox, allow negative
     m_rangeVelocityPlot->setVelocityLimit(40.0f);  // Will be updated by spinbox
     rvGroupLayout->addWidget(m_rangeVelocityPlot);
-    
-    gridLayout->addWidget(rvGroup, 1, 1);
-    
+
+    gridLayout->addWidget(rvGroup, 1, 0);
+
+    // Bottom-left: Range Rate vs Time plot (shares same limits as velocity)
+    QGroupBox* rangeRateGroup = new QGroupBox("Range Rate plot", this);
+    QVBoxLayout* rangeRateGroupLayout = new QVBoxLayout(rangeRateGroup);
+    rangeRateGroupLayout->setContentsMargins(5, 5, 5, 5);
+
+    m_rangeRatePlot = new TimeSeriesPlotWidget(this);
+    m_rangeRatePlot->setYAxisLabel("Range Rate");
+    m_rangeRatePlot->setYAxisUnit("km/h");
+    m_rangeRatePlot->setYAxisRange(-40, 40);  // Default range: same as velocity (-40 to +40 km/h)
+    m_rangeRatePlot->setTimeWindowSeconds(60);
+    rangeRateGroupLayout->addWidget(m_rangeRatePlot);
+
+    gridLayout->addWidget(rangeRateGroup, 1, 1);
+
     mainLayout->addLayout(gridLayout, 1);
     
     // Filter controls panel
@@ -1317,7 +1317,7 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     filterLayout->addWidget(m_filterRecedingCheckBox);
     
     m_filterApproachingCheckBox = new QCheckBox("Approaching", this);
-    m_filterApproachingCheckBox->setChecked(false);  // Default: false
+    m_filterApproachingCheckBox->setChecked(true);  // Default: false
     connect(m_filterApproachingCheckBox, &QCheckBox::toggled,
             this, &TimeSeriesPlotsWidget::onFilterDirectionChanged);
     filterLayout->addWidget(m_filterApproachingCheckBox);

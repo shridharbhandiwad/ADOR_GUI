@@ -577,14 +577,16 @@ void MainWindow::setupUI()
     addField(settingsGridLayout, row++, "Max Range (cm)",   m_maxRangeEdit,        "5000");
     addField(settingsGridLayout, row++, "Min Speed (km/h)", m_minSpeedEdit,        "-100");
     addField(settingsGridLayout, row++, "Max Speed (km/h)", m_maxSpeedEdit,        "100");
-    addField(settingsGridLayout, row++, "Range Thresh",     m_rangeThresholdEdit,  "0");
+
     
     // Add separator space between sections
-    settingsGridLayout->setRowMinimumHeight(row++, 16);
+    //settingsGridLayout->setRowMinimumHeight(row++, 16);
     
     // Filter & Tracking fields
     addField(settingsGridLayout, row++, "Min Angle (deg)",  m_minAngleEdit,        "0");
     addField(settingsGridLayout, row++, "Max Angle (deg)",  m_maxAngleEdit,        "0");
+
+    addField(settingsGridLayout, row++, "Range Thresh",     m_rangeThresholdEdit,  "0");
     addField(settingsGridLayout, row++, "Speed Thresh",     m_speedThresholdEdit,  "0");
     addField(settingsGridLayout, row++, "Num Tracks",       m_numTracksEdit,       "50");
     addField(settingsGridLayout, row++, "Median Filter",    m_medianFilterEdit,    "1");
