@@ -21,8 +21,8 @@ SpeedometerGauge::SpeedometerGauge(QWidget *parent)
     , m_isDarkTheme(false)
     , m_radius(0.0f)
 {
-    // Set minimum size to ensure speedometer is visible
-    setMinimumSize(300, 300);
+    // Set minimum size to ensure speedometer is visible - doubled for enterprise display
+    setMinimumSize(600, 600);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     // Setup animation timer for smooth needle movement
@@ -176,11 +176,30 @@ void SpeedometerGauge::paintEvent(QPaintEvent *event)
 
 void SpeedometerGauge::drawBackground(QPainter& painter)
 {
-    // Draw gradient background
-    QRadialGradient bgGradient(m_center, m_radius * 1.2f);
+    // Fill entire background first
+    painter.fillRect(rect(), m_theme.backgroundColor);
+    
+    // Draw premium radial gradient background
+    QRadialGradient bgGradient(m_center, m_radius * 1.3f);
     bgGradient.setColorAt(0, m_theme.cardBackground);
+    bgGradient.setColorAt(0.6, m_theme.cardBackground);
     bgGradient.setColorAt(1, m_theme.backgroundColor);
-    painter.fillRect(rect(), bgGradient);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(bgGradient);
+    painter.drawRect(rect());
+    
+    // Outer decorative ring for premium feel
+    float outerRingRadius = m_radius * 0.96f;
+    QPen outerRingPen(m_theme.gaugeArcColor, 1.5);
+    painter.setPen(outerRingPen);
+    painter.setBrush(Qt::NoBrush);
+    painter.drawEllipse(m_center, outerRingRadius, outerRingRadius);
+    
+    // Inner subtle circle
+    float innerRingRadius = m_radius * 0.72f;
+    QPen innerRingPen(m_theme.gaugeArcColor.lighter(110), 0.8);
+    painter.setPen(innerRingPen);
+    painter.drawEllipse(m_center, innerRingRadius, innerRingRadius);
 }
 
 void SpeedometerGauge::drawOuterGlow(QPainter& painter)
@@ -350,8 +369,9 @@ void SpeedometerGauge::drawSpeedLabels(QPainter& painter)
 {
     painter.save();
     
-    int fontSize = static_cast<int>(m_radius * 0.085f);
-    QFont labelFont("Segoe UI", fontSize, QFont::DemiBold);
+    int fontSize = static_cast<int>(m_radius * 0.09f);
+    QFont labelFont("Segoe UI", fontSize, QFont::Bold);
+    labelFont.setLetterSpacing(QFont::AbsoluteSpacing, 0.5);
     painter.setFont(labelFont);
     
     for (int speed = 0; speed <= static_cast<int>(m_maxSpeed); speed += 40) {
@@ -473,9 +493,10 @@ void SpeedometerGauge::drawDigitalDisplay(QPainter& painter)
     // Draw speed value in the bottom center of gauge
     float displayY = m_center.y() + m_radius * 0.25f;
     
-    // Speed value
-    int fontSize = static_cast<int>(m_radius * 0.22f);
+    // Speed value - larger enterprise font
+    int fontSize = static_cast<int>(m_radius * 0.26f);
     QFont speedFont("Segoe UI", fontSize, QFont::Bold);
+    speedFont.setLetterSpacing(QFont::AbsoluteSpacing, 2.0);
     painter.setFont(speedFont);
     
     QString speedText = QString::number(static_cast<int>(m_animatedSpeed));
@@ -492,9 +513,10 @@ void SpeedometerGauge::drawDigitalDisplay(QPainter& painter)
         speedText
     );
     
-    // Unit label
-    int unitFontSize = static_cast<int>(m_radius * 0.08f);
-    QFont unitFont("Segoe UI", unitFontSize, QFont::Medium);
+    // Unit label - refined enterprise style
+    int unitFontSize = static_cast<int>(m_radius * 0.09f);
+    QFont unitFont("Segoe UI", unitFontSize, QFont::DemiBold);
+    unitFont.setLetterSpacing(QFont::AbsoluteSpacing, 3.0);
     painter.setFont(unitFont);
     painter.setPen(m_theme.textSecondary);
     
@@ -541,19 +563,46 @@ void SpeedCard::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing, true);
     
-    // Draw shadow
-    QColor shadowColor = m_isDarkTheme ? QColor(0, 0, 0, 60) : QColor(0, 0, 0, 20);
+    int radius = 14;
+    QRect cardRect = rect().adjusted(3, 3, -3, -3);
+    
+    // Multi-layered shadow for depth (enterprise aesthetic)
+    // Outer soft shadow
+    QColor outerShadow = m_isDarkTheme ? QColor(0, 0, 0, 50) : QColor(0, 0, 0, 12);
     painter.setPen(Qt::NoPen);
-    painter.setBrush(shadowColor);
-    painter.drawRoundedRect(rect().adjusted(4, 4, 0, 0), 16, 16);
+    painter.setBrush(outerShadow);
+    painter.drawRoundedRect(cardRect.adjusted(2, 4, 2, 4), radius, radius);
     
-    // Draw card background
-    QColor bgColor = m_isDarkTheme ? QColor(30, 41, 59) : QColor(255, 255, 255);
-    QColor borderColor = m_isDarkTheme ? QColor(51, 65, 85) : QColor(226, 232, 240);
+    // Inner tighter shadow
+    QColor innerShadow = m_isDarkTheme ? QColor(0, 0, 0, 35) : QColor(0, 0, 0, 8);
+    painter.setBrush(innerShadow);
+    painter.drawRoundedRect(cardRect.adjusted(1, 2, 1, 2), radius, radius);
     
-    painter.setBrush(bgColor);
-    painter.setPen(QPen(borderColor, 1));
-    painter.drawRoundedRect(rect().adjusted(0, 0, -4, -4), 16, 16);
+    // Card background with subtle gradient
+    QLinearGradient bgGradient(0, cardRect.top(), 0, cardRect.bottom());
+    if (m_isDarkTheme) {
+        bgGradient.setColorAt(0, QColor(30, 30, 40));
+        bgGradient.setColorAt(0.5, QColor(26, 26, 34));
+        bgGradient.setColorAt(1, QColor(22, 22, 30));
+    } else {
+        bgGradient.setColorAt(0, QColor(255, 255, 255));
+        bgGradient.setColorAt(0.5, QColor(252, 252, 254));
+        bgGradient.setColorAt(1, QColor(248, 248, 252));
+    }
+    
+    QColor borderColor = m_isDarkTheme ? QColor(52, 52, 64) : QColor(215, 215, 228);
+    
+    painter.setBrush(bgGradient);
+    painter.setPen(QPen(borderColor, 1.5));
+    painter.drawRoundedRect(cardRect, radius, radius);
+    
+    // Subtle top highlight line for glass effect
+    QPainterPath topHighlight;
+    topHighlight.addRoundedRect(QRectF(cardRect.left() + 10, cardRect.top(), cardRect.width() - 20, 1), 0, 0);
+    QColor highlightColor = m_isDarkTheme ? QColor(255, 255, 255, 15) : QColor(255, 255, 255, 200);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(highlightColor);
+    painter.drawPath(topHighlight);
 }
 
 // ==================== DigitalSpeedDisplay Implementation ====================
@@ -615,24 +664,40 @@ void DigitalSpeedDisplay::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setRenderHint(QPainter::TextAntialiasing, true);
     
-    // Draw background with subtle gradient
+    int radius = 10;
+    QRect displayRect = rect().adjusted(2, 2, -2, -2);
+    
+    // Enterprise background with refined gradient
     QLinearGradient bgGradient(0, 0, 0, height());
-    QColor bgColor = m_isDarkTheme ? QColor(15, 23, 42) : QColor(248, 250, 252);
-    bgGradient.setColorAt(0, bgColor.lighter(105));
-    bgGradient.setColorAt(1, bgColor);
+    if (m_isDarkTheme) {
+        bgGradient.setColorAt(0, QColor(20, 20, 28));
+        bgGradient.setColorAt(0.5, QColor(16, 16, 24));
+        bgGradient.setColorAt(1, QColor(12, 12, 20));
+    } else {
+        bgGradient.setColorAt(0, QColor(250, 250, 254));
+        bgGradient.setColorAt(0.5, QColor(246, 246, 252));
+        bgGradient.setColorAt(1, QColor(242, 242, 248));
+    }
     
-    QColor borderColor = m_isDarkTheme ? QColor(51, 65, 85) : QColor(226, 232, 240);
+    QColor borderColor = m_isDarkTheme ? QColor(48, 48, 60) : QColor(210, 210, 224);
     
-    painter.setPen(QPen(borderColor, 2));
+    // Subtle inset shadow
+    QColor insetShadow = m_isDarkTheme ? QColor(0, 0, 0, 40) : QColor(0, 0, 0, 10);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(insetShadow);
+    painter.drawRoundedRect(displayRect.adjusted(0, 0, 1, 1), radius, radius);
+    
+    painter.setPen(QPen(borderColor, 1.5));
     painter.setBrush(bgGradient);
-    painter.drawRoundedRect(rect().adjusted(1, 1, -1, -1), 12, 12);
+    painter.drawRoundedRect(displayRect, radius, radius);
     
-    // Draw value
-    QColor textColor = m_isDarkTheme ? QColor(241, 245, 249) : QColor(30, 41, 59);
-    QColor accentColor = m_isDarkTheme ? QColor(34, 211, 238) : QColor(6, 182, 212);
+    // Speed value - large, bold, enterprise font
+    QColor textColor = m_isDarkTheme ? QColor(235, 235, 245) : QColor(28, 28, 42);
+    QColor unitColor = m_isDarkTheme ? QColor(130, 130, 145) : QColor(90, 90, 108);
     
-    int fontSize = qMin(width(), height()) / 3;
+    int fontSize = qMax(qMin(width(), height()) / 3, 20);
     QFont valueFont("Segoe UI", fontSize, QFont::Bold);
+    valueFont.setLetterSpacing(QFont::AbsoluteSpacing, 2.0);
     painter.setFont(valueFont);
     painter.setPen(textColor);
     
@@ -640,11 +705,12 @@ void DigitalSpeedDisplay::paintEvent(QPaintEvent *event)
     QFontMetrics fm(valueFont);
     QRect valueRect = fm.boundingRect(valueText);
     
-    int totalWidth = valueRect.width() + 10;
+    int totalWidth = valueRect.width() + 12;
     
-    // Draw unit
-    int unitFontSize = fontSize / 3;
+    // Unit text
+    int unitFontSize = qMax(fontSize / 3, 10);
     QFont unitFont("Segoe UI", unitFontSize, QFont::Medium);
+    unitFont.setLetterSpacing(QFont::AbsoluteSpacing, 1.0);
     QFontMetrics unitFm(unitFont);
     QRect unitRect = unitFm.boundingRect(m_unit);
     totalWidth += unitRect.width();
@@ -658,9 +724,9 @@ void DigitalSpeedDisplay::paintEvent(QPaintEvent *event)
     );
     
     painter.setFont(unitFont);
-    painter.setPen(accentColor);
+    painter.setPen(unitColor);
     painter.drawText(
-        startX + valueRect.width() + 8,
+        startX + valueRect.width() + 10,
         height() / 2 + valueRect.height() / 3 - (valueRect.height() - unitRect.height()) / 2,
         m_unit
     );
@@ -701,9 +767,11 @@ void ModernSpeedButton::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setRenderHint(QPainter::TextAntialiasing, true);
     
-    QColor primaryColor = m_isDarkTheme ? QColor(96, 165, 250) : QColor(59, 130, 246);
-    QColor hoverColor = m_isDarkTheme ? QColor(59, 130, 246) : QColor(37, 99, 235);
-    QColor pressedColor = m_isDarkTheme ? QColor(37, 99, 235) : QColor(29, 78, 216);
+    // Enterprise monochrome button palette
+    QColor primaryColor = m_isDarkTheme ? QColor(160, 160, 175) : QColor(50, 50, 62);
+    QColor hoverColor = m_isDarkTheme ? QColor(180, 180, 195) : QColor(38, 38, 50);
+    QColor pressedColor = m_isDarkTheme ? QColor(140, 140, 155) : QColor(30, 30, 42);
+    QColor textCol = m_isDarkTheme ? QColor(22, 22, 30) : QColor(255, 255, 255);
     
     QColor bgColor = primaryColor;
     if (m_pressed) {
@@ -712,28 +780,41 @@ void ModernSpeedButton::paintEvent(QPaintEvent *event)
         bgColor = hoverColor;
     }
     
-    // Draw shadow
+    int radius = 10;
+    QRect btnRect = m_pressed ? rect().adjusted(1, 1, -1, -1) : rect().adjusted(0, 0, -2, -2);
+    
+    // Enterprise shadow - subtle, professional
     if (!m_pressed) {
-        QColor shadowColor(bgColor.red(), bgColor.green(), bgColor.blue(), 80);
+        QColor shadowColor(0, 0, 0, m_isDarkTheme ? 60 : 30);
         painter.setPen(Qt::NoPen);
         painter.setBrush(shadowColor);
-        painter.drawRoundedRect(rect().adjusted(2, 3, -2, 0), 12, 12);
+        painter.drawRoundedRect(btnRect.adjusted(1, 3, 1, 3), radius, radius);
     }
     
-    // Draw button background with gradient
-    QLinearGradient bgGradient(0, 0, 0, height());
-    bgGradient.setColorAt(0, bgColor);
-    bgGradient.setColorAt(1, bgColor.darker(110));
+    // Button background with subtle gradient
+    QLinearGradient bgGradient(0, btnRect.top(), 0, btnRect.bottom());
+    bgGradient.setColorAt(0, bgColor.lighter(108));
+    bgGradient.setColorAt(0.45, bgColor);
+    bgGradient.setColorAt(1, bgColor.darker(108));
     
-    painter.setPen(Qt::NoPen);
+    painter.setPen(QPen(bgColor.darker(120), 1.0));
     painter.setBrush(bgGradient);
+    painter.drawRoundedRect(btnRect, radius, radius);
     
-    QRect btnRect = m_pressed ? rect().adjusted(1, 2, -1, -1) : rect().adjusted(0, 0, -2, -3);
-    painter.drawRoundedRect(btnRect, 12, 12);
+    // Top highlight for a subtle inset/glass effect
+    if (!m_pressed) {
+        QLinearGradient highlightGrad(0, btnRect.top(), 0, btnRect.top() + btnRect.height() / 2);
+        highlightGrad.setColorAt(0, QColor(255, 255, 255, m_isDarkTheme ? 25 : 50));
+        highlightGrad.setColorAt(1, QColor(255, 255, 255, 0));
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(highlightGrad);
+        painter.drawRoundedRect(btnRect.adjusted(1, 1, -1, -btnRect.height()/2), radius, radius);
+    }
     
-    // Draw text
-    painter.setPen(Qt::white);
-    QFont btnFont("Segoe UI", 13, QFont::DemiBold);
+    // Draw text - enterprise font
+    painter.setPen(textCol);
+    QFont btnFont("Segoe UI", 14, QFont::DemiBold);
+    btnFont.setLetterSpacing(QFont::AbsoluteSpacing, 1.5);
     painter.setFont(btnFont);
     painter.drawText(btnRect, Qt::AlignCenter, text());
 }
@@ -885,87 +966,60 @@ SpeedWidgetTheme SpeedMeasurementWidget::createDarkTheme() const
 
 void SpeedMeasurementWidget::setupUI()
 {
-    // Set minimum size for the entire widget to ensure visibility
-    setMinimumSize(800, 500);
+    // Set minimum size for the entire widget - enlarged for enterprise display
+    setMinimumSize(1000, 700);
     
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
-    mainLayout->setSpacing(32);
-    mainLayout->setContentsMargins(24, 24, 24, 24);
+    mainLayout->setSpacing(40);
+    mainLayout->setContentsMargins(32, 28, 32, 28);
     
     // ========== Left side: Speedometer with title ==========
     QVBoxLayout* leftLayout = new QVBoxLayout();
-    leftLayout->setSpacing(16);
+    leftLayout->setSpacing(18);
     leftLayout->setAlignment(Qt::AlignTop);
     
-    // Title section with icon-like element
-    QHBoxLayout* titleLayout = new QHBoxLayout();
-    titleLayout->setAlignment(Qt::AlignCenter);
-    titleLayout->setSpacing(12);
+    // Title section - clean enterprise text, no icons
+    m_actualSpeedLabel = new QLabel("LIVE SPEED");
+    m_actualSpeedLabel->setAlignment(Qt::AlignCenter);
+    leftLayout->addWidget(m_actualSpeedLabel);
     
-    // Speed icon indicator
-    QLabel* iconLabel = new QLabel("\xE2\x9A\xA1");  // Lightning bolt emoji as icon
-    iconLabel->setStyleSheet("font-size: 24px;");
-    titleLayout->addWidget(iconLabel);
-    
-    m_actualSpeedLabel = new QLabel("Live Speed");
-    QFont titleFont("Segoe UI", 22, QFont::Bold);
-    m_actualSpeedLabel->setFont(titleFont);
-    titleLayout->addWidget(m_actualSpeedLabel);
-    
-    leftLayout->addLayout(titleLayout);
-    
-    // Speedometer gauge - larger size for better visibility (responsive)
+    // Speedometer gauge - doubled size for enterprise visibility
     m_speedometer = new SpeedometerGauge(this);
-    // Size will be determined by layout based on available space
     leftLayout->addWidget(m_speedometer, 1, Qt::AlignCenter);
     
     // Status label below speedometer
     m_statusLabel = new QLabel("Waiting for data...");
     m_statusLabel->setAlignment(Qt::AlignCenter);
-    QFont statusFont("Segoe UI", 13, QFont::Normal);
-    m_statusLabel->setFont(statusFont);
     leftLayout->addWidget(m_statusLabel);
     
     mainLayout->addLayout(leftLayout, 3);
     
     // ========== Right side: Top Speed and Controls ==========
     QVBoxLayout* rightLayout = new QVBoxLayout();
-    rightLayout->setSpacing(24);
+    rightLayout->setSpacing(28);
     rightLayout->setAlignment(Qt::AlignTop);
     
-    // Top Speed Card (responsive size)
+    // Top Speed Card
     m_topSpeedCard = new SpeedCard(this);
-    m_topSpeedCard->setMinimumSize(250, 200);
+    m_topSpeedCard->setMinimumSize(300, 240);
     
     QVBoxLayout* topSpeedCardLayout = new QVBoxLayout(m_topSpeedCard);
-    topSpeedCardLayout->setSpacing(16);
-    topSpeedCardLayout->setContentsMargins(24, 24, 24, 24);
+    topSpeedCardLayout->setSpacing(18);
+    topSpeedCardLayout->setContentsMargins(28, 28, 28, 28);
     
-    // Card header with icon
-    QHBoxLayout* topSpeedHeaderLayout = new QHBoxLayout();
-    topSpeedHeaderLayout->setSpacing(12);
-    
-    QLabel* trophyIcon = new QLabel("\xF0\x9F\x8F\x86");  // Trophy emoji
-    trophyIcon->setStyleSheet("font-size: 28px;");
-    topSpeedHeaderLayout->addWidget(trophyIcon);
-    
-    m_topSpeedLabel = new QLabel("Top Speed");
-    QFont topSpeedTitleFont("Segoe UI", 18, QFont::DemiBold);
-    m_topSpeedLabel->setFont(topSpeedTitleFont);
-    topSpeedHeaderLayout->addWidget(m_topSpeedLabel);
-    topSpeedHeaderLayout->addStretch();
-    
-    topSpeedCardLayout->addLayout(topSpeedHeaderLayout);
+    // Card header - clean text, no emoji
+    m_topSpeedLabel = new QLabel("TOP SPEED");
+    topSpeedCardLayout->addWidget(m_topSpeedLabel);
     
     // Separator line
     QFrame* separator = new QFrame();
     separator->setFrameShape(QFrame::HLine);
-    separator->setFixedHeight(1);
+    separator->setFixedHeight(2);
     topSpeedCardLayout->addWidget(separator);
     
-    // Digital display for top speed (responsive size)
+    // Digital display for top speed
     m_topSpeedDisplay = new DigitalSpeedDisplay(this);
-    // Size will be determined by layout based on available space
+    m_topSpeedDisplay->setMinimumSize(260, 100);
     m_topSpeedDisplay->setValue(0);
     topSpeedCardLayout->addWidget(m_topSpeedDisplay, 0, Qt::AlignCenter);
     
@@ -973,38 +1027,28 @@ void SpeedMeasurementWidget::setupUI()
     
     rightLayout->addWidget(m_topSpeedCard);
     
-    // Output/Controls Card (responsive size)
+    // Controls Card
     m_outputCard = new SpeedCard(this);
-    m_outputCard->setMinimumSize(250, 180);
+    m_outputCard->setMinimumSize(300, 220);
     
     QVBoxLayout* outputCardLayout = new QVBoxLayout(m_outputCard);
-    outputCardLayout->setSpacing(20);
-    outputCardLayout->setContentsMargins(24, 24, 24, 24);
+    outputCardLayout->setSpacing(22);
+    outputCardLayout->setContentsMargins(28, 28, 28, 28);
     
-    // Card header
-    QHBoxLayout* outputHeaderLayout = new QHBoxLayout();
-    outputHeaderLayout->setSpacing(12);
-    
-    QLabel* controlIcon = new QLabel("\xE2\x9A\x99\xEF\xB8\x8F");  // Gear emoji
-    controlIcon->setStyleSheet("font-size: 24px;");
-    outputHeaderLayout->addWidget(controlIcon);
-    
-    QLabel* outputLabel = new QLabel("Controls");
-    QFont outputTitleFont("Segoe UI", 18, QFont::DemiBold);
-    outputLabel->setFont(outputTitleFont);
-    outputHeaderLayout->addWidget(outputLabel);
-    outputHeaderLayout->addStretch();
-    
-    outputCardLayout->addLayout(outputHeaderLayout);
+    // Card header - clean text, no emoji
+    QLabel* outputLabel = new QLabel("CONTROLS");
+    outputCardLayout->addWidget(outputLabel);
     
     // Separator
     QFrame* separator2 = new QFrame();
     separator2->setFrameShape(QFrame::HLine);
-    separator2->setFixedHeight(1);
+    separator2->setFixedHeight(2);
     outputCardLayout->addWidget(separator2);
     
     // Reset button
     m_resetButton = new ModernSpeedButton("Reset Top Speed", this);
+    m_resetButton->setMinimumHeight(48);
+    m_resetButton->setMinimumWidth(220);
     connect(m_resetButton, &QPushButton::clicked, this, &SpeedMeasurementWidget::onResetTopSpeed);
     outputCardLayout->addWidget(m_resetButton, 0, Qt::AlignCenter);
     
@@ -1106,28 +1150,83 @@ void SpeedMeasurementWidget::setDarkTheme(bool isDark)
 
 void SpeedMeasurementWidget::applyTheme()
 {
-    QString textColor = m_isDarkTheme ? "#f1f5f9" : "#1e293b";
-    QString secondaryColor = m_isDarkTheme ? "#94a3b8" : "#64748b";
-    QString mutedColor = m_isDarkTheme ? "#64748b" : "#94a3b8";
-    QString accentColor = m_isDarkTheme ? "#22d3ee" : "#06b6d4";
-    QString separatorColor = m_isDarkTheme ? "#334155" : "#e2e8f0";
+    // Enterprise color palette
+    QString bgColor = m_isDarkTheme ? "#12121a" : "#f8f9fc";
+    QString cardBg = m_isDarkTheme ? "#1c1c26" : "#ffffff";
+    QString textColor = m_isDarkTheme ? "#e8e8f0" : "#1a1a2e";
+    QString secondaryColor = m_isDarkTheme ? "#9898a8" : "#5a5a72";
+    QString mutedColor = m_isDarkTheme ? "#6a6a7e" : "#8a8aa0";
+    QString accentColor = m_isDarkTheme ? "#a0a0b0" : "#3c3c4a";
+    QString separatorColor = m_isDarkTheme ? "#2a2a36" : "#e0e0ea";
+    QString separatorAccent = m_isDarkTheme ? "#3a3a48" : "#c8c8d8";
+    QString cardBorder = m_isDarkTheme ? "#2e2e3a" : "#d8d8e4";
+    QString headerUnderline = m_isDarkTheme ? "#4a4a58" : "#b0b0c0";
     
+    // Apply main widget background
+    setStyleSheet(QString(
+        "SpeedMeasurementWidget {"
+        "  background-color: %1;"
+        "}"
+    ).arg(bgColor));
+    
+    // Enterprise "LIVE SPEED" header - large, tracked, uppercase
     if (m_actualSpeedLabel) {
-        m_actualSpeedLabel->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
+        m_actualSpeedLabel->setStyleSheet(QString(
+            "QLabel {"
+            "  color: %1;"
+            "  background: transparent;"
+            "  font-family: 'Segoe UI', 'Helvetica Neue', 'Arial', sans-serif;"
+            "  font-size: 28px;"
+            "  font-weight: 700;"
+            "  letter-spacing: 6px;"
+            "  padding: 8px 20px;"
+            "  border-bottom: 3px solid %2;"
+            "}"
+        ).arg(textColor, headerUnderline));
     }
     
+    // Enterprise "TOP SPEED" header
     if (m_topSpeedLabel) {
-        m_topSpeedLabel->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
+        m_topSpeedLabel->setStyleSheet(QString(
+            "QLabel {"
+            "  color: %1;"
+            "  background: transparent;"
+            "  font-family: 'Segoe UI', 'Helvetica Neue', 'Arial', sans-serif;"
+            "  font-size: 22px;"
+            "  font-weight: 700;"
+            "  letter-spacing: 5px;"
+            "  padding-bottom: 6px;"
+            "}"
+        ).arg(textColor));
     }
     
+    // Status label - refined, subtle
     if (m_statusLabel) {
-        m_statusLabel->setStyleSheet(QString("QLabel { color: %1; background: transparent; font-style: italic; }").arg(mutedColor));
+        m_statusLabel->setStyleSheet(QString(
+            "QLabel {"
+            "  color: %1;"
+            "  background: transparent;"
+            "  font-family: 'Segoe UI', 'Helvetica Neue', 'Arial', sans-serif;"
+            "  font-size: 14px;"
+            "  font-weight: 400;"
+            "  letter-spacing: 1px;"
+            "  font-style: italic;"
+            "  padding: 6px 12px;"
+            "}"
+        ).arg(mutedColor));
     }
     
-    // Style separators
-    QString separatorStyle = QString("QFrame { background-color: %1; border: none; }").arg(separatorColor);
+    // Separator styling - refined thin lines with subtle gradient feel
+    QString separatorStyle = QString(
+        "QFrame {"
+        "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+        "    stop:0 transparent, stop:0.1 %1, stop:0.9 %1, stop:1 transparent);"
+        "  border: none;"
+        "  max-height: 2px;"
+        "  min-height: 2px;"
+        "}"
+    ).arg(separatorAccent);
     
-    // Find and style all separators
     QList<QFrame*> frames = findChildren<QFrame*>();
     for (QFrame* frame : frames) {
         if (frame->frameShape() == QFrame::HLine) {
@@ -1135,21 +1234,35 @@ void SpeedMeasurementWidget::applyTheme()
         }
     }
     
-    // Style labels in cards
+    // Style all child labels in cards - "CONTROLS" and any others
     QList<QLabel*> labels = findChildren<QLabel*>();
     for (QLabel* label : labels) {
         if (label != m_actualSpeedLabel && label != m_topSpeedLabel && label != m_statusLabel) {
-            // Check if it's an icon label (contains emoji)
             QString text = label->text();
-            if (text.contains("\xE2") || text.contains("\xF0")) {
-                // Emoji icon - keep default
-                label->setStyleSheet("QLabel { background: transparent; }");
-            } else if (label->font().weight() >= QFont::DemiBold) {
-                // Title labels
-                label->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(textColor));
+            // Detect section headers by uppercase text
+            if (text == "CONTROLS" || text == "TOP SPEED" || text == "LIVE SPEED") {
+                label->setStyleSheet(QString(
+                    "QLabel {"
+                    "  color: %1;"
+                    "  background: transparent;"
+                    "  font-family: 'Segoe UI', 'Helvetica Neue', 'Arial', sans-serif;"
+                    "  font-size: 22px;"
+                    "  font-weight: 700;"
+                    "  letter-spacing: 5px;"
+                    "  padding-bottom: 6px;"
+                    "}"
+                ).arg(textColor));
             } else {
-                // Regular labels
-                label->setStyleSheet(QString("QLabel { color: %1; background: transparent; }").arg(secondaryColor));
+                label->setStyleSheet(QString(
+                    "QLabel {"
+                    "  color: %1;"
+                    "  background: transparent;"
+                    "  font-family: 'Segoe UI', 'Helvetica Neue', 'Arial', sans-serif;"
+                    "  font-size: 14px;"
+                    "  font-weight: 400;"
+                    "  letter-spacing: 0.5px;"
+                    "}"
+                ).arg(secondaryColor));
             }
         }
     }
