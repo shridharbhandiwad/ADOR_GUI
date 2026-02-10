@@ -890,6 +890,10 @@ void MainWindow::setupUI()
     m_timeSeriesPlotsWidget = new TimeSeriesPlotsWidget(this);
     m_mainTabWidget->addTab(m_timeSeriesPlotsWidget, "TimeSeries Plots");
     
+    // Connect track filter changes to refresh PPI and Track Table immediately
+    connect(m_timeSeriesPlotsWidget, &TimeSeriesPlotsWidget::trackFiltersChanged,
+            this, &MainWindow::refreshTrackTable);
+    
     // Create Speed Measurement tab
     m_speedMeasurementWidget = new SpeedMeasurementWidget(this);
     m_mainTabWidget->addTab(m_speedMeasurementWidget, "Speed Measurement");
@@ -953,9 +957,11 @@ void MainWindow::updateDisplay()
 
     // CRITICAL FIX: Display update only refreshes UI, not data processing
     // Range rate and filter processing now happens immediately in UDP reception
-    m_ppiWidget->updateTargets(m_currentTargets);
+    // Apply track filters so only matching tracks appear on PPI and Track Table
+    TargetTrackData filteredTargets = getFilteredTargets();
+    m_ppiWidget->updateTargets(filteredTargets);
     m_fftWidget->updateData(m_currentADCFrame);
-    m_fftWidget->updateTargets(m_currentTargets);
+    m_fftWidget->updateTargets(filteredTargets);
     
     updateTrackTable();
 
@@ -1354,9 +1360,12 @@ void MainWindow::applyFrameTargets()
     m_frameTargets.clear();
     m_receivedTargetCount = 0;
     
-    // Update displays immediately for synchronization
-    m_ppiWidget->updateTargets(m_currentTargets);
-    m_fftWidget->updateTargets(m_currentTargets);
+    // Apply track filters so only matching tracks appear on PPI and Track Table
+    TargetTrackData filteredTargets = getFilteredTargets();
+    
+    // Update displays with filtered targets
+    m_ppiWidget->updateTargets(filteredTargets);
+    m_fftWidget->updateTargets(filteredTargets);
     updateTrackTable();
 }
 
@@ -1366,13 +1375,16 @@ void MainWindow::refreshTrackTable()
     // Tracks are already managed frame-by-frame in parseBinaryTargetData
     // This function just ensures the UI stays in sync with current data
     
+    // Apply track filters so only matching tracks appear on PPI and Track Table
+    TargetTrackData filteredTargets = getFilteredTargets();
+    
     // Keep minimum rows in track table, extend if more tracks are available
-    int rowCount = std::max(static_cast<int>(m_currentTargets.numTracks), TRACK_TABLE_MINIMUM_ROWS);
+    int rowCount = std::max(static_cast<int>(filteredTargets.numTracks), TRACK_TABLE_MINIMUM_ROWS);
     m_trackTable->setRowCount(rowCount);
     
-    // Populate rows with actual track data
-    for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
-        const TargetTrack& target = m_currentTargets.targets[i];
+    // Populate rows with filtered track data
+    for (uint32_t i = 0; i < filteredTargets.numTracks; ++i) {
+        const TargetTrack& target = filteredTargets.targets[i];
         m_trackTable->setItem(i, 0, new QTableWidgetItem(QString::number(target.target_id)));
         m_trackTable->setItem(i, 1, new QTableWidgetItem(QString::number(target.radius, 'f', 2)));
         m_trackTable->setItem(i, 2, new QTableWidgetItem(QString::number(target.azimuth, 'f', 1)));
@@ -1380,7 +1392,7 @@ void MainWindow::refreshTrackTable()
     }
     
     // Clear empty rows (when fewer tracks than minimum)
-    for (int i = m_currentTargets.numTracks; i < rowCount; ++i) {
+    for (uint32_t i = filteredTargets.numTracks; i < static_cast<uint32_t>(rowCount); ++i) {
         m_trackTable->setItem(i, 0, new QTableWidgetItem(""));
         m_trackTable->setItem(i, 1, new QTableWidgetItem(""));
         m_trackTable->setItem(i, 2, new QTableWidgetItem(""));
@@ -1388,11 +1400,12 @@ void MainWindow::refreshTrackTable()
     }
     m_trackTable->resizeColumnsToContents();
 
-    // Sync PPI and FFT widgets with current data
-    m_ppiWidget->updateTargets(m_currentTargets);
-    m_fftWidget->updateTargets(m_currentTargets);
+    // Sync PPI and FFT widgets with filtered data
+    m_ppiWidget->updateTargets(filteredTargets);
+    m_fftWidget->updateTargets(filteredTargets);
 
-    qDebug() << "Track table refreshed. Active tracks:" << m_currentTargets.numTracks
+    qDebug() << "Track table refreshed. Total tracks:" << m_currentTargets.numTracks
+             << ", Filtered tracks:" << filteredTargets.numTracks
              << ", Display rows:" << rowCount << "(ephemeral sync mode)";
 }
 
@@ -1505,16 +1518,45 @@ void MainWindow::onApplySettings()
     }
 }
 
+TargetTrackData MainWindow::getFilteredTargets() const
+{
+    // Apply track filters from TimeSeriesPlotsWidget to produce filtered target set
+    // for PPI display and Track Table
+    if (!m_timeSeriesPlotsWidget) {
+        return m_currentTargets;  // No filter widget, return all targets
+    }
+    
+    float filterMinRange = m_timeSeriesPlotsWidget->getFilterMinRange();
+    float filterMinVelocity = m_timeSeriesPlotsWidget->getFilterMinVelocity();
+    bool filterReceding = m_timeSeriesPlotsWidget->getFilterReceding();
+    bool filterApproaching = m_timeSeriesPlotsWidget->getFilterApproaching();
+    
+    TargetTrackData filtered;
+    for (size_t i = 0; i < m_currentTargets.targets.size(); ++i) {
+        const TargetTrack& track = m_currentTargets.targets[i];
+        if (TimeSeriesPlotsWidget::trackPassesFilters(track, filterMinRange,
+                                                       filterMinVelocity,
+                                                       filterReceding,
+                                                       filterApproaching)) {
+            filtered.targets.push_back(track);
+        }
+    }
+    filtered.numTracks = static_cast<uint32_t>(filtered.targets.size());
+    return filtered;
+}
+
 void MainWindow::updateTrackTable()
 {
-    // EPHEMERAL SYNCHRONIZATION: Update track table with current frame data
-    // Keep minimum rows in track table, extend if more tracks are available
-    int rowCount = std::max(static_cast<int>(m_currentTargets.numTracks), TRACK_TABLE_MINIMUM_ROWS);
+    // EPHEMERAL SYNCHRONIZATION: Update track table with filtered frame data
+    // Apply track filters so only matching tracks appear on PPI and Track Table
+    TargetTrackData filteredTargets = getFilteredTargets();
+    
+    int rowCount = std::max(static_cast<int>(filteredTargets.numTracks), TRACK_TABLE_MINIMUM_ROWS);
     m_trackTable->setRowCount(rowCount);
     
-    // Populate rows with actual track data
-    for (uint32_t i = 0; i < m_currentTargets.numTracks; ++i) {
-        const TargetTrack& target = m_currentTargets.targets[i];
+    // Populate rows with filtered track data
+    for (uint32_t i = 0; i < filteredTargets.numTracks; ++i) {
+        const TargetTrack& target = filteredTargets.targets[i];
         m_trackTable->setItem(i, 0, new QTableWidgetItem(QString::number(target.target_id)));
         m_trackTable->setItem(i, 1, new QTableWidgetItem(QString::number(target.radius, 'f', 2)));
         m_trackTable->setItem(i, 2, new QTableWidgetItem(QString::number(target.azimuth, 'f', 1)));
@@ -1522,7 +1564,7 @@ void MainWindow::updateTrackTable()
     }
     
     // Clear empty rows (when fewer tracks than minimum)
-    for (int i = m_currentTargets.numTracks; i < rowCount; ++i) {
+    for (uint32_t i = filteredTargets.numTracks; i < static_cast<uint32_t>(rowCount); ++i) {
         m_trackTable->setItem(i, 0, new QTableWidgetItem(""));
         m_trackTable->setItem(i, 1, new QTableWidgetItem(""));
         m_trackTable->setItem(i, 2, new QTableWidgetItem(""));

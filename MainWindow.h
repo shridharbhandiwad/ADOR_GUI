@@ -78,6 +78,7 @@ private:
     void setupTimer();
     void updateTrackTable();
     void applyFrameTargets();  // Apply collected frame targets as current targets (ephemeral sync)
+    TargetTrackData getFilteredTargets() const;  // Apply track filters from TimeSeriesPlotsWidget
     void generateSimulatedTargetData();
     void generateSimulatedADCData();
     void loadSettings();
