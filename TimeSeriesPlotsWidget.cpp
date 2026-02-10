@@ -744,7 +744,7 @@ QColor RangeVelocityPlotWidget::getTextColor() const
 
 QColor RangeVelocityPlotWidget::getValidAreaColor() const
 {
-    return m_isDarkTheme ? QColor(34, 197, 94, 60) : QColor(134, 239, 172, 100);  // Green with transparency
+    return m_isDarkTheme ? QColor(34, 197, 94, 25) : QColor(134, 239, 172, 35);  // Subtle green with low transparency
 }
 
 QColor RangeVelocityPlotWidget::getDataPointColor() const
@@ -1213,7 +1213,7 @@ void TimeSeriesPlotsWidget::setupUI()
     
     gridLayout->addWidget(rangeGroup, 0, 1);
 
-    // Bottom-right: Range vs Velocity plot
+    // Bottom-left: Range vs Velocity plot
     QGroupBox* rvGroup = new QGroupBox(this);
     QVBoxLayout* rvGroupLayout = new QVBoxLayout(rvGroup);
     rvGroupLayout->setContentsMargins(5, 5, 5, 5);
@@ -1227,8 +1227,8 @@ void TimeSeriesPlotsWidget::setupUI()
 
     gridLayout->addWidget(rvGroup, 1, 0);
 
-    // Bottom-left: Range Rate vs Time plot (shares same limits as velocity)
-    QGroupBox* rangeRateGroup = new QGroupBox("Range Rate plot", this);
+    // Bottom-right: Range Rate vs Time plot (shares same limits as velocity)
+    QGroupBox* rangeRateGroup = new QGroupBox(this);
     QVBoxLayout* rangeRateGroupLayout = new QVBoxLayout(rangeRateGroup);
     rangeRateGroupLayout->setContentsMargins(5, 5, 5, 5);
 
@@ -1269,28 +1269,30 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     filterLayout->addWidget(filterTitleLabel);
     
     // Min Range
-    QLabel* minRangeLabel = new QLabel("Min Range(m)", this);
+    QLabel* minRangeLabel = new QLabel("Min Range", this);
     m_filterMinRangeSpinBox = new QDoubleSpinBox(this);
     m_filterMinRangeSpinBox->setRange(0, 1000);
     m_filterMinRangeSpinBox->setValue(10.0);  // Default: 10m
+    m_filterMinRangeSpinBox->setSuffix(" m");
     m_filterMinRangeSpinBox->setDecimals(1);
     m_filterMinRangeSpinBox->setSingleStep(1.0);
-    m_filterMinRangeSpinBox->setMinimumWidth(100);
-    m_filterMinRangeSpinBox->setMaximumWidth(120);
+    m_filterMinRangeSpinBox->setMinimumWidth(120);
+    m_filterMinRangeSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_filterMinRangeSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onFilterMinRangeChanged);
     filterLayout->addWidget(minRangeLabel);
     filterLayout->addWidget(m_filterMinRangeSpinBox);
     
     // Min Velocity
-    QLabel* minVelocityLabel = new QLabel("Min Velocity(kph)", this);
+    QLabel* minVelocityLabel = new QLabel("Min Velocity", this);
     m_filterMinVelocitySpinBox = new QDoubleSpinBox(this);
     m_filterMinVelocitySpinBox->setRange(0, 500);
     m_filterMinVelocitySpinBox->setValue(30.0);  // Default: 30kph
+    m_filterMinVelocitySpinBox->setSuffix(" km/h");
     m_filterMinVelocitySpinBox->setDecimals(1);
     m_filterMinVelocitySpinBox->setSingleStep(1.0);
-    m_filterMinVelocitySpinBox->setMinimumWidth(100);
-    m_filterMinVelocitySpinBox->setMaximumWidth(120);
+    m_filterMinVelocitySpinBox->setMinimumWidth(120);
+    m_filterMinVelocitySpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_filterMinVelocitySpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onFilterMinVelocityChanged);
     filterLayout->addWidget(minVelocityLabel);
@@ -1302,8 +1304,8 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     m_filterMovingAvgSpinBox->setRange(1, 20);
     m_filterMovingAvgSpinBox->setValue(1);  // Default: 1
     m_filterMovingAvgSpinBox->setSingleStep(1);
-    m_filterMovingAvgSpinBox->setMinimumWidth(80);
-    m_filterMovingAvgSpinBox->setMaximumWidth(100);
+    m_filterMovingAvgSpinBox->setMinimumWidth(120);
+    m_filterMovingAvgSpinBox->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     connect(m_filterMovingAvgSpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &TimeSeriesPlotsWidget::onFilterMovingAvgChanged);
     filterLayout->addWidget(movingAvgLabel);
@@ -1869,7 +1871,7 @@ void TimeSeriesPlotsWidget::applyTheme()
         m_settingsPanel->setStyleSheet(panelStyle);
     }
     
-    // Style the group boxes
+    // Style the group boxes (all without titles for uniform appearance)
     QString groupBoxStyle = QString(
         "QGroupBox {"
         "  background-color: %1;"
@@ -1878,6 +1880,12 @@ void TimeSeriesPlotsWidget::applyTheme()
         "  margin-top: 0px;"
         "  padding: 5px;"
         "  font-weight: bold;"
+        "  color: %3;"
+        "}"
+        "QGroupBox::title {"
+        "  subcontrol-origin: margin;"
+        "  subcontrol-position: top left;"
+        "  padding: 2px 8px;"
         "  color: %3;"
         "}"
     ).arg(groupBgColor, borderColor, textColor);
