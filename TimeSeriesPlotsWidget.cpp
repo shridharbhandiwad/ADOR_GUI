@@ -1803,14 +1803,18 @@ void TimeSeriesPlotsWidget::applyTheme()
     QString bgColor = m_isDarkTheme ? "#1e293b" : "#f8fafc";
     QString borderColor = m_isDarkTheme ? "#334155" : "#e2e8f0";
     QString groupBgColor = m_isDarkTheme ? "#0f172a" : "#ffffff";
-    QString inputBgColor = m_isDarkTheme ? "#0f172a" : "#ffffff";
     QString accentColor = m_isDarkTheme ? "#3b82f6" : "#2563eb";
     QString buttonBgColor = m_isDarkTheme ? "#3b82f6" : "#2563eb";
     QString buttonTextColor = "#ffffff";
     QString buttonHoverColor = m_isDarkTheme ? "#2563eb" : "#1d4ed8";
     
-    QString buttonArrowColor = m_isDarkTheme ? "#94a3b8" : "#64748b";
-    QString buttonBgHoverColor = m_isDarkTheme ? "#1e293b" : "#f1f5f9";
+    // Spinbox colors matching MainWindow enterprise style
+    QString spinBgColor = m_isDarkTheme ? "#0a0a0a" : "#fafafa";
+    QString spinBorderColor = m_isDarkTheme ? "#262626" : "#e5e5e5";
+    QString spinHoverBorderColor = m_isDarkTheme ? "#404040" : "#a3a3a3";
+    QString spinHoverBgColor = m_isDarkTheme ? "#171717" : "#ffffff";
+    QString spinFocusBorderColor = m_isDarkTheme ? "#fafafa" : "#1a1a1a";
+    QString spinButtonHoverBg = m_isDarkTheme ? "rgba(250, 250, 250, 0.15)" : "rgba(26, 26, 26, 0.1)";
     
     QString panelStyle = QString(
         "QWidget {"
@@ -1822,56 +1826,31 @@ void TimeSeriesPlotsWidget::applyTheme()
         "  font-weight: 500;"
         "}"
         "QSpinBox, QDoubleSpinBox {"
-        "  background: %3;"
-        "  border: 1px solid %4;"
-        "  border-radius: 4px;"
-        "  padding: 5px;"
-        "  padding-right: 22px;"
+        "  background-color: %3;"
+        "  border: 2px solid %4;"
+        "  border-radius: 10px;"
+        "  padding: 10px 14px;"
         "  color: %2;"
+        "  font-weight: 500;"
+        "}"
+        "QSpinBox:hover, QDoubleSpinBox:hover {"
+        "  border-color: %5;"
+        "  background-color: %6;"
         "}"
         "QSpinBox:focus, QDoubleSpinBox:focus {"
-        "  border-color: %5;"
-        "  border-width: 2px;"
+        "  border: 2px solid %7;"
+        "  background-color: %6;"
         "}"
-        "QSpinBox::up-button, QDoubleSpinBox::up-button {"
-        "  subcontrol-origin: border;"
-        "  subcontrol-position: top right;"
-        "  width: 20px;"
-        "  border-left: 1px solid %4;"
-        "  border-bottom: 1px solid %4;"
-        "  border-top-right-radius: 4px;"
-        "  background: %3;"
+        "QSpinBox::up-button, QSpinBox::down-button,"
+        "QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {"
+        "  background-color: transparent;"
+        "  border: none;"
+        "  width: 24px;"
+        "  border-radius: 4px;"
         "}"
-        "QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {"
-        "  background: %9;"
-        "}"
-        "QSpinBox::down-button, QDoubleSpinBox::down-button {"
-        "  subcontrol-origin: border;"
-        "  subcontrol-position: bottom right;"
-        "  width: 20px;"
-        "  border-left: 1px solid %4;"
-        "  border-top: 1px solid %4;"
-        "  border-bottom-right-radius: 4px;"
-        "  background: %3;"
-        "}"
-        "QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {"
-        "  background: %9;"
-        "}"
-        "QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {"
-        "  image: none;"
-        "  border-left: 4px solid transparent;"
-        "  border-right: 4px solid transparent;"
-        "  border-bottom: 5px solid %10;"
-        "  width: 0px;"
-        "  height: 0px;"
-        "}"
-        "QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {"
-        "  image: none;"
-        "  border-left: 4px solid transparent;"
-        "  border-right: 4px solid transparent;"
-        "  border-top: 5px solid %10;"
-        "  width: 0px;"
-        "  height: 0px;"
+        "QSpinBox::up-button:hover, QSpinBox::down-button:hover,"
+        "QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {"
+        "  background-color: %8;"
         "}"
         "QCheckBox {"
         "  color: %2;"
@@ -1880,31 +1859,31 @@ void TimeSeriesPlotsWidget::applyTheme()
         "QCheckBox::indicator {"
         "  width: 18px;"
         "  height: 18px;"
-        "  border: 1px solid %4;"
+        "  border: 2px solid %4;"
         "  border-radius: 3px;"
         "  background: %3;"
         "}"
         "QCheckBox::indicator:checked {"
-        "  background: %5;"
-        "  border-color: %5;"
+        "  background: %9;"
+        "  border-color: %9;"
         "}"
         "QPushButton {"
-        "  background-color: %6;"
-        "  color: %7;"
+        "  background-color: %10;"
+        "  color: %11;"
         "  border: none;"
-        "  border-radius: 6px;"
+        "  border-radius: 10px;"
         "  padding: 8px 16px;"
         "  font-weight: 500;"
         "}"
         "QPushButton:hover {"
-        "  background-color: %8;"
+        "  background-color: %12;"
         "}"
         "QPushButton:pressed {"
-        "  background-color: %5;"
+        "  background-color: %9;"
         "}"
-    ).arg(bgColor, textColor, inputBgColor, borderColor, accentColor, 
-          buttonBgColor, buttonTextColor, buttonHoverColor, buttonBgHoverColor)
-     .arg(buttonArrowColor);
+    ).arg(bgColor, textColor, spinBgColor, spinBorderColor, spinHoverBorderColor,
+          spinHoverBgColor, spinFocusBorderColor, spinButtonHoverBg, accentColor)
+     .arg(buttonBgColor, buttonTextColor, buttonHoverColor);
     
     // Style the filter panel
     if (m_filterPanel) {
