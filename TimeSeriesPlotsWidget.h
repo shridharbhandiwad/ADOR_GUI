@@ -411,6 +411,15 @@ private:
     // Trackdata filter logging
     void logFilteredTrackData(const TargetTrack& target, float velocityKmh, float avgRangeM, qint64 currentTime);
     QString createFilterLogFilename();
+    
+    // Filter logging control
+    bool m_isFilterLoggingActive;
+    QFile* m_filterLogFile;
+    QString m_filterLogFilename;
+    
+public slots:
+    void startFilterLogging();
+    void stopFilterLogging();
 };
 
 #endif // TIMESERIESPLOTSWIDGET_H
