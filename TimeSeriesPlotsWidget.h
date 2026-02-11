@@ -13,6 +13,7 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QLabel>
+#include <QLineEdit>
 #include <QGroupBox>
 #include <QMouseEvent>
 #include <QWheelEvent>
