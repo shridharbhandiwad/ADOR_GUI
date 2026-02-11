@@ -11,9 +11,10 @@
 #include <QFile>
 #include <QTextStream>
 #include <cmath>
-
+#include <QDebug>
 // ==================== DigitalRangeRateDisplay Implementation ====================
 
+unsigned long int iCount=0;
 DigitalRangeRateDisplay::DigitalRangeRateDisplay(QWidget *parent)
     : QWidget(parent)
     , m_targetValue(0.0f)
@@ -2405,30 +2406,38 @@ float TimeSeriesPlotsWidget::calculateRangeRate(uint32_t trackId, float currentR
     
     float rangeRate = 0.0f;
     
-    // If we have previous data, calculate range rate
-    if (!history.isEmpty()) {
-        const TrackHistory& lastPoint = history.last();
-        float dR = currentRange - lastPoint.range;  // meters
-        float dT = (timestamp - lastPoint.timestamp) / 1000.0f;  // convert ms to seconds
-        
-        if (dT > 0.001f) {  // Avoid division by zero
-            rangeRate = (dR / dT) * 3.6f;  // Convert m/s to kph
-        }
-    }
-    
-    // Add current point to history
-    TrackHistory current;
-    current.timestamp = timestamp;
-    current.range = currentRange;
-    history.append(current);
-    
-    // Keep only the last 10 points per track to avoid memory growth
-    while (history.size() > 10) {
-        history.removeFirst();
-    }
-    
-    return rangeRate;
-}
+    bool iCntMet = ((iCount%6)==0)?true:false;
+
+       // If we have previous data, calculate range rate
+       if(iCntMet)
+       {
+           qDebug()<<"iCntMet Met"<<iCntMet<<iCount;
+           if (!history.isEmpty()) {
+               const TrackHistory& lastPoint = history.last();
+               float dR = currentRange - lastPoint.range;  // meters
+               float dT = (timestamp - lastPoint.timestamp) / 1000.0f;  // convert ms to seconds
+
+               if (dT > 0.001f) {  // Avoid division by zero
+                   rangeRate = (dR / dT) * 3.6f;  // Convert m/s to kph
+               }
+           }
+
+           // Add current point to history
+           TrackHistory current;
+           current.timestamp = timestamp;
+           current.range = currentRange;
+           history.append(current);
+
+           // Keep only the last 10 points per track to avoid memory growth
+           while (history.size() > 10) {
+               history.removeFirst();
+           }
+       }
+
+       iCount++;
+       return rangeRate;
+   }
+
 
 // Create timestamped filename for filtered trackdata logging
 QString TimeSeriesPlotsWidget::createFilterLogFilename()
