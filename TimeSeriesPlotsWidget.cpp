@@ -10,6 +10,128 @@
 #include <QSettings>
 #include <cmath>
 
+// ==================== DigitalRangeRateDisplay Implementation ====================
+
+DigitalRangeRateDisplay::DigitalRangeRateDisplay(QWidget *parent)
+    : QWidget(parent)
+    , m_targetValue(0.0f)
+    , m_displayValue(0.0f)
+    , m_unit("km/h")
+    , m_isDarkTheme(false)
+{
+    // Set minimum size to ensure display is visible
+    setMinimumSize(240, 100);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    
+    m_valueAnimation = new QPropertyAnimation(this, "displayValue", this);
+    m_valueAnimation->setDuration(300);
+    m_valueAnimation->setEasingCurve(QEasingCurve::OutCubic);
+}
+
+void DigitalRangeRateDisplay::setValue(float value)
+{
+    m_targetValue = value;
+    m_valueAnimation->stop();
+    m_valueAnimation->setStartValue(m_displayValue);
+    m_valueAnimation->setEndValue(value);
+    m_valueAnimation->start();
+}
+
+void DigitalRangeRateDisplay::setDisplayValue(float value)
+{
+    m_displayValue = value;
+    update();
+}
+
+void DigitalRangeRateDisplay::setUnit(const QString& unit)
+{
+    m_unit = unit;
+    update();
+}
+
+void DigitalRangeRateDisplay::setDarkTheme(bool isDark)
+{
+    m_isDarkTheme = isDark;
+    update();
+}
+
+void DigitalRangeRateDisplay::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event)
+    
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::TextAntialiasing, true);
+    
+    int radius = 10;
+    QRect displayRect = rect().adjusted(2, 2, -2, -2);
+    
+    // Enterprise background with refined gradient (similar to Top Speed style)
+    QLinearGradient bgGradient(0, 0, 0, height());
+    if (m_isDarkTheme) {
+        bgGradient.setColorAt(0, QColor(20, 20, 28));
+        bgGradient.setColorAt(0.5, QColor(16, 16, 24));
+        bgGradient.setColorAt(1, QColor(12, 12, 20));
+    } else {
+        bgGradient.setColorAt(0, QColor(250, 250, 254));
+        bgGradient.setColorAt(0.5, QColor(246, 246, 252));
+        bgGradient.setColorAt(1, QColor(242, 242, 248));
+    }
+    
+    QColor borderColor = m_isDarkTheme ? QColor(48, 48, 60) : QColor(210, 210, 224);
+    
+    // Subtle inset shadow
+    QColor insetShadow = m_isDarkTheme ? QColor(0, 0, 0, 40) : QColor(0, 0, 0, 10);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(insetShadow);
+    painter.drawRoundedRect(displayRect.adjusted(0, 0, 1, 1), radius, radius);
+    
+    painter.setPen(QPen(borderColor, 1.5));
+    painter.setBrush(bgGradient);
+    painter.drawRoundedRect(displayRect, radius, radius);
+    
+    // Speed value - large, bold, enterprise font (like Top Speed display)
+    QColor textColor = m_isDarkTheme ? QColor(235, 235, 245) : QColor(28, 28, 42);
+    QColor unitColor = m_isDarkTheme ? QColor(130, 130, 145) : QColor(90, 90, 108);
+    
+    // Use larger font for better visibility
+    int fontSize = qMax(qMin(width(), height()) / 3, 24);
+    QFont valueFont("Segoe UI", fontSize, QFont::Bold);
+    valueFont.setLetterSpacing(QFont::AbsoluteSpacing, 2.0);
+    painter.setFont(valueFont);
+    painter.setPen(textColor);
+    
+    QString valueText = QString::number(static_cast<int>(m_displayValue));
+    QFontMetrics fm(valueFont);
+    QRect valueRect = fm.boundingRect(valueText);
+    
+    int totalWidth = valueRect.width() + 12;
+    
+    // Unit text
+    int unitFontSize = qMax(fontSize / 3, 12);
+    QFont unitFont("Segoe UI", unitFontSize, QFont::Medium);
+    unitFont.setLetterSpacing(QFont::AbsoluteSpacing, 1.0);
+    QFontMetrics unitFm(unitFont);
+    QRect unitRect = unitFm.boundingRect(m_unit);
+    totalWidth += unitRect.width();
+    
+    int startX = (width() - totalWidth) / 2;
+    
+    painter.drawText(
+        startX,
+        height() / 2 + valueRect.height() / 3,
+        valueText
+    );
+    
+    painter.setFont(unitFont);
+    painter.setPen(unitColor);
+    painter.drawText(
+        startX + valueRect.width() + 10,
+        height() / 2 + valueRect.height() / 3 - (valueRect.height() - unitRect.height()) / 2,
+        m_unit
+    );
+}
+
 // ==================== TimeSeriesPlotWidget Implementation ====================
 
 TimeSeriesPlotWidget::TimeSeriesPlotWidget(QWidget *parent)
@@ -1329,13 +1451,13 @@ void TimeSeriesPlotsWidget::setupFilterControls()
             this, &TimeSeriesPlotsWidget::onFilterDirectionChanged);
     filterLayout->addWidget(m_filterApproachingCheckBox);
     
-    // Range Rate Moving Average Display
-    m_rangeRateLabel = new QLabel("Range Rate", this);
-    m_rangeRateDisplay = new QLineEdit(this);
-    m_rangeRateDisplay->setReadOnly(true);
-    m_rangeRateDisplay->setMinimumWidth(120);
-    m_rangeRateDisplay->setAlignment(Qt::AlignCenter);
-    m_rangeRateDisplay->setText("0.0 km/h");
+    // Range Rate Moving Average Display (styled like Top Speed)
+    m_rangeRateLabel = new QLabel("RANGE RATE", this);
+    QFont rangeRateLabelFont("Segoe UI", 10, QFont::Bold);
+    m_rangeRateLabel->setFont(rangeRateLabelFont);
+    m_rangeRateDisplay = new DigitalRangeRateDisplay(this);
+    m_rangeRateDisplay->setMinimumSize(240, 100);
+    m_rangeRateDisplay->setValue(0);
     filterLayout->addWidget(m_rangeRateLabel);
     filterLayout->addWidget(m_rangeRateDisplay);
     
@@ -1568,7 +1690,7 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         
         // Update range rate display
         if (m_rangeRateDisplay) {
-            m_rangeRateDisplay->setText(QString::number(m_rangeRateMovingAvg, 'f', 2) + " km/h");
+            m_rangeRateDisplay->setValue(m_rangeRateMovingAvg);
         }
         
         // Update range-velocity plot (preserves velocity sign)
@@ -1635,6 +1757,9 @@ void TimeSeriesPlotsWidget::setDarkTheme(bool isDark)
     }
     if (m_rangeRatePlot) {
         m_rangeRatePlot->setDarkTheme(isDark);
+    }
+    if (m_rangeRateDisplay) {
+        m_rangeRateDisplay->setDarkTheme(isDark);
     }
     
     applyTheme();
@@ -1964,6 +2089,26 @@ void TimeSeriesPlotsWidget::applyTheme()
     // Style the filter panel
     if (m_filterPanel) {
         m_filterPanel->setStyleSheet(panelStyle);
+    }
+    
+    // Apply theme to Range Rate display and label
+    if (m_rangeRateDisplay) {
+        m_rangeRateDisplay->setDarkTheme(m_isDarkTheme);
+    }
+    
+    // Style the Range Rate label (like TOP SPEED header)
+    if (m_rangeRateLabel) {
+        m_rangeRateLabel->setStyleSheet(QString(
+            "QLabel {"
+            "  color: %1;"
+            "  background: transparent;"
+            "  font-family: 'Segoe UI', 'Helvetica Neue', 'Arial', sans-serif;"
+            "  font-size: 14px;"
+            "  font-weight: 700;"
+            "  letter-spacing: 3px;"
+            "  padding: 4px 8px;"
+            "}"
+        ).arg(textColor));
     }
     
     // Style the settings panel

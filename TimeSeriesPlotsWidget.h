@@ -19,6 +19,7 @@
 #include <QWheelEvent>
 #include <QToolTip>
 #include <QMap>
+#include <QPropertyAnimation>
 #include "DataStructures.h"
 
 // Structure to hold time series data point
@@ -243,6 +244,32 @@ private:
     static constexpr int MAX_DATA_POINTS = 500;
 };
 
+// Digital display widget with animated numbers (similar to Top Speed style)
+class DigitalRangeRateDisplay : public QWidget
+{
+    Q_OBJECT
+    Q_PROPERTY(float displayValue READ getDisplayValue WRITE setDisplayValue)
+
+public:
+    explicit DigitalRangeRateDisplay(QWidget *parent = nullptr);
+    
+    void setValue(float value);
+    float getDisplayValue() const { return m_displayValue; }
+    void setDisplayValue(float value);
+    void setUnit(const QString& unit);
+    void setDarkTheme(bool isDark);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    float m_targetValue;
+    float m_displayValue;
+    QString m_unit;
+    bool m_isDarkTheme;
+    QPropertyAnimation* m_valueAnimation;
+};
+
 // Structure to store previous track data for range rate calculation
 struct TrackHistory {
     qint64 timestamp;
@@ -350,7 +377,7 @@ private:
     
     // Range Rate Moving Average Display
     QLabel* m_rangeRateLabel;
-    QLineEdit* m_rangeRateDisplay;
+    DigitalRangeRateDisplay* m_rangeRateDisplay;
     
     // Theme
     bool m_isDarkTheme;
