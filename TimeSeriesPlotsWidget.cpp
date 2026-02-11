@@ -8,6 +8,8 @@
 #include <QLabel>
 #include <QFrame>
 #include <QSettings>
+#include <QFile>
+#include <QTextStream>
 #include <cmath>
 
 // ==================== DigitalRangeRateDisplay Implementation ====================
@@ -1680,6 +1682,9 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         float avgRangeM = applyMovingAverage(target.target_id, rangeM);
         float avgVelocityKmh = applyMovingAverage(target.target_id + 1000000, velocityKmh);  // Use offset ID for velocity buffer
         
+        // Log filtered trackdata to D drive (after filters pass, before range rate computation)
+        logFilteredTrackData(target, velocityKmh, avgRangeM, currentTime);
+        
         // Calculate range rate (dR/dT)
         float rangeRateKmh = calculateRangeRate(target.target_id, avgRangeM, currentTime);
         
@@ -2423,4 +2428,58 @@ float TimeSeriesPlotsWidget::calculateRangeRate(uint32_t trackId, float currentR
     }
     
     return rangeRate;
+}
+
+// Create timestamped filename for filtered trackdata logging
+QString TimeSeriesPlotsWidget::createFilterLogFilename()
+{
+    // Get current system time in format: YYYYMMDD_HHMMSS
+    QDateTime now = QDateTime::currentDateTime();
+    QString timestamp = now.toString("yyyyMMdd_HHmmss");
+    
+    // Create filename: trackdata_filter_<timestamp>.csv
+    QString filename = QString("trackdata_filter_%1.csv").arg(timestamp);
+    
+    // Construct full path to D drive
+    QString fullPath = QString("D:/%1").arg(filename);
+    
+    return fullPath;
+}
+
+// Log filtered trackdata to CSV file on D drive
+void TimeSeriesPlotsWidget::logFilteredTrackData(const TargetTrack& target, float velocityKmh, float avgRangeM, qint64 currentTime)
+{
+    // Create filename with system time (creates one file per second based on timestamp)
+    QString filename = createFilterLogFilename();
+    
+    QFile file(filename);
+    bool fileExists = file.exists();
+    
+    // Open file in append mode
+    if (!file.open(QIODevice::Append | QIODevice::Text)) {
+        qWarning() << "Failed to open trackdata filter log file:" << filename;
+        return;
+    }
+    
+    QTextStream out(&file);
+    
+    // Write CSV header if this is a new file
+    if (!fileExists) {
+        out << "Timestamp_ms,Target_ID,Level_dB,Range_m,Azimuth_deg,Elevation_deg,Radial_Speed_m_s,Azimuth_Speed_deg_s,Elevation_Speed_deg_s,Velocity_kmh,Avg_Range_m\n";
+    }
+    
+    // Write data row
+    out << currentTime << ","
+        << target.target_id << ","
+        << target.level << ","
+        << target.radius << ","
+        << target.azimuth << ","
+        << target.elevation << ","
+        << target.radial_speed << ","
+        << target.azimuth_speed << ","
+        << target.elevation_speed << ","
+        << velocityKmh << ","
+        << avgRangeM << "\n";
+    
+    file.close();
 }

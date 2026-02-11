@@ -407,6 +407,10 @@ private:
     
     // Cleanup timer to periodically remove old data
     QTimer* m_cleanupTimer;
+    
+    // Trackdata filter logging
+    void logFilteredTrackData(const TargetTrack& target, float velocityKmh, float avgRangeM, qint64 currentTime);
+    QString createFilterLogFilename();
 };
 
 #endif // TIMESERIESPLOTSWIDGET_H
