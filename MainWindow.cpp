@@ -3961,6 +3961,11 @@ void MainWindow::onStartLoggingClicked()
     // Set logging state to active
     m_isLogging = true;
     
+    // Start filter logging in TimeSeriesPlotsWidget
+    if (m_timeSeriesPlotsWidget) {
+        m_timeSeriesPlotsWidget->startFilterLogging();
+    }
+    
     // Update UI
     updateLoggingStatus();
 }
@@ -3974,6 +3979,11 @@ void MainWindow::onStopLoggingClicked()
         m_trackDataFile = nullptr;
         
         qDebug() << "Logging stopped. Log file saved:" << m_currentLogFilename;
+    }
+    
+    // Stop filter logging in TimeSeriesPlotsWidget
+    if (m_timeSeriesPlotsWidget) {
+        m_timeSeriesPlotsWidget->stopFilterLogging();
     }
     
     // Set logging state to inactive

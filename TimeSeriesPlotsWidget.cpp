@@ -1269,6 +1269,9 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_rangeRateMovingAvg(0.0f)
     , m_lastDataReceivedTime(0)
     , m_cleanupTimer(nullptr)
+    , m_isFilterLoggingActive(false)
+    , m_filterLogFile(nullptr)
+    , m_filterLogFilename("")
 {
     setupUI();
     loadSettings();  // Load saved settings on startup
@@ -1296,6 +1299,9 @@ TimeSeriesPlotsWidget::~TimeSeriesPlotsWidget()
     if (m_cleanupTimer) {
         m_cleanupTimer->stop();
     }
+    
+    // Close filter log file if open
+    stopFilterLogging();
 }
 
 void TimeSeriesPlotsWidget::setupUI()
@@ -2458,24 +2464,12 @@ QString TimeSeriesPlotsWidget::createFilterLogFilename()
 // Log filtered trackdata to CSV file on D drive
 void TimeSeriesPlotsWidget::logFilteredTrackData(const TargetTrack& target, float velocityKmh, float avgRangeM, qint64 currentTime)
 {
-    // Create filename with system time (creates one file per second based on timestamp)
-    QString filename = createFilterLogFilename();
-    
-    QFile file(filename);
-    bool fileExists = file.exists();
-    
-    // Open file in append mode
-    if (!file.open(QIODevice::Append | QIODevice::Text)) {
-        qWarning() << "Failed to open trackdata filter log file:" << filename;
+    // Only log if filter logging is active
+    if (!m_isFilterLoggingActive || !m_filterLogFile) {
         return;
     }
     
-    QTextStream out(&file);
-    
-    // Write CSV header if this is a new file
-    if (!fileExists) {
-        out << "Timestamp_ms,Target_ID,Level_dB,Range_m,Azimuth_deg,Elevation_deg,Radial_Speed_m_s,Azimuth_Speed_deg_s,Elevation_Speed_deg_s,Velocity_kmh,Avg_Range_m\n";
-    }
+    QTextStream out(m_filterLogFile);
     
     // Write data row
     out << currentTime << ","
@@ -2490,5 +2484,53 @@ void TimeSeriesPlotsWidget::logFilteredTrackData(const TargetTrack& target, floa
         << velocityKmh << ","
         << avgRangeM << "\n";
     
-    file.close();
+    // Flush to ensure data is written immediately
+    out.flush();
+}
+
+// Start filter logging
+void TimeSeriesPlotsWidget::startFilterLogging()
+{
+    // If already logging, close existing file first
+    if (m_filterLogFile) {
+        stopFilterLogging();
+    }
+    
+    // Create timestamped filename
+    m_filterLogFilename = createFilterLogFilename();
+    
+    // Create and open new log file
+    m_filterLogFile = new QFile(m_filterLogFilename);
+    
+    if (!m_filterLogFile->open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open trackdata filter log file:" << m_filterLogFilename;
+        delete m_filterLogFile;
+        m_filterLogFile = nullptr;
+        return;
+    }
+    
+    // Write CSV header
+    QTextStream out(m_filterLogFile);
+    out << "Timestamp_ms,Target_ID,Level_dB,Range_m,Azimuth_deg,Elevation_deg,Radial_Speed_m_s,Azimuth_Speed_deg_s,Elevation_Speed_deg_s,Velocity_kmh,Avg_Range_m\n";
+    out.flush();
+    
+    // Set logging active
+    m_isFilterLoggingActive = true;
+    
+    qDebug() << "Filter logging started. File:" << m_filterLogFilename;
+}
+
+// Stop filter logging
+void TimeSeriesPlotsWidget::stopFilterLogging()
+{
+    if (m_filterLogFile) {
+        m_filterLogFile->close();
+        delete m_filterLogFile;
+        m_filterLogFile = nullptr;
+        
+        qDebug() << "Filter logging stopped. File saved:" << m_filterLogFilename;
+    }
+    
+    m_isFilterLoggingActive = false;
+    m_filterLogFilename = "";
 }
