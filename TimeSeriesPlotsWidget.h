@@ -347,6 +347,10 @@ private:
     QCheckBox* m_filterRecedingCheckBox;
     QCheckBox* m_filterApproachingCheckBox;
     
+    // Range Rate Moving Average Display
+    QLabel* m_rangeRateLabel;
+    QLineEdit* m_rangeRateDisplay;
+    
     // Theme
     bool m_isDarkTheme;
     
@@ -364,6 +368,11 @@ private:
     // Track history for range rate calculation and moving average
     QMap<uint32_t, QVector<TrackHistory>> m_trackHistory;
     QMap<uint32_t, QVector<float>> m_movingAvgBuffer;
+    
+    // Range rate moving average calculation
+    float m_previousRangeRate;
+    float m_currentRangeRate;
+    float m_rangeRateMovingAvg;
     
     // Track last data received time to detect when no data is coming in
     qint64 m_lastDataReceivedTime;

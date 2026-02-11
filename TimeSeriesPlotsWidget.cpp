@@ -1129,6 +1129,8 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_filterMovingAvgSpinBox(nullptr)
     , m_filterRecedingCheckBox(nullptr)
     , m_filterApproachingCheckBox(nullptr)
+    , m_rangeRateLabel(nullptr)
+    , m_rangeRateDisplay(nullptr)
     , m_isDarkTheme(false)
     , m_maxRange(100.0f)
     , m_maxVelocity(100.0f)
@@ -1137,6 +1139,9 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_filterMovingAvgSize(1)
     , m_filterReceding(true)
     , m_filterApproaching(true)
+    , m_previousRangeRate(0.0f)
+    , m_currentRangeRate(0.0f)
+    , m_rangeRateMovingAvg(0.0f)
     , m_lastDataReceivedTime(0)
     , m_cleanupTimer(nullptr)
 {
@@ -1323,6 +1328,16 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     connect(m_filterApproachingCheckBox, &QCheckBox::toggled,
             this, &TimeSeriesPlotsWidget::onFilterDirectionChanged);
     filterLayout->addWidget(m_filterApproachingCheckBox);
+    
+    // Range Rate Moving Average Display
+    m_rangeRateLabel = new QLabel("Range Rate", this);
+    m_rangeRateDisplay = new QLineEdit(this);
+    m_rangeRateDisplay->setReadOnly(true);
+    m_rangeRateDisplay->setMinimumWidth(120);
+    m_rangeRateDisplay->setAlignment(Qt::AlignCenter);
+    m_rangeRateDisplay->setText("0.0 km/h");
+    filterLayout->addWidget(m_rangeRateLabel);
+    filterLayout->addWidget(m_rangeRateDisplay);
     
     filterLayout->addStretch();
 }
@@ -1545,6 +1560,16 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         
         // Calculate range rate (dR/dT)
         float rangeRateKmh = calculateRangeRate(target.target_id, avgRangeM, currentTime);
+        
+        // Calculate moving average of range rate: (previous + current) / 2
+        m_currentRangeRate = rangeRateKmh;
+        m_rangeRateMovingAvg = (m_previousRangeRate + m_currentRangeRate) / 2.0f;
+        m_previousRangeRate = m_currentRangeRate;
+        
+        // Update range rate display
+        if (m_rangeRateDisplay) {
+            m_rangeRateDisplay->setText(QString::number(m_rangeRateMovingAvg, 'f', 2) + " km/h");
+        }
         
         // Update range-velocity plot (preserves velocity sign)
         if (m_rangeVelocityPlot) {
@@ -1825,6 +1850,26 @@ void TimeSeriesPlotsWidget::applyTheme()
         "QLabel {"
         "  color: %2;"
         "  font-weight: 500;"
+        "}"
+        "QLineEdit {"
+        "  background-color: %3;"
+        "  border: 1px solid %4;"
+        "  border-radius: 4px;"
+        "  padding: 5px;"
+        "  color: %2;"
+        "  font-weight: 500;"
+        "}"
+        "QLineEdit:hover {"
+        "  border-color: %5;"
+        "  background-color: %6;"
+        "}"
+        "QLineEdit:focus {"
+        "  border-color: %7;"
+        "  border-width: 2px;"
+        "}"
+        "QLineEdit:read-only {"
+        "  background-color: %3;"
+        "  color: %2;"
         "}"
         "QSpinBox, QDoubleSpinBox {"
         "  background-color: %3;"
