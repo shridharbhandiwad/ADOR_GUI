@@ -1700,9 +1700,9 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         m_rangeRateMovingAvg = (m_previousRangeRate + m_currentRangeRate) / 2.0f;
         m_previousRangeRate = m_currentRangeRate;
         
-        // Update range rate display
+        // Update velocity display (show velocity instead of range rate)
         if (m_rangeRateDisplay) {
-            m_rangeRateDisplay->setValue(m_rangeRateMovingAvg);
+            m_rangeRateDisplay->setValue(avgVelocityKmh);
         }
         
         // Update range-velocity plot (preserves velocity sign)
