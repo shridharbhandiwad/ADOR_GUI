@@ -56,6 +56,7 @@ private slots:
     void onLoadFromFile();
     void onSaveToFile();
     void refreshTrackTable();  // Auto-refresh track table (sync with current frame data)
+    void onDataTimeout();      // Handle data timeout - clear displays when no data received
 
     // DSP parameter slots
     void onRangeAvgEdited();
@@ -164,6 +165,10 @@ private:
     QTimer* m_trackRefreshTimer;
     static constexpr int TRACK_REFRESH_INTERVAL_MS = 500;  // Faster refresh for ephemeral sync
     static constexpr int TRACK_TABLE_MINIMUM_ROWS = 10;    // Minimum rows to display in track table
+    
+    // Data timeout timer (for clearing displays when no data is received)
+    QTimer* m_dataTimeoutTimer;
+    static constexpr int DATA_TIMEOUT_MS = 3000;  // 3 seconds timeout
     
     // Frame-based track collection for ephemeral synchronization
     // Tracks are only shown when present in the current frame

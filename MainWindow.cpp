@@ -58,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_udpSocket(nullptr)
     , m_updateTimer(nullptr)
     , m_trackRefreshTimer(nullptr)
+    , m_dataTimeoutTimer(nullptr)
     , m_saveSettingsButton(nullptr)
     , m_loadFromFileButton(nullptr)
     , m_saveToFileButton(nullptr)
@@ -940,6 +941,12 @@ void MainWindow::setupTimer()
     connect(m_trackRefreshTimer, &QTimer::timeout,
             this, &MainWindow::refreshTrackTable);
     m_trackRefreshTimer->start(TRACK_REFRESH_INTERVAL_MS);
+    
+    // Setup data timeout timer - clears displays when no data received
+    m_dataTimeoutTimer = new QTimer(this);
+    m_dataTimeoutTimer->setSingleShot(true);  // One-shot timer
+    connect(m_dataTimeoutTimer, &QTimer::timeout,
+            this, &MainWindow::onDataTimeout);
 }
 
 void MainWindow::updateDisplay()
@@ -1021,6 +1028,11 @@ void MainWindow::readPendingDatagrams()
 //==============================================================================
 void MainWindow::parseBinaryRawData(const QByteArray& datagram)
 {
+    // Reset data timeout timer - we received data
+    if (m_dataTimeoutTimer) {
+        m_dataTimeoutTimer->start(DATA_TIMEOUT_MS);
+    }
+    
     if (datagram.size() < static_cast<int>(sizeof(RawDataHeader_t))) {
         qWarning() << "Datagram too small for binary header";
         return;
@@ -1120,6 +1132,11 @@ void MainWindow::processRawDataFrame(const RawDataHeader_t* header,
 
 void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
 {
+    // Reset data timeout timer - we received data
+    if (m_dataTimeoutTimer) {
+        m_dataTimeoutTimer->start(DATA_TIMEOUT_MS);
+    }
+    
     if (datagram.size() < static_cast<int>(sizeof(TargetDataPacket_t))) {
         qWarning() << "Datagram too small for binary target packet";
         return;
@@ -1411,6 +1428,45 @@ void MainWindow::refreshTrackTable()
     qDebug() << "Track table refreshed. Total tracks:" << m_currentTargets.numTracks
              << ", Filtered tracks:" << filteredTargets.numTracks
              << ", Display rows:" << rowCount << "(ephemeral sync mode)";
+}
+
+void MainWindow::onDataTimeout()
+{
+    // Data timeout occurred - clear all displays
+    qDebug() << "Data timeout - clearing PPI, Track Table, and FFT displays";
+    
+    // Clear target data
+    m_currentTargets.targets.clear();
+    m_currentTargets.numTracks = 0;
+    m_frameTargets.clear();
+    m_expectedNumTargets = 0;
+    m_receivedTargetCount = 0;
+    
+    // Clear PPI display
+    if (m_ppiWidget) {
+        m_ppiWidget->updateTargets(m_currentTargets);
+    }
+    
+    // Clear FFT display
+    if (m_fftWidget) {
+        m_fftWidget->updateTargets(m_currentTargets);
+    }
+    
+    // Clear Track Table
+    if (m_trackTable) {
+        for (int i = 0; i < TRACK_TABLE_MINIMUM_ROWS; ++i) {
+            m_trackTable->setItem(i, 0, new QTableWidgetItem(""));
+            m_trackTable->setItem(i, 1, new QTableWidgetItem(""));
+            m_trackTable->setItem(i, 2, new QTableWidgetItem(""));
+            m_trackTable->setItem(i, 3, new QTableWidgetItem(""));
+        }
+        m_trackTable->resizeColumnsToContents();
+    }
+    
+    // Update status
+    m_statusLabel->setText("Status: No data (timeout)");
+    
+    qDebug() << "All displays cleared due to data timeout";
 }
 
 //==============================================================================
