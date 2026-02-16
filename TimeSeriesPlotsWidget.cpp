@@ -1461,7 +1461,7 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     filterLayout->addWidget(m_filterApproachingCheckBox);
     
     // Range Rate Moving Average Display (styled like Top Speed)
-    m_rangeRateLabel = new QLabel("RANGE RATE", this);
+    m_rangeRateLabel = new QLabel("VELOCITY", this);
     QFont rangeRateLabelFont("Segoe UI", 10, QFont::Bold);
     m_rangeRateLabel->setFont(rangeRateLabelFont);
     m_rangeRateDisplay = new DigitalRangeRateDisplay(this);
