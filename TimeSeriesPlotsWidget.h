@@ -258,9 +258,14 @@ public:
     void setDisplayValue(float value);
     void setUnit(const QString& unit);
     void setDarkTheme(bool isDark);
+    void clearValue();  // Clear display and show N/A
+    void setDataTimeout(int milliseconds);  // Set timeout for data staleness
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+
+private slots:
+    void onDataTimeout();
 
 private:
     float m_targetValue;
@@ -268,6 +273,9 @@ private:
     QString m_unit;
     bool m_isDarkTheme;
     QPropertyAnimation* m_valueAnimation;
+    bool m_hasValidData;  // Flag to track if data is valid
+    QTimer* m_dataTimeoutTimer;  // Timer to detect stale data
+    int m_dataTimeoutMs;  // Timeout duration in milliseconds
 };
 
 // Structure to store previous track data for range rate calculation

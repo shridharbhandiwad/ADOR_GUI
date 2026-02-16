@@ -21,6 +21,8 @@ DigitalRangeRateDisplay::DigitalRangeRateDisplay(QWidget *parent)
     , m_displayValue(0.0f)
     , m_unit("km/h")
     , m_isDarkTheme(false)
+    , m_hasValidData(false)
+    , m_dataTimeoutMs(3000)  // Default 3 seconds timeout
 {
     // Set minimum size to ensure display is visible
     setMinimumSize(240, 100);
@@ -29,11 +31,22 @@ DigitalRangeRateDisplay::DigitalRangeRateDisplay(QWidget *parent)
     m_valueAnimation = new QPropertyAnimation(this, "displayValue", this);
     m_valueAnimation->setDuration(300);
     m_valueAnimation->setEasingCurve(QEasingCurve::OutCubic);
+    
+    // Setup data timeout timer
+    m_dataTimeoutTimer = new QTimer(this);
+    m_dataTimeoutTimer->setSingleShot(true);
+    connect(m_dataTimeoutTimer, &QTimer::timeout, this, &DigitalRangeRateDisplay::onDataTimeout);
 }
 
 void DigitalRangeRateDisplay::setValue(float value)
 {
     m_targetValue = value;
+    m_hasValidData = true;
+    
+    // Restart the timeout timer whenever new data arrives
+    m_dataTimeoutTimer->stop();
+    m_dataTimeoutTimer->start(m_dataTimeoutMs);
+    
     m_valueAnimation->stop();
     m_valueAnimation->setStartValue(m_displayValue);
     m_valueAnimation->setEndValue(value);
@@ -55,6 +68,29 @@ void DigitalRangeRateDisplay::setUnit(const QString& unit)
 void DigitalRangeRateDisplay::setDarkTheme(bool isDark)
 {
     m_isDarkTheme = isDark;
+    update();
+}
+
+void DigitalRangeRateDisplay::clearValue()
+{
+    m_hasValidData = false;
+    m_dataTimeoutTimer->stop();
+    update();
+}
+
+void DigitalRangeRateDisplay::setDataTimeout(int milliseconds)
+{
+    m_dataTimeoutMs = milliseconds;
+    if (m_hasValidData && m_dataTimeoutTimer->isActive()) {
+        // Restart timer with new timeout value
+        m_dataTimeoutTimer->start(m_dataTimeoutMs);
+    }
+}
+
+void DigitalRangeRateDisplay::onDataTimeout()
+{
+    // Data has timed out, mark as invalid and show N/A
+    m_hasValidData = false;
     update();
 }
 
@@ -96,43 +132,60 @@ void DigitalRangeRateDisplay::paintEvent(QPaintEvent *event)
     // Speed value - large, bold, enterprise font (like Top Speed display)
     QColor textColor = m_isDarkTheme ? QColor(235, 235, 245) : QColor(28, 28, 42);
     QColor unitColor = m_isDarkTheme ? QColor(130, 130, 145) : QColor(90, 90, 108);
+    QColor naColor = m_isDarkTheme ? QColor(160, 160, 175) : QColor(110, 110, 128);
     
     // Use larger font for better visibility
     int fontSize = qMax(qMin(width(), height()) / 3, 24);
     QFont valueFont("Segoe UI", fontSize, QFont::Bold);
     valueFont.setLetterSpacing(QFont::AbsoluteSpacing, 2.0);
     painter.setFont(valueFont);
-    painter.setPen(textColor);
     
-    QString valueText = QString::number(static_cast<int>(m_displayValue));
-    QFontMetrics fm(valueFont);
-    QRect valueRect = fm.boundingRect(valueText);
-    
-    int totalWidth = valueRect.width() + 12;
-    
-    // Unit text
-    int unitFontSize = qMax(fontSize / 3, 12);
-    QFont unitFont("Segoe UI", unitFontSize, QFont::Medium);
-    unitFont.setLetterSpacing(QFont::AbsoluteSpacing, 1.0);
-    QFontMetrics unitFm(unitFont);
-    QRect unitRect = unitFm.boundingRect(m_unit);
-    totalWidth += unitRect.width();
-    
-    int startX = (width() - totalWidth) / 2;
-    
-    painter.drawText(
-        startX,
-        height() / 2 + valueRect.height() / 3,
-        valueText
-    );
-    
-    painter.setFont(unitFont);
-    painter.setPen(unitColor);
-    painter.drawText(
-        startX + valueRect.width() + 10,
-        height() / 2 + valueRect.height() / 3 - (valueRect.height() - unitRect.height()) / 2,
-        m_unit
-    );
+    // Check if we have valid data
+    if (!m_hasValidData) {
+        // Display "N/A" when no valid data is available
+        painter.setPen(naColor);
+        QString naText = "N/A";
+        QFontMetrics fm(valueFont);
+        QRect naRect = fm.boundingRect(naText);
+        int naX = (width() - naRect.width()) / 2;
+        painter.drawText(
+            naX,
+            height() / 2 + naRect.height() / 3,
+            naText
+        );
+    } else {
+        // Display the actual value
+        painter.setPen(textColor);
+        QString valueText = QString::number(static_cast<int>(m_displayValue));
+        QFontMetrics fm(valueFont);
+        QRect valueRect = fm.boundingRect(valueText);
+        
+        int totalWidth = valueRect.width() + 12;
+        
+        // Unit text
+        int unitFontSize = qMax(fontSize / 3, 12);
+        QFont unitFont("Segoe UI", unitFontSize, QFont::Medium);
+        unitFont.setLetterSpacing(QFont::AbsoluteSpacing, 1.0);
+        QFontMetrics unitFm(unitFont);
+        QRect unitRect = unitFm.boundingRect(m_unit);
+        totalWidth += unitRect.width();
+        
+        int startX = (width() - totalWidth) / 2;
+        
+        painter.drawText(
+            startX,
+            height() / 2 + valueRect.height() / 3,
+            valueText
+        );
+        
+        painter.setFont(unitFont);
+        painter.setPen(unitColor);
+        painter.drawText(
+            startX + valueRect.width() + 10,
+            height() / 2 + valueRect.height() / 3 - (valueRect.height() - unitRect.height()) / 2,
+            m_unit
+        );
+    }
 }
 
 // ==================== TimeSeriesPlotWidget Implementation ====================
@@ -1639,6 +1692,11 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         // }
         // Don't clear range-velocity plot as it accumulates data over time
         
+        // Clear the velocity digital display to show N/A
+        if (m_rangeRateDisplay) {
+            m_rangeRateDisplay->clearValue();
+        }
+        
         m_lastDataReceivedTime = 0;
         return;
     }
@@ -1739,6 +1797,11 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         //     }
         //     m_lastDataReceivedTime = 0;
         // }
+        
+        // Clear the velocity digital display to show N/A when no tracks pass filter
+        if (m_rangeRateDisplay) {
+            m_rangeRateDisplay->clearValue();
+        }
         
         // Trigger a repaint to update the time axis
         if (m_velocityTimePlot) {
@@ -1954,6 +2017,11 @@ void TimeSeriesPlotsWidget::clearAllData()
     }
     if (m_rangeRatePlot) {
         m_rangeRatePlot->clearData();
+    }
+    
+    // Clear the velocity digital display to show N/A
+    if (m_rangeRateDisplay) {
+        m_rangeRateDisplay->clearValue();
     }
     
     // Clear track history and moving average buffers
