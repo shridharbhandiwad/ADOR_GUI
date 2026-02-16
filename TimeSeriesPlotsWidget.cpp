@@ -1369,7 +1369,7 @@ void TimeSeriesPlotsWidget::setupUI()
     rangeRateGroupLayout->setContentsMargins(5, 5, 5, 5);
 
     m_rangeRatePlot = new TimeSeriesPlotWidget(this);
-    m_rangeRatePlot->setYAxisLabel("Range Rate");
+    m_rangeRatePlot->setYAxisLabel("Velocity");
     m_rangeRatePlot->setYAxisUnit("km/h");
     m_rangeRatePlot->setYAxisRange(-40, 40);  // Default range: same as velocity (-40 to +40 km/h)
     m_rangeRatePlot->setTimeWindowSeconds(60);
@@ -1461,7 +1461,7 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     filterLayout->addWidget(m_filterApproachingCheckBox);
     
     // Range Rate Moving Average Display (styled like Top Speed)
-    m_rangeRateLabel = new QLabel("RANGE RATE", this);
+    m_rangeRateLabel = new QLabel("VELOCITY", this);
     QFont rangeRateLabelFont("Segoe UI", 10, QFont::Bold);
     m_rangeRateLabel->setFont(rangeRateLabelFont);
     m_rangeRateDisplay = new DigitalRangeRateDisplay(this);
@@ -1700,9 +1700,9 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         m_rangeRateMovingAvg = (m_previousRangeRate + m_currentRangeRate) / 2.0f;
         m_previousRangeRate = m_currentRangeRate;
         
-        // Update range rate display
+        // Update velocity display (show velocity instead of range rate)
         if (m_rangeRateDisplay) {
-            m_rangeRateDisplay->setValue(m_rangeRateMovingAvg);
+            m_rangeRateDisplay->setValue(avgVelocityKmh);
         }
         
         // Update range-velocity plot (preserves velocity sign)
