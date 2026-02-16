@@ -983,8 +983,8 @@ void MainWindow::readPendingDatagrams()
         datagram.resize(m_udpSocket->pendingDatagramSize());
         m_udpSocket->readDatagram(datagram.data(), datagram.size());
 
-        qDebug() << "========================================";
-        qDebug() << "Received datagram of size:" << datagram.size() << "bytes";
+        //qDebug() << "========================================";
+        //qDebug() << "Received datagram of size:" << datagram.size() << "bytes";
 
         // Check if it's a binary packet (minimum 4 bytes for message_type)
         if (datagram.size() >= 4) {
@@ -994,7 +994,7 @@ void MainWindow::readPendingDatagrams()
 
             if (msg_type == 0x01) {
                 // Binary raw ADC data packet
-                qDebug() << "Detected binary RAW DATA packet (0x01)";
+                //qDebug() << "Detected binary RAW DATA packet (0x01)";
                 parseBinaryRawData(datagram);
                 continue;
             } else if (msg_type == 0x02) {
@@ -1033,25 +1033,25 @@ void MainWindow::parseBinaryRawData(const QByteArray& datagram)
         return;
     }
 
-    qDebug() << "=== Binary Raw Data Frame ===";
-    qDebug() << "Message Type:    0x" << QString::number(header->message_type, 16);
-    qDebug() << "Frame Number:   " << header->frame_number;
-    qDebug() << "Num Chirps:     " << header->num_chirps;
-    qDebug() << "Num RX Antennas:" << header->num_rx_antennas;
-    qDebug() << "Samples/Chirp:  " << header->num_samples_per_chirp;
-    qDebug() << "RX Mask:         0x" << QString::number(header->rx_mask, 16);
-    qDebug() << "ADC Resolution: " << header->adc_resolution << "bits";
-    qDebug() << "Interleaved RX: " << header->interleaved_rx;
-    qDebug() << "Data Format:    " << header->data_format
-             << (header->data_format == 1 ? " (Complex I/Q)" : " (Real)");
+//    qDebug() << "=== Binary Raw Data Frame ===";
+//    qDebug() << "Message Type:    0x" << QString::number(header->message_type, 16);
+//    qDebug() << "Frame Number:   " << header->frame_number;
+//    qDebug() << "Num Chirps:     " << header->num_chirps;
+//    qDebug() << "Num RX Antennas:" << header->num_rx_antennas;
+//    qDebug() << "Samples/Chirp:  " << header->num_samples_per_chirp;
+//    qDebug() << "RX Mask:         0x" << QString::number(header->rx_mask, 16);
+//    qDebug() << "ADC Resolution: " << header->adc_resolution << "bits";
+//    qDebug() << "Interleaved RX: " << header->interleaved_rx;
+//    qDebug() << "Data Format:    " << header->data_format
+//             << (header->data_format == 1 ? " (Complex I/Q)" : " (Real)");
 
     uint32_t total_samples = header->num_samples_per_chirp * header->num_chirps * header->num_rx_antennas;
     uint32_t expected_data_size = total_samples * sizeof(float);
     uint32_t expected_total_size = sizeof(RawDataHeader_t) + expected_data_size;
 
-    qDebug() << "Total samples:  " << total_samples;
-    qDebug() << "Expected size:  " << expected_total_size << "bytes";
-    qDebug() << "Actual size:    " << datagram.size() << "bytes";
+//    qDebug() << "Total samples:  " << total_samples;
+//    qDebug() << "Expected size:  " << expected_total_size << "bytes";
+//    qDebug() << "Actual size:    " << datagram.size() << "bytes";
 
     if (datagram.size() < static_cast<int>(expected_total_size)) {
         qWarning() << "Datagram size mismatch. Expected:" << expected_total_size
@@ -1110,11 +1110,11 @@ void MainWindow::processRawDataFrame(const RawDataHeader_t* header,
 
     m_currentADCFrame.computeMagnitudes();
 
-    qDebug() << "Processed" << m_currentADCFrame.complex_data.size() << "complex samples";
+    //qDebug() << "Processed" << m_currentADCFrame.complex_data.size() << "complex samples";
     if (!m_currentADCFrame.complex_data.empty()) {
-        qDebug() << "First sample: I=" << m_currentADCFrame.complex_data[0].I
-                 << "Q=" << m_currentADCFrame.complex_data[0].Q
-                 << "Mag=" << m_currentADCFrame.complex_data[0].magnitude();
+//        qDebug() << "First sample: I=" << m_currentADCFrame.complex_data[0].I
+//                 << "Q=" << m_currentADCFrame.complex_data[0].Q
+//                 << "Mag=" << m_currentADCFrame.complex_data[0].magnitude();
     }
 }
 
@@ -1133,17 +1133,19 @@ void MainWindow::parseBinaryTargetData(const QByteArray& datagram)
         return;
     }
 
-    qDebug() << "=== Binary Target Data Packet ===";
-    qDebug() << "Message Type:    0x" << QString::number(packet->message_type, 16);
-    qDebug() << "Num Targets:    " << packet->num_targets;
-    qDebug() << "Target ID:      " << packet->target_id;
-    qDebug() << "Level:          " << packet->level << "dB";
-    qDebug() << "Radius:         " << packet->radius << "m";
-    qDebug() << "Azimuth:        " << packet->azimuth << "°";
-    qDebug() << "Elevation:      " << packet->elevation << "°";
+//    qDebug() << "=== Binary Target Data Packet ===";
+//    qDebug() << "Message Type:    0x" << QString::number(packet->message_type, 16);
+//    qDebug() << "Num Targets:    " << packet->num_targets;
+//    qDebug() << "Target ID:      " << packet->target_id;
+//    qDebug() << "Level:          " << packet->level << "dB";
+//    qDebug() << "Radius:         " << packet->radius << "m";
+//    qDebug() << "Azimuth:        " << packet->azimuth << "°";
+//    qDebug() << "Elevation:      " << packet->elevation << "°";
+//    qDebug() << "Radial Speed:   " << packet->radial_speed << "m/s";
+//    qDebug() << "Azimuth Speed:  " << packet->azimuth_speed << "°/s";
+//    qDebug() << "Elevation Speed:" << packet->elevation_speed << "°/s";
+
     qDebug() << "Radial Speed:   " << packet->radial_speed << "m/s";
-    qDebug() << "Azimuth Speed:  " << packet->azimuth_speed << "°/s";
-    qDebug() << "Elevation Speed:" << packet->elevation_speed << "°/s";
 
     // EPHEMERAL SYNCHRONIZATION: Frame-based track collection
     // Tracks are only shown when present in the current frame

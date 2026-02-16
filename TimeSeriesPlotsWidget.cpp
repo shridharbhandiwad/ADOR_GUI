@@ -1259,8 +1259,8 @@ TimeSeriesPlotsWidget::TimeSeriesPlotsWidget(QWidget *parent)
     , m_isDarkTheme(false)
     , m_maxRange(100.0f)
     , m_maxVelocity(100.0f)
-    , m_filterMinRange(10.0f)
-    , m_filterMinVelocity(30.0f)
+    , m_filterMinRange(0.0f)
+    , m_filterMinVelocity(0.0f)
     , m_filterMovingAvgSize(1)
     , m_filterReceding(true)
     , m_filterApproaching(true)
@@ -1408,7 +1408,7 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     QLabel* minRangeLabel = new QLabel("Min Range", this);
     m_filterMinRangeSpinBox = new QDoubleSpinBox(this);
     m_filterMinRangeSpinBox->setRange(0, 1000);
-    m_filterMinRangeSpinBox->setValue(10.0);  // Default: 10m
+    m_filterMinRangeSpinBox->setValue(0.0);  // Default: 10m
     m_filterMinRangeSpinBox->setSuffix(" m");
     m_filterMinRangeSpinBox->setDecimals(1);
     m_filterMinRangeSpinBox->setSingleStep(1.0);
@@ -1423,7 +1423,7 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     QLabel* minVelocityLabel = new QLabel("Min Velocity", this);
     m_filterMinVelocitySpinBox = new QDoubleSpinBox(this);
     m_filterMinVelocitySpinBox->setRange(0, 500);
-    m_filterMinVelocitySpinBox->setValue(30.0);  // Default: 30kph
+    m_filterMinVelocitySpinBox->setValue(0.0);  // Default: 30kph
     m_filterMinVelocitySpinBox->setSuffix(" km/h");
     m_filterMinVelocitySpinBox->setDecimals(1);
     m_filterMinVelocitySpinBox->setSingleStep(1.0);
@@ -1675,7 +1675,8 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
     for (size_t i = 0; i < targets.numTracks && i < targets.targets.size(); ++i) {
         const auto& target = targets.targets[i];
         // Preserve sign for velocity (can be positive or negative)
-        float velocityKmh = target.radial_speed * 3.6f;  // Convert m/s to km/h
+        float velocityKmh = target.radial_speed;// * 3.6f;  // Convert m/s to km/h
+        qDebug()<<"target.radial_speed=="<<target.radial_speed;
         float rangeM = target.radius;
         
         // Apply filters
@@ -1702,7 +1703,8 @@ void TimeSeriesPlotsWidget::updateFromTargets(const TargetTrackData& targets)
         
         // Update range rate display
         if (m_rangeRateDisplay) {
-            m_rangeRateDisplay->setValue(m_rangeRateMovingAvg);
+            //m_rangeRateDisplay->setValue(m_rangeRateMovingAvg);
+            m_rangeRateDisplay->setValue(velocityKmh);
         }
         
         // Update range-velocity plot (preserves velocity sign)
@@ -2233,12 +2235,12 @@ void TimeSeriesPlotsWidget::loadSettings()
     
     // Load filter settings
     if (m_filterMinRangeSpinBox) {
-        double filterMinRange = settings.value("filterMinRange", 10.0).toDouble();
+        double filterMinRange = settings.value("filterMinRange", 0.0).toDouble();
         m_filterMinRangeSpinBox->setValue(filterMinRange);
     }
     
     if (m_filterMinVelocitySpinBox) {
-        double filterMinVelocity = settings.value("filterMinVelocity", 30.0).toDouble();
+        double filterMinVelocity = settings.value("filterMinVelocity", 0.0).toDouble();
         m_filterMinVelocitySpinBox->setValue(filterMinVelocity);
     }
     
@@ -2253,7 +2255,7 @@ void TimeSeriesPlotsWidget::loadSettings()
     }
     
     if (m_filterApproachingCheckBox) {
-        bool filterApproaching = settings.value("filterApproaching", false).toBool();
+        bool filterApproaching = settings.value("filterApproaching", true).toBool();
         m_filterApproachingCheckBox->setChecked(filterApproaching);
     }
     
