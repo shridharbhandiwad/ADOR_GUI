@@ -9,46 +9,52 @@ The RadarGUI application had layout and sizing issues when ported to different P
 This resulted in overlapped UI elements and incorrect widget sizing as shown in the reported screenshot.
 
 ## Root Causes
-1. **Hard-coded pixel sizes** - Widgets used fixed pixel values (e.g., `setMinimumSize(300, 250)`)
-2. **Fixed splitter sizes** - Splitter sizes used absolute pixel values instead of proportions
-3. **Non-responsive panel widths** - DSP Settings panel had fixed min/max widths
-4. **No DPI awareness** - Layout calculations didn't account for screen DPI scaling
+1. **Hard-coded pixel sizes** - Widgets used fixed pixel values without DPI scaling
+2. **Fixed splitter sizes** - Splitter sizes used absolute pixel values calculated from screen geometry
+3. **Non-responsive panel widths** - DSP Settings panel had overly restrictive max widths
+4. **Widget minimum sizes** - SpeedMeasurementWidget and TimeSeriesPlotsWidget had large hardcoded minimum sizes
 
-## Solutions Implemented
+## Solutions Implemented (Updated 2026-02-17)
 
 ### 1. MainWindow.cpp
 - **Responsive window sizing**: Window minimum size now based on 60% screen width, 70% screen height
 - **DPI-aware calculations**: All sizes multiplied by DPI scale factor (logicalDotsPerInch / 96.0)
-- **Proportional splitter sizes**: 
-  - Top horizontal splitter: 67% PPI, 33% Track Table (based on available width)
-  - Vertical splitter: 60% top row, 40% FFT (based on available height)
-- **Responsive DSP panel**: Min width 280px, max width 20% of screen width
-- **DPI-scaled widgets**: PPI and FFT widgets sized based on DPI scale
+- **Stretch-factor based splitter sizing**: 
+  - Top horizontal splitter: Uses stretch factors (2:1 ratio) instead of fixed pixel widths
+  - Vertical splitter: Uses stretch factors (3:2 ratio) instead of fixed pixel heights
+  - This ensures proportional scaling regardless of actual screen size
+- **Improved DSP panel**: Min width 250px, max width 22% of screen (capped at 450px)
+- **DPI-scaled widgets**: PPI and FFT widgets with flexible minimum sizes and expanding size policies
 - **Responsive field sizes**: Input fields in DSP Settings panel scale with DPI
+- **Size policies**: All main widgets now use QSizePolicy::Expanding for better responsiveness
 
-### 2. Widget Updates
-All custom widgets updated to remove hard-coded minimum sizes:
+### 2. Widget Updates (Updated 2026-02-17)
+All custom widgets updated to remove hard-coded minimum sizes and use size policies:
 
 #### PPIWidget.cpp
-- Removed `setMinimumSize(400, 200)`
-- Added `setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding)`
-- Size now determined by parent layout
+- Already had `setMinimumSize(400, 200)` commented out
+- Uses `setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding)`
+- Minimum size now set in MainWindow with DPI scaling
 
 #### FFTWidget.cpp
-- Removed `setMinimumSize(400, 200)`
-- Added expanding size policy
+- No hardcoded minimum sizes
+- Expanding size policy set in MainWindow
 - Responsive to layout changes
 
 #### TimeSeriesPlotsWidget.cpp
-- Updated `TimeSeriesPlotWidget` - removed hard-coded minimum size
-- Updated `RangeVelocityPlotWidget` - removed hard-coded minimum size
-- Both widgets now expand with available space
+- **FIXED**: `DigitalRangeRateDisplay` - removed `setMinimumSize(240, 100)`
+- Changed to `setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred)`
+- Removed hardcoded size in setupFilterPanel
+- Display now adapts to available space
 
 #### SpeedMeasurementWidget.cpp
-- `SpeedometerGauge` - removed `setMinimumSize(500, 500)`
-- `DigitalSpeedDisplay` - removed `setMinimumSize(180, 100)`
-- Speedometer, cards, and displays now resize with layout
-- `ModernSpeedButton` - uses responsive sizing with minimum height for usability
+- **FIXED**: `SpeedometerGauge` - removed `setMinimumSize(600, 600)`
+- **FIXED**: `DigitalSpeedDisplay` - removed `setMinimumSize(200, 80)`
+- **FIXED**: `SpeedMeasurementWidget` - removed `setMinimumSize(1000, 700)`
+- **FIXED**: `m_topSpeedCard` - removed `setMinimumSize(300, 240)`
+- **FIXED**: `m_topSpeedDisplay` - removed `setMinimumSize(260, 100)`
+- **FIXED**: `m_outputCard` - removed `setMinimumSize(300, 220)`
+- All components now use QSizePolicy::Expanding to adapt to available space
 
 ### 3. Dialog Updates (dialogs.cpp)
 All dialogs now calculate minimum sizes based on screen DPI:
@@ -87,11 +93,16 @@ int ppiMinWidth = static_cast<int>(250 * dpiScale);
 int ppiMinHeight = static_cast<int>(200 * dpiScale);
 ```
 
-### Proportional Layout Sizing
+### Proportional Layout Sizing (Updated to use stretch factors)
 ```cpp
-int totalTopWidth = screenGeometry.width() - 400;
-int ppiWidth = static_cast<int>(totalTopWidth * 0.67);  // 67%
-int tableWidth = static_cast<int>(totalTopWidth * 0.33); // 33%
+// Old approach (problematic):
+// int totalTopWidth = screenGeometry.width() - 400;
+// int ppiWidth = static_cast<int>(totalTopWidth * 0.67);
+// topHorizontalSplitter->setSizes({ppiWidth, tableWidth});
+
+// New approach (better):
+topHorizontalSplitter->setStretchFactor(0, 2);  // PPI gets 2x space
+topHorizontalSplitter->setStretchFactor(1, 1);  // Track Table gets 1x space
 ```
 
 ## Benefits

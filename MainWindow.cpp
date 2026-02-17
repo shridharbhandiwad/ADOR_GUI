@@ -474,9 +474,10 @@ void MainWindow::setupUI()
 
     m_ppiWidget = new PPIWidget();
     // Use responsive minimum size based on screen DPI and size
-    int ppiMinWidth = static_cast<int>(250 * dpiScale);
-    int ppiMinHeight = static_cast<int>(200 * dpiScale);
+    int ppiMinWidth = qMax(200, static_cast<int>(200 * dpiScale));
+    int ppiMinHeight = qMax(150, static_cast<int>(150 * dpiScale));
     m_ppiWidget->setMinimumSize(ppiMinWidth, ppiMinHeight);
+    m_ppiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
 
     topHorizontalSplitter->addWidget(ppiGroup);
@@ -508,11 +509,10 @@ void MainWindow::setupUI()
 
     topHorizontalSplitter->addWidget(tableGroup);
     
-    // Set initial sizes for PPI (larger) and Track Table (smaller) - proportional to screen width
-    int totalTopWidth = screenGeometry.width() - 400;  // Subtract DSP panel width
-    int ppiWidth = static_cast<int>(totalTopWidth * 0.67);  // 67% for PPI
-    int tableWidth = static_cast<int>(totalTopWidth * 0.33);  // 33% for Track Table
-    topHorizontalSplitter->setSizes({ppiWidth, tableWidth});
+    // Set proportional stretch factors for PPI (2) and Track Table (1)
+    // This allows the splitter to resize proportionally regardless of screen size
+    topHorizontalSplitter->setStretchFactor(0, 2);  // PPI gets 2x more space
+    topHorizontalSplitter->setStretchFactor(1, 1);  // Track Table gets 1x space
 
     rightVerticalSplitter->addWidget(topHorizontalSplitter);
 
@@ -524,18 +524,18 @@ void MainWindow::setupUI()
     m_fftWidget->setRadarParameters(100000.0f, 0.001f, 50000000.0f, 24000000000.0f);
     m_fftWidget->setMaxRange(50.0f);
     // Use responsive minimum size based on screen DPI and size
-    int fftMinWidth = static_cast<int>(250 * dpiScale);
-    int fftMinHeight = static_cast<int>(120 * dpiScale);
+    int fftMinWidth = qMax(200, static_cast<int>(200 * dpiScale));
+    int fftMinHeight = qMax(100, static_cast<int>(100 * dpiScale));
     m_fftWidget->setMinimumSize(fftMinWidth, fftMinHeight);
+    m_fftWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     fftLayout->addWidget(m_fftWidget);
     
     rightVerticalSplitter->addWidget(fftGroup);
     
-    // Set initial sizes for top row (larger) and FFT - proportional to screen height
-    int totalHeight = screenGeometry.height() - 100;  // Subtract menu and margins
-    int topRowHeight = static_cast<int>(totalHeight * 0.60);  // 60% for top row (PPI + Track Table)
-    int fftHeight = static_cast<int>(totalHeight * 0.40);     // 40% for FFT
-    rightVerticalSplitter->setSizes({topRowHeight, fftHeight});
+    // Set proportional stretch factors for top row (3) and FFT (2)
+    // This allows the splitter to resize proportionally regardless of screen size
+    rightVerticalSplitter->setStretchFactor(0, 3);  // Top row (PPI + Track Table) gets 60% space
+    rightVerticalSplitter->setStretchFactor(1, 2);  // FFT gets 40% space
 
     // ========== LEFT: DSP Settings Panel (Vertical Layout) ==========
     m_dspSettingsGroup = new QGroupBox("DSP Settings", this);
@@ -839,10 +839,11 @@ void MainWindow::setupUI()
 
     // ========== ASSEMBLE MAIN LAYOUT ==========
     // Add DSP Settings on the left (responsive width based on screen size)
-    int dspMinWidth = qMax(280, static_cast<int>(280 * dpiScale));
-    int dspMaxWidth = qMax(350, static_cast<int>(screenGeometry.width() * 0.20));  // Max 20% of screen width
+    int dspMinWidth = qMax(250, static_cast<int>(250 * dpiScale));
+    int dspMaxWidth = qMax(300, qMin(450, static_cast<int>(screenGeometry.width() * 0.22)));  // Max 22% of screen width, capped at 450px
     m_dspSettingsGroup->setMinimumWidth(dspMinWidth);
     m_dspSettingsGroup->setMaximumWidth(dspMaxWidth);
+    m_dspSettingsGroup->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     mainLayout->addWidget(m_dspSettingsGroup, 0);
     
     // ========== CREATE TAB WIDGET FOR MAIN CONTENT ==========
