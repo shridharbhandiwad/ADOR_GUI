@@ -24,9 +24,8 @@ DigitalRangeRateDisplay::DigitalRangeRateDisplay(QWidget *parent)
     , m_hasValidData(false)
     , m_dataTimeoutMs(3000)  // Default 3 seconds timeout
 {
-    // Set minimum size to ensure display is visible
-    setMinimumSize(240, 100);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    // Use preferred size policy to adapt to available space
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     
     m_valueAnimation = new QPropertyAnimation(this, "displayValue", this);
     m_valueAnimation->setDuration(300);
@@ -1518,7 +1517,7 @@ void TimeSeriesPlotsWidget::setupFilterControls()
     QFont rangeRateLabelFont("Segoe UI", 10, QFont::Bold);
     m_rangeRateLabel->setFont(rangeRateLabelFont);
     m_rangeRateDisplay = new DigitalRangeRateDisplay(this);
-    m_rangeRateDisplay->setMinimumSize(240, 100);
+    m_rangeRateDisplay->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_rangeRateDisplay->setValue(0);
     filterLayout->addWidget(m_rangeRateLabel);
     filterLayout->addWidget(m_rangeRateDisplay);
