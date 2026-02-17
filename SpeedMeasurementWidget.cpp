@@ -21,7 +21,8 @@ SpeedometerGauge::SpeedometerGauge(QWidget *parent)
     , m_isDarkTheme(false)
     , m_radius(0.0f)
 {
-    // Use expanding size policy to adapt to available space
+    // Set minimum size to ensure speedometer is visible - doubled for enterprise display
+    setMinimumSize(600, 600);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     // Setup animation timer for smooth needle movement
@@ -613,8 +614,9 @@ DigitalSpeedDisplay::DigitalSpeedDisplay(QWidget *parent)
     , m_unit("km/h")
     , m_isDarkTheme(false)
 {
-    // Use expanding size policy to adapt to available space
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    // Set minimum size to ensure display is visible
+    setMinimumSize(200, 80);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     
     m_valueAnimation = new QPropertyAnimation(this, "displayValue", this);
     m_valueAnimation->setDuration(300);
@@ -964,8 +966,8 @@ SpeedWidgetTheme SpeedMeasurementWidget::createDarkTheme() const
 
 void SpeedMeasurementWidget::setupUI()
 {
-    // Use expanding size policy to adapt to available space
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    // Set minimum size for the entire widget - enlarged for enterprise display
+    setMinimumSize(1000, 700);
     
     QHBoxLayout* mainLayout = new QHBoxLayout(this);
     mainLayout->setSpacing(40);
@@ -999,7 +1001,7 @@ void SpeedMeasurementWidget::setupUI()
     
     // Top Speed Card
     m_topSpeedCard = new SpeedCard(this);
-    m_topSpeedCard->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_topSpeedCard->setMinimumSize(300, 240);
     
     QVBoxLayout* topSpeedCardLayout = new QVBoxLayout(m_topSpeedCard);
     topSpeedCardLayout->setSpacing(18);
@@ -1017,7 +1019,7 @@ void SpeedMeasurementWidget::setupUI()
     
     // Digital display for top speed
     m_topSpeedDisplay = new DigitalSpeedDisplay(this);
-    m_topSpeedDisplay->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_topSpeedDisplay->setMinimumSize(260, 100);
     m_topSpeedDisplay->setValue(0);
     topSpeedCardLayout->addWidget(m_topSpeedDisplay, 0, Qt::AlignCenter);
     
@@ -1027,7 +1029,7 @@ void SpeedMeasurementWidget::setupUI()
     
     // Controls Card
     m_outputCard = new SpeedCard(this);
-    m_outputCard->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_outputCard->setMinimumSize(300, 220);
     
     QVBoxLayout* outputCardLayout = new QVBoxLayout(m_outputCard);
     outputCardLayout->setSpacing(22);
