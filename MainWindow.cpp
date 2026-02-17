@@ -39,6 +39,8 @@
 #include <QJsonObject>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QScrollArea>
+#include <QFrame>
 #include <cmath>
 #include <cstring>
 
@@ -137,13 +139,13 @@ void MainWindow::setupUI()
         screenGeometry = QRect(0, 0, 1920, 1080);
     }
     
-    // Set responsive minimum size based on screen size (60% of available width, 70% of height)
-    int minWidth = qMax(1000, static_cast<int>(screenGeometry.width() * 0.6));
-    int minHeight = qMax(700, static_cast<int>(screenGeometry.height() * 0.7));
+    // Set reasonable minimum size that works on all screen resolutions
+    // Use DPI scaling to ensure minimum is appropriate for high-DPI displays
+    int minWidth = static_cast<int>(800 * dpiScale);
+    int minHeight = static_cast<int>(600 * dpiScale);
     setMinimumSize(minWidth, minHeight);
     
-    // Maximize window to screen size on startup
-    setGeometry(screenGeometry);
+    // Start maximized for best initial experience, but allow resizing down to minimum
     showMaximized();
 
     // Apply premium engineering dashboard theme
@@ -468,14 +470,15 @@ void MainWindow::setupUI()
 
     // ========== CENTER-TOP: PPI Display ==========
     QGroupBox* ppiGroup = new QGroupBox("PPI");
+    ppiGroup->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     QVBoxLayout* ppiLayout = new QVBoxLayout(ppiGroup);
     ppiLayout->setSpacing(4);
     ppiLayout->setContentsMargins(4, 12, 4, 4);  // Reduced margins
 
     m_ppiWidget = new PPIWidget();
-    // Use responsive minimum size based on screen DPI and size
-    int ppiMinWidth = qMax(200, static_cast<int>(200 * dpiScale));
-    int ppiMinHeight = qMax(150, static_cast<int>(150 * dpiScale));
+    // Use responsive minimum size based on screen DPI - keep it small to work on all screens
+    int ppiMinWidth = static_cast<int>(150 * dpiScale);
+    int ppiMinHeight = static_cast<int>(120 * dpiScale);
     m_ppiWidget->setMinimumSize(ppiMinWidth, ppiMinHeight);
     m_ppiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     ppiLayout->addWidget(m_ppiWidget, 1);  // Stretch factor 1 to take available space
@@ -484,14 +487,17 @@ void MainWindow::setupUI()
 
     // ========== RIGHT-TOP: Track Table ==========
     QGroupBox* tableGroup = new QGroupBox("Track Table");
+    tableGroup->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     QVBoxLayout* tableLayout = new QVBoxLayout(tableGroup);
     tableLayout->setContentsMargins(4, 12, 4, 4);  // Reduced margins
     m_trackTable = new QTableWidget();
+    m_trackTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_trackTable->setColumnCount(4);
     QStringList headers;
     headers << "ID" << "Range (m)" << "Azimuth (°)" << "Radial Speed (m/s)";
     m_trackTable->setHorizontalHeaderLabels(headers);
     m_trackTable->horizontalHeader()->setStretchLastSection(true);
+    m_trackTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_trackTable->verticalHeader()->setVisible(false);  // Hide row numbers to remove black column on left
     m_trackTable->setAlternatingRowColors(true);
     m_trackTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -518,14 +524,15 @@ void MainWindow::setupUI()
 
     // ========== BOTTOM: FFT Display ==========
     QGroupBox* fftGroup = new QGroupBox("FFT");
+    fftGroup->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     QVBoxLayout* fftLayout = new QVBoxLayout(fftGroup);
     fftLayout->setContentsMargins(4, 12, 4, 4);  // Reduced margins
     m_fftWidget = new FFTWidget();
     m_fftWidget->setRadarParameters(100000.0f, 0.001f, 50000000.0f, 24000000000.0f);
     m_fftWidget->setMaxRange(50.0f);
-    // Use responsive minimum size based on screen DPI and size
-    int fftMinWidth = qMax(200, static_cast<int>(200 * dpiScale));
-    int fftMinHeight = qMax(100, static_cast<int>(100 * dpiScale));
+    // Use responsive minimum size based on screen DPI - keep it small to work on all screens
+    int fftMinWidth = static_cast<int>(150 * dpiScale);
+    int fftMinHeight = static_cast<int>(80 * dpiScale);
     m_fftWidget->setMinimumSize(fftMinWidth, fftMinHeight);
     m_fftWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     fftLayout->addWidget(m_fftWidget);
@@ -542,13 +549,21 @@ void MainWindow::setupUI()
     // Styling will be applied dynamically based on theme
     
     QVBoxLayout* settingsMainLayout = new QVBoxLayout(m_dspSettingsGroup);
-    settingsMainLayout->setSpacing(8);
-    settingsMainLayout->setContentsMargins(12, 20, 12, 12);
+    settingsMainLayout->setSpacing(4);
+    settingsMainLayout->setContentsMargins(8, 16, 8, 8);
+    
+    // Create scroll area for DSP settings to ensure usability on smaller screens
+    QScrollArea* settingsScrollArea = new QScrollArea(this);
+    settingsScrollArea->setWidgetResizable(true);
+    settingsScrollArea->setFrameShape(QFrame::NoFrame);
+    settingsScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    settingsScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     
     // Single vertical container for settings with unified layout
-    QWidget* settingsContainer = new QWidget(this);
+    QWidget* settingsContainer = new QWidget();
+    settingsContainer->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     QGridLayout* settingsGridLayout = new QGridLayout(settingsContainer);
-    settingsGridLayout->setSpacing(6);
+    settingsGridLayout->setSpacing(4);
     settingsGridLayout->setContentsMargins(4, 4, 4, 4);
 
     // Clear labels vector before adding new ones
@@ -559,12 +574,10 @@ void MainWindow::setupUI()
         QLabel* l = new QLabel(label, this);
         m_dspLabels.append(l);  // Store label for theme updates
         edit = new QLineEdit(def, this);
-        // Use responsive sizes based on DPI
-        int editMinWidth = static_cast<int>(60 * dpiScale);
-        int editMaxWidth = static_cast<int>(90 * dpiScale);
-        int editMinHeight = static_cast<int>(26 * dpiScale);
-        edit->setMinimumWidth(editMinWidth);
-        edit->setMaximumWidth(editMaxWidth);
+        // Use size policy instead of fixed sizes for better flexibility
+        edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        // Set a reasonable minimum height only
+        int editMinHeight = static_cast<int>(24 * dpiScale);
         edit->setMinimumHeight(editMinHeight);
         layout->addWidget(l, row, 0);
         layout->addWidget(edit, row, 1);
@@ -593,16 +606,16 @@ void MainWindow::setupUI()
     addField(settingsGridLayout, row++, "Median Filter",    m_medianFilterEdit,    "1");
     addField(settingsGridLayout, row++, "MTI Length",       m_mtiLengthEdit,       "2");
 
-    // Set column widths for narrower panel - responsive based on DPI
-    int labelColWidth = static_cast<int>(90 * dpiScale);
-    int editColWidth = static_cast<int>(60 * dpiScale);
-    settingsGridLayout->setColumnMinimumWidth(0, labelColWidth);
-    settingsGridLayout->setColumnMinimumWidth(1, editColWidth);
+    // Let columns size naturally based on content
+    // Column 0 (labels) should not stretch, column 1 (edits) should stretch to fill
+    settingsGridLayout->setColumnStretch(0, 0);  // Labels don't stretch
+    settingsGridLayout->setColumnStretch(1, 1);  // Edit fields stretch to fill available space
     
-    // Push content to top
-    settingsGridLayout->setRowStretch(row, 1);
+    // Don't add row stretch - let scroll area handle overflow
     
-    settingsMainLayout->addWidget(settingsContainer, 1);
+    // Set the settings container as the scroll area widget
+    settingsScrollArea->setWidget(settingsContainer);
+    settingsMainLayout->addWidget(settingsScrollArea, 1);
     
     // Create buttons layout - Compact vertical layout for narrow panel
     QWidget* buttonContainer = new QWidget(this);
@@ -613,7 +626,8 @@ void MainWindow::setupUI()
     
     // Apply button - Premium blue gradient with icon hint
     m_applyButton = new QPushButton("Apply", this);
-    m_applyButton->setMinimumHeight(34);
+    m_applyButton->setMinimumHeight(static_cast<int>(32 * dpiScale));
+    m_applyButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_applyButton->setCursor(Qt::PointingHandCursor);
     m_applyButton->setStyleSheet(R"(
         QPushButton {
@@ -639,7 +653,8 @@ void MainWindow::setupUI()
     
     // Save Settings button - Monochrome solid style
     m_saveSettingsButton = new QPushButton("Save", this);
-    m_saveSettingsButton->setMinimumHeight(34);
+    m_saveSettingsButton->setMinimumHeight(static_cast<int>(32 * dpiScale));
+    m_saveSettingsButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_saveSettingsButton->setCursor(Qt::PointingHandCursor);
     m_saveSettingsButton->setStyleSheet(R"(
         QPushButton {
@@ -665,7 +680,8 @@ void MainWindow::setupUI()
     
     // Load From File button - Monochrome outlined style
     m_loadFromFileButton = new QPushButton("Load From File", this);
-    m_loadFromFileButton->setMinimumHeight(34);
+    m_loadFromFileButton->setMinimumHeight(static_cast<int>(32 * dpiScale));
+    m_loadFromFileButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_loadFromFileButton->setCursor(Qt::PointingHandCursor);
     m_loadFromFileButton->setStyleSheet(R"(
         QPushButton {
@@ -691,7 +707,8 @@ void MainWindow::setupUI()
     
     // Save to File button - Monochrome outlined style
     m_saveToFileButton = new QPushButton("Save to File", this);
-    m_saveToFileButton->setMinimumHeight(34);
+    m_saveToFileButton->setMinimumHeight(static_cast<int>(32 * dpiScale));
+    m_saveToFileButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_saveToFileButton->setCursor(Qt::PointingHandCursor);
     m_saveToFileButton->setStyleSheet(R"(
         QPushButton {
@@ -749,7 +766,8 @@ void MainWindow::setupUI()
     loggingButtonLayout->setSpacing(8);
     
     m_startLoggingButton = new QPushButton("Start", this);
-    m_startLoggingButton->setMinimumHeight(36);
+    m_startLoggingButton->setMinimumHeight(static_cast<int>(32 * dpiScale));
+    m_startLoggingButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_startLoggingButton->setStyleSheet(R"(
         QPushButton {
             font-size: 13px;
@@ -777,7 +795,8 @@ void MainWindow::setupUI()
     )");
     
     m_stopLoggingButton = new QPushButton("Stop", this);
-    m_stopLoggingButton->setMinimumHeight(36);
+    m_stopLoggingButton->setMinimumHeight(static_cast<int>(32 * dpiScale));
+    m_stopLoggingButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_stopLoggingButton->setEnabled(false);
     m_stopLoggingButton->setStyleSheet(m_startLoggingButton->styleSheet());
     
@@ -787,7 +806,8 @@ void MainWindow::setupUI()
     
     // Open Details button
     m_openLoggingDetailsButton = new QPushButton("Open Details...", this);
-    m_openLoggingDetailsButton->setMinimumHeight(36);
+    m_openLoggingDetailsButton->setMinimumHeight(static_cast<int>(32 * dpiScale));
+    m_openLoggingDetailsButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     m_openLoggingDetailsButton->setStyleSheet(R"(
         QPushButton {
             font-size: 13px;
@@ -838,16 +858,16 @@ void MainWindow::setupUI()
     connect(m_saveToFileButton,    &QPushButton::clicked,       this, &MainWindow::onSaveToFile);
 
     // ========== ASSEMBLE MAIN LAYOUT ==========
-    // Add DSP Settings on the left (responsive width based on screen size)
-    int dspMinWidth = qMax(250, static_cast<int>(250 * dpiScale));
-    int dspMaxWidth = qMax(300, qMin(450, static_cast<int>(screenGeometry.width() * 0.22)));  // Max 22% of screen width, capped at 450px
+    // Add DSP Settings on the left with flexible but reasonable constraints
+    int dspMinWidth = static_cast<int>(180 * dpiScale);
     m_dspSettingsGroup->setMinimumWidth(dspMinWidth);
-    m_dspSettingsGroup->setMaximumWidth(dspMaxWidth);
-    m_dspSettingsGroup->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-    mainLayout->addWidget(m_dspSettingsGroup, 0);
+    // Remove maximum width constraint to allow flexibility on different screens
+    m_dspSettingsGroup->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    mainLayout->addWidget(m_dspSettingsGroup, 0);  // Stretch factor 0 = natural size, won't grow
     
     // ========== CREATE TAB WIDGET FOR MAIN CONTENT ==========
     m_mainTabWidget = new QTabWidget(this);
+    m_mainTabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_mainTabWidget->setStyleSheet(R"(
         QTabWidget::pane {
             border: 1px solid #e5e5e5;
@@ -902,8 +922,8 @@ void MainWindow::setupUI()
     m_speedMeasurementWidget = new SpeedMeasurementWidget(this);
     m_mainTabWidget->addTab(m_speedMeasurementWidget, "Speed Measurement");
     
-    // Add the tab widget to the main layout with stretch
-    mainLayout->addWidget(m_mainTabWidget, 1);
+    // Add the tab widget to the main layout with high stretch factor to take all available space
+    mainLayout->addWidget(m_mainTabWidget, 1);  // Stretch factor 1 = takes all remaining space
 
     // Store splitters for compatibility (if needed elsewhere)
     m_mainSplitter = nullptr;

@@ -1,34 +1,83 @@
 # Cross-Platform Layout and Sizing Fixes
 
 ## Problem
-The RadarGUI application had layout and sizing issues when ported to different PCs with varying:
-- Screen resolutions
-- DPI settings (96, 125%, 150%, etc.)
-- Display sizes
+The RadarGUI application had layout and sizing issues when deployed to different PCs with varying:
+- Screen resolutions (1366x768 to 4K displays)
+- DPI settings (96 DPI to 192+ DPI / 100% to 200%+ scaling)
+- Display sizes (laptops to large monitors)
 
-This resulted in overlapped UI elements and incorrect widget sizing as shown in the reported screenshot.
+This resulted in:
+- Overlapped UI elements
+- Incorrect widget sizing
+- Components not fitting on screen
+- Non-functional layouts on smaller displays
 
-## Root Causes
-1. **Hard-coded pixel sizes** - Widgets used fixed pixel values without DPI scaling
-2. **Fixed splitter sizes** - Splitter sizes used absolute pixel values calculated from screen geometry
-3. **Non-responsive panel widths** - DSP Settings panel had overly restrictive max widths
-4. **Widget minimum sizes** - SpeedMeasurementWidget and TimeSeriesPlotsWidget had large hardcoded minimum sizes
+## Root Causes Identified
+1. **Overly aggressive window minimum size** - Required 1000x700 OR 60%/70% of screen
+2. **Hard-coded pixel sizes** - Widgets used fixed pixel values without proper DPI scaling
+3. **Fixed splitter sizes** - Splitter sizes calculated from screen geometry assumptions
+4. **Edit field constraints** - Both min and max widths set, preventing flexibility
+5. **No scroll area** - DSP Settings panel couldn't overflow on smaller screens
+6. **Widget minimum sizes** - SpeedMeasurementWidget and TimeSeriesPlotsWidget had large hardcoded sizes
+7. **Missing size policies** - Many widgets lacked proper QSizePolicy settings
 
-## Solutions Implemented (Updated 2026-02-17)
+## Comprehensive Solutions Implemented (2026-02-17 - Complete Rewrite)
 
-### 1. MainWindow.cpp
-- **Responsive window sizing**: Window minimum size now based on 60% screen width, 70% screen height
-- **DPI-aware calculations**: All sizes multiplied by DPI scale factor (logicalDotsPerInch / 96.0)
-- **Stretch-factor based splitter sizing**: 
-  - Top horizontal splitter: Uses stretch factors (2:1 ratio) instead of fixed pixel widths
-  - Vertical splitter: Uses stretch factors (3:2 ratio) instead of fixed pixel heights
-  - This ensures proportional scaling regardless of actual screen size
-- **Improved DSP panel**: Min width 250px, max width 22% of screen (capped at 450px)
-- **DPI-scaled widgets**: PPI and FFT widgets with flexible minimum sizes and expanding size policies
-- **Responsive field sizes**: Input fields in DSP Settings panel scale with DPI
-- **Size policies**: All main widgets now use QSizePolicy::Expanding for better responsiveness
+### 1. MainWindow.cpp - Window and Layout Core
 
-### 2. Widget Updates (Updated 2026-02-17)
+#### Window Sizing (FIXED)
+- **Old**: `setMinimumSize(qMax(1000, 60% of screen), qMax(700, 70% of screen))`
+- **New**: `setMinimumSize(800 * dpiScale, 600 * dpiScale)`
+- Window can now resize down to 800x600 (scaled by DPI), works on all screens
+
+#### DPI Awareness
+- All sizes use DPI scale factor: `screen->logicalDotsPerInch() / 96.0`
+- Ensures consistent appearance across different DPI settings
+
+#### Splitter Sizing (FIXED)
+- **Old**: Calculated exact pixel sizes from screen geometry
+- **New**: Uses stretch factors for proportional scaling
+  - Top horizontal splitter: `setStretchFactor(0, 2)` and `setStretchFactor(1, 1)` (2:1 PPI:Track Table)
+  - Vertical splitter: `setStretchFactor(0, 3)` and `setStretchFactor(1, 2)` (3:2 top:FFT)
+- Adapts automatically to any window size
+
+#### DSP Settings Panel (MAJOR OVERHAUL)
+- **Minimum width**: 180px * dpiScale (down from 250px, more flexible)
+- **Maximum width**: REMOVED (was constraining layout)
+- **Size policy**: QSizePolicy::Minimum (won't grow, just takes needed space)
+- **Scroll area**: ADDED - QScrollArea with vertical scrollbar for smaller screens
+- **Edit fields**: No longer have max width constraints, use QSizePolicy::Expanding
+- **Grid layout**: Uses column stretch factors instead of fixed column widths
+- **Button heights**: All DPI-scaled (32px * dpiScale instead of fixed 34-36px)
+- **All buttons**: Added QSizePolicy::Expanding for flexibility
+
+### 2. Main Display Widgets (FIXED)
+
+#### PPI Widget
+- **Size policy**: QSizePolicy::Expanding in both directions
+- **Minimum size**: 150px * dpiScale (down from 200px)
+- **Group box**: Added QSizePolicy::Expanding
+- More flexible for smaller screens
+
+#### Track Table
+- **Size policy**: QSizePolicy::Expanding in both directions
+- **Header resize**: Added `setSectionResizeMode(QHeaderView::Stretch)`
+- **Group box**: Added QSizePolicy::Expanding
+- Columns now stretch to fill available space
+
+#### FFT Widget
+- **Size policy**: QSizePolicy::Expanding in both directions
+- **Minimum size**: 150px × 80px * dpiScale (down from 200px × 100px)
+- **Group box**: Added QSizePolicy::Expanding
+- More compact minimum size for smaller screens
+
+### 3. Tab Widget Content (FIXED)
+
+#### Main Tab Widget
+- **Size policy**: QSizePolicy::Expanding in both directions
+- **Stretch factor**: 1 in main layout (takes all remaining space after DSP panel)
+
+### 4. Custom Widget Updates (from previous fix)
 All custom widgets updated to remove hard-coded minimum sizes and use size policies:
 
 #### PPIWidget.cpp
@@ -56,7 +105,7 @@ All custom widgets updated to remove hard-coded minimum sizes and use size polic
 - **FIXED**: `m_outputCard` - removed `setMinimumSize(300, 220)`
 - All components now use QSizePolicy::Expanding to adapt to available space
 
-### 3. Dialog Updates (dialogs.cpp)
+### 5. Dialog Updates (dialogs.cpp)
 All dialogs now calculate minimum sizes based on screen DPI:
 
 #### UdpConfigDialog
@@ -72,7 +121,7 @@ All dialogs now calculate minimum sizes based on screen DPI:
 - Base size: 550x450
 - Scales with screen DPI
 
-### 4. DPI Scaling Improvements (main.cpp)
+### 6. DPI Scaling Improvements (main.cpp)
 - Added `Qt::HighDpiScaleFactorRoundingPolicy::PassThrough` (Qt 5.14+)
 - Better fractional DPI scaling (125%, 150%, 175%, etc.)
 - More accurate representation on high-DPI displays
@@ -105,12 +154,29 @@ topHorizontalSplitter->setStretchFactor(0, 2);  // PPI gets 2x space
 topHorizontalSplitter->setStretchFactor(1, 1);  // Track Table gets 1x space
 ```
 
+## Key Improvements Summary
+
+| Component | Old Behavior | New Behavior |
+|-----------|-------------|--------------|
+| Window min size | 1000×700 or 60%×70% screen | 800×600 scaled by DPI |
+| DSP Panel width | 250-450px with max constraint | 180px min, no max, flexible |
+| Edit fields | Min + Max width set | Expanding policy, min height only |
+| Buttons | Fixed 34-36px height | DPI-scaled 32px height |
+| PPI minimum | 200×150px | 150×120px scaled by DPI |
+| FFT minimum | 200×100px | 150×80px scaled by DPI |
+| Splitters | Fixed pixel calculations | Stretch factors (proportional) |
+| DSP Panel scroll | None (overflow hidden) | QScrollArea with vertical scroll |
+| Size policies | Missing on many widgets | Expanding on all major widgets |
+| Table columns | Fixed width | Stretch to fill available space |
+
 ## Benefits
-1. **Cross-platform compatibility** - Works correctly on different screen sizes and DPI settings
-2. **Automatic scaling** - UI adapts to display characteristics without manual intervention
-3. **No overlap** - Proper spacing maintained regardless of screen configuration
-4. **Better UX** - Consistent appearance across different systems
-5. **Future-proof** - Handles new display technologies and resolutions
+1. **Works on all screen sizes** - From 1366×768 laptops to 4K monitors
+2. **DPI independent** - Looks good at 100%, 125%, 150%, 200% scaling
+3. **Truly flexible** - Can resize window down to minimum without breaking
+4. **Scrollable DSP panel** - Settings accessible even on small screens
+5. **No component overlap** - Proper proportional sizing at all resolutions
+6. **Better UX** - Consistent, functional appearance across different systems
+7. **Future-proof** - Handles new display technologies and resolutions
 
 ## Testing Recommendations
 Test on systems with:
